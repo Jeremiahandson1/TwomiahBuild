@@ -1,0 +1,57 @@
+{
+  "siteName": "BuildPro Demo Co",
+  "companyName": "BuildPro Demo Co LLC",
+  "phone": "(555) 123-4567",
+  "email": "demo@buildpro.io",
+  "address": "123 Main Street",
+  "city": "Austin",
+  "state": "TX",
+  "zip": "78701",
+  "logo": "",
+  "favicon": "",
+  "defaultOgImage": "",
+  "socialLinks": {
+    "facebook": "",
+    "instagram": "",
+    "twitter": "",
+    "linkedin": "",
+    "youtube": "",
+    "yelp": "",
+    "googleBusiness": ""
+  },
+  "defaultMetaTitle": "BuildPro Demo Co - Austin Home Services",
+  "defaultMetaDescription": "BuildPro Demo Co - Professional contracting services in Austin, TX.",
+  "analytics": {
+    "googleAnalyticsId": "",
+    "facebookPixelId": "",
+    "googleTagManagerId": ""
+  },
+  "scripts": {
+    "headScripts": "",
+    "bodyStartScripts": "",
+    "bodyEndScripts": ""
+  },
+  "custom404": {
+    "title": "Page Not Found",
+    "message": "Sorry, the page you're looking for doesn't exist or has been moved.",
+    "showSearch": true,
+    "showHomeLink": true,
+    "showContactLink": true,
+    "backgroundImage": ""
+  },
+  "robotsTxt": "User-agent: *\nAllow: /\n\nSitemap: https://buildpro-demo-site.onrender.com/sitemap.xml",
+  "emailNotifications": {
+    "enabled": false,
+    "recipient": "demo@buildpro.io",
+    "smtpHost": "",
+    "smtpPort": 587,
+    "smtpUser": "",
+    "smtpPass": "",
+    "fromEmail": "noreply@demo.buildpro.io",
+    "fromName": "BuildPro Demo Co Website",
+    "sendgridApiKey": ""
+  },
+  "twoFactorEnabled": false,
+  "adminPassword": "$2b$12$LJ3m4x5R8kGqV9YzN1w2aOQJHGZn5o8B1cD2eF3gH4iJ5kL6mN7oP",
+  "twoFactorSecret": ""
+}

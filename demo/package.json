@@ -1,0 +1,10 @@
+{
+  "name": "buildpro-demo",
+  "version": "1.0.0",
+  "scripts": {
+    "install:all": "cd website && npm install && cd ../frontend && npm install",
+    "build": "cd frontend && npm run build:quick",
+    "start": "cd website && node server-static.js",
+    "setup": "cd website && node scripts/initDb.js && node scripts/seedDb.js"
+  }
+}
