@@ -25,9 +25,15 @@ const router = express.Router();
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..');
 const OUTPUT_DIR = process.env.BUILDPRO_OUTPUT_DIR || path.join(PROJECT_ROOT, 'generated');
 
-// All factory routes require owner or admin auth
-router.use(authenticate);
-router.use(requireRole('owner', 'admin'));
+// Skip auth for public endpoints
+router.use((req, res, next) => {
+  if (req.path === '/features' || req.path === '/templates') return next();
+  authenticate(req, res, next);
+});
+router.use((req, res, next) => {
+  if (req.path === '/features' || req.path === '/templates') return next();
+  requireRole('owner', 'admin')(req, res, next);
+});
 
 
 /**
