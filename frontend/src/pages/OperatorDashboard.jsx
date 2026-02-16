@@ -5,7 +5,7 @@ import {
   TrendingUp, Clock, CheckCircle2, AlertCircle
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function OperatorDashboard() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function OperatorDashboard() {
   async function fetchStats() {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/factory/stats`, {
+      const res = await fetch(`${API_URL}/api/factory/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
