@@ -22,7 +22,7 @@ export default function CustomersPage() {
 
   async function fetchCustomers() {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       const params = new URLSearchParams();
       if (statusFilter) params.set('status', statusFilter);
       if (billingFilter) params.set('billing', billingFilter);

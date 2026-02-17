@@ -15,9 +15,8 @@ class ErrorBoundary extends React.Component {
     this.setState({ errorInfo });
     
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error caught by boundary:', error, errorInfo);
-    }
+    console.error('ErrorBoundary caught:', error?.message || error);
+      console.error('Component stack:', errorInfo?.componentStack);
     
     // TODO: Send to error tracking service (Sentry, etc.)
   }
@@ -51,7 +50,7 @@ class ErrorBoundary extends React.Component {
               {this.props.message || "We're sorry, but something unexpected happened. Please try again."}
             </p>
             
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {this.state.error && (
               <div className="mb-6 p-4 bg-red-50 rounded-lg text-left">
                 <p className="font-mono text-sm text-red-800 break-all">
                   {this.state.error.toString()}

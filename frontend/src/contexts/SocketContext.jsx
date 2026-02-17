@@ -8,7 +8,8 @@ const SocketContext = createContext(null);
 const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export function SocketProvider({ children }) {
-  const { token, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
+      const token = localStorage.getItem('accessToken');
   const toast = useToast();
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
