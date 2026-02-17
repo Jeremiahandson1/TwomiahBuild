@@ -204,7 +204,7 @@ export default function FactoryWizard() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px' }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px', color: '#111827' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>BuildPro Factory</h1>
