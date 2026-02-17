@@ -165,26 +165,24 @@ export default function FactoryWizard() {
   const validateZip = (zip) => !zip || /^\d{5}(-\d{4})?$/.test(zip);
   const validateState = (state) => !state || /^[A-Z]{2}$/i.test(state);
 
-  const canProceed = () => {
+  const canProceed = useCallback(() => {
     const c = config.company;
     switch (step) {
       case 0: return config.products.length > 0;
       case 1: {
-        const errors = {};
-        if (!c.name.trim()) errors.name = 'Company name is required';
-        if (c.email && !validateEmail(c.email)) errors.email = 'Invalid email format';
-        if (c.phone && !validatePhone(c.phone)) errors.phone = 'Phone must be at least 10 digits';
-        if (c.domain && !validateDomain(c.domain)) errors.domain = 'Invalid domain format';
-        if (c.zip && !validateZip(c.zip)) errors.zip = 'Invalid ZIP code';
-        if (c.state && !validateState(c.state)) errors.state = '2-letter code';
-        setValidationErrors(errors);
-        return Object.keys(errors).length === 0;
+        if (!c.name?.trim()) return false;
+        if (c.email && !validateEmail(c.email)) return false;
+        if (c.phone && !validatePhone(c.phone)) return false;
+        if (c.domain && !validateDomain(c.domain)) return false;
+        if (c.zip && !validateZip(c.zip)) return false;
+        if (c.state && !validateState(c.state)) return false;
+        return true;
       }
       case 2: return true;
       case 3: return true;
       default: return true;
     }
-  };
+  }, [step, config]);
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -261,7 +259,21 @@ export default function FactoryWizard() {
 
           {step < 4 ? (
             <button
-              onClick={() => setStep(s => s + 1)}
+              onClick={() => {
+                if (step === 1) {
+                  const c = config.company;
+                  const errors = {};
+                  if (!c.name?.trim()) errors.name = 'Company name is required';
+                  if (c.email && !validateEmail(c.email)) errors.email = 'Invalid email format';
+                  if (c.phone && !validatePhone(c.phone)) errors.phone = 'Phone must be at least 10 digits';
+                  if (c.domain && !validateDomain(c.domain)) errors.domain = 'Invalid domain format';
+                  if (c.zip && !validateZip(c.zip)) errors.zip = 'Invalid ZIP code';
+                  if (c.state && !validateState(c.state)) errors.state = '2-letter code';
+                  setValidationErrors(errors);
+                  if (Object.keys(errors).length > 0) return;
+                }
+                setStep(s => s + 1);
+              }}
               disabled={!canProceed()}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '10px 24px',
