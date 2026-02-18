@@ -224,7 +224,7 @@ function Hero() {
     <section style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center',
       background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(249,115,22,0.18) 0%, transparent 70%), #030712',
-      position: 'relative', overflow: 'hidden', paddingTop: 100,
+      position: 'relative', overflow: 'hidden', paddingTop: 100, overflowX: 'hidden',
     }}>
       {/* Grid overlay */}
       <div style={{
@@ -322,7 +322,7 @@ function Hero() {
 
         {/* Dashboard preview card */}
         <div style={{
-          position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
+          position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)',
           width: '42%', maxWidth: 480,
           background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(249,115,22,0.2)',
           borderRadius: 16, padding: 24,
@@ -660,7 +660,7 @@ export default function HomePage() {
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
         .hide-mobile { display: flex !important; }
         .show-mobile { display: none !important; }
-        @media (max-width: 768px) {
+        @media (max-width: 1100px) {
           .hide-mobile { display: none !important; }
           .show-mobile { display: flex !important; }
         }
