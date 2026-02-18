@@ -129,6 +129,8 @@ async function pushToGitHub(repoFullName, extractDir) {
     const cmds = [
       `cd "${extractDir}" && git init`,
       `cd "${extractDir}" && git checkout -b main`,
+      `cd "${extractDir}" && git config user.email "factory@buildpro.app"`,
+      `cd "${extractDir}" && git config user.name "BuildPro Factory"`,
       `cd "${extractDir}" && git add -A`,
       `cd "${extractDir}" && git commit -m "Initial BuildPro deployment"`,
       `cd "${extractDir}" && git remote add origin "${remoteUrl}" 2>/dev/null || git remote set-url origin "${remoteUrl}"`,
@@ -446,13 +448,17 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
     // ── Step 7: Create Site Service (if website product) ──
     if (products.includes('website')) {
       try {
-        const site = await createRenderStaticSite({
+        const site = await createRenderWebService({
           name: `${slug}-site`,
           repoFullName: repo.full_name,
           rootDir: 'site',
-          buildCommand: 'npm install && npm run build',
-          publishPath: 'dist',
-          envVars: [],
+          buildCommand: 'npm install',
+          startCommand: 'node server-static.js',
+          envVars: [
+            { key: 'NODE_ENV', value: 'production' },
+            { key: 'PORT', value: '10000' },
+          ],
+          plan,
           region,
         });
 
