@@ -13,6 +13,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Public Pages
+import HomePage from './pages/public/HomePage';
 import PricingPage from './pages/public/PricingPage';
 import SignupPage from './pages/public/SignupPage';
 import SignupSuccessPage from './pages/public/SignupSuccessPage';
@@ -85,6 +86,7 @@ function App() {
                   <Route path="/signup" element={<SignupPage />} />
                   <Route path="/signup/success" element={<SignupSuccessPage />} />
                   <Route path="/self-hosted" element={<SelfHostedPurchasePage />} />
+                  <Route path="/home" element={<HomePage />} />
 
                   {/* Auth routes */}
                   <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Common schemas
 export const id = z.string().uuid();
-export const email = z.string().email().toLowerCase().trim();
+export const email = z.string().trim().toLowerCase().email();
 export const phone = z.string().regex(/^[\d\s\-\+\(\)]+$/).optional().nullable();
 export const date = z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/));
 export const money = z.number().nonnegative().multipleOf(0.01);

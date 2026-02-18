@@ -3,7 +3,7 @@ import { z } from 'zod';
 // Import validation schemas (we'll test the patterns)
 describe('Validation Schemas', () => {
   describe('Email schema', () => {
-    const emailSchema = z.string().email().toLowerCase().trim();
+    const emailSchema = z.string().trim().toLowerCase().email();
 
     test('validates correct email', () => {
       expect(() => emailSchema.parse('test@example.com')).not.toThrow();
