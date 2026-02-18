@@ -77,7 +77,7 @@ function getImageUrl(p) {
                     height="600"
                   >
                 <% } else { %>
-                  <span class="service-icon"><%= service.icon || '🔧' %></span>
+                  <span class="service-icon"><%= service.icon || '🤝' %></span>
                 <% } %>
               </div>
               <div class="service-content">
@@ -102,28 +102,28 @@ function getImageUrl(p) {
   <!-- Why Choose Us Section -->
   <section class="why-choose-section">
     <div class="container">
-      <h2>Why {{CITY}} Homeowners Trust {{COMPANY_NAME}}</h2>
+      <h2>Why Families in {{CITY}} Choose {{COMPANY_NAME}}</h2>
       <div class="why-grid">
         <div class="why-item animate-on-scroll">
           <div class="why-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </div>
-          <h3>Industry Certified</h3>
-          <p>We've earned top certifications in our industry, giving you access to premium materials, extended warranties, and a commitment to quality backed by the leading names in {{INDUSTRY}}.</p>
+          <h3>Caregivers Who Truly Care</h3>
+          <p>Every caregiver on our team is carefully screened, background-checked, and selected for their genuine compassion. We don't just fill shifts — we match the right caregiver to your loved one's personality and needs.</p>
         </div>
         <div class="why-item animate-on-scroll">
           <div class="why-icon">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
-          <h3>Local to the {{SERVICE_REGION}}</h3>
-          <p>Based in {{CITY}}, we serve homeowners across {{NEARBY_CITY_1}}, {{NEARBY_CITY_4}}, {{NEARBY_CITY_3}}, Bloomer, and the surrounding communities. When a storm hits the valley, we're already here — not driving in from Minneapolis or Madison.</p>
+          <h3>Locally Owned in {{SERVICE_REGION}}</h3>
+          <p>We're not a national franchise — we're your neighbors. {{COMPANY_NAME}} is owned and operated right here in {{CITY}}, serving families across {{NEARBY_CITY_1}}, {{NEARBY_CITY_2}}, {{NEARBY_CITY_3}}, and throughout {{SERVICE_REGION}}.</p>
         </div>
         <div class="why-item animate-on-scroll">
           <div class="why-icon">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
-          <h3>Transparent Pricing, No Surprises</h3>
-          <p>Every project starts with a detailed free estimate. We walk you through material options, labor costs, and timelines before any work begins. Our customers consistently mention our honest communication in their reviews.</p>
+          <h3>Licensed, Insured & Accountable</h3>
+          <p>{{COMPANY_NAME}} is fully licensed by the state, carries comprehensive liability insurance, and maintains workers' compensation coverage on every caregiver. Your family is protected — and so is your peace of mind.</p>
         </div>
       </div>
     </div>
@@ -258,10 +258,6 @@ function getImageUrl(p) {
                 </svg>
               <% } else if (badge.type === 'bbb') { %>
                 <span class="badge-text">BBB</span>
-              <% } else if (badge.type === 'owens-corning') { %>
-                <span class="badge-text">OC</span>
-              <% } else if (badge.type === 'gaf') { %>
-                <span class="badge-text">GAF</span>
               <% } else { %>
                 <span class="badge-text">✓</span>
               <% } %>
@@ -343,24 +339,24 @@ function getImageUrl(p) {
       <h2>Frequently Asked Questions</h2>
       <div class="home-faq-list">
         <details class="home-faq-item animate-on-scroll">
-          <summary><strong>How long does a typical project take in {{CITY}}?</strong></summary>
-          <p>Project timelines vary depending on scope and complexity. We provide detailed timelines during your estimate and communicate clearly throughout the process to minimize delays.</p>
+          <summary><strong>How quickly can care start in {{CITY}}?</strong></summary>
+          <p>In most cases we can begin care within 24–48 hours of your free assessment. For urgent situations, contact us directly and we'll do everything we can to expedite the process.</p>
         </details>
         <details class="home-faq-item animate-on-scroll">
-          <summary><strong>Do you offer financing for home improvements?</strong></summary>
-          <p>Yes, we offer flexible financing options to help {{SERVICE_REGION}} homeowners afford the upgrades they need. Ask about our current promotions during your free estimate.</p>
+          <summary><strong>Do you accept Medicare or Medicaid?</strong></summary>
+          <p>Coverage varies by the type of care needed. We work with families to understand their options and will help you navigate what may be covered. Contact us and we'll walk you through it at no cost.</p>
         </details>
         <details class="home-faq-item animate-on-scroll">
           <summary><strong>What areas do you serve besides {{CITY}}?</strong></summary>
-          <p>We serve homeowners in {{CITY}}, {{NEARBY_CITY_1}}, {{NEARBY_CITY_4}}, {{NEARBY_CITY_3}}, Bloomer, Osseo, and throughout the greater {{SERVICE_REGION}}. Our crew is local, so we're never far away.</p>
+          <p>We provide in-home care services throughout {{SERVICE_REGION}}, including {{NEARBY_CITY_1}}, {{NEARBY_CITY_2}}, {{NEARBY_CITY_3}}, and surrounding communities. Call us if you're unsure whether we cover your area.</p>
         </details>
         <details class="home-faq-item animate-on-scroll">
           <summary><strong>What makes {{COMPANY_NAME}} different?</strong></summary>
-          <p>We combine industry expertise with a commitment to quality materials, transparent pricing, and exceptional customer service. Our certifications and warranties give you peace of mind on every project.</p>
+          <p>We're locally owned, which means you're working with people who are invested in this community — not a national call center. Every client gets a dedicated care coordinator, and we personally match caregivers based on personality and needs, not just availability.</p>
         </details>
         <details class="home-faq-item animate-on-scroll">
-          <summary><strong>Do you handle insurance claims for storm damage?</strong></summary>
-          <p>Absolutely. We work directly with your insurance company throughout the claims process. Our team documents the damage, provides detailed estimates, and coordinates with adjusters so you can focus on getting your home back to normal.</p>
+          <summary><strong>What if we're not happy with our caregiver?</strong></summary>
+          <p>We'll make it right. The right fit matters deeply to us. If a caregiver isn't the right match, just let your care coordinator know and we'll work quickly to find someone better suited to your loved one.</p>
         </details>
       </div>
     </div>
@@ -588,18 +584,18 @@ function getImageUrl(p) {
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "How long does a typical project take in {{CITY}}?",
+        "name": "How quickly can care start in {{CITY}}?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Project timelines vary depending on scope and complexity. We provide detailed timelines during your estimate and communicate clearly throughout."
+          "text": "In most cases we can begin care within 24–48 hours of your free assessment. For urgent situations we'll do everything we can to expedite the process."
         }
       },
       {
         "@type": "Question",
-        "name": "Do you offer financing for home improvements?",
+        "name": "Do you accept Medicare or Medicaid?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes, we offer flexible financing options to help {{SERVICE_REGION}} homeowners afford the upgrades they need."
+          "text": "Coverage varies by the type of care needed. We work with families to understand their options and will help you navigate what may be covered at no cost."
         }
       },
       {
@@ -607,7 +603,7 @@ function getImageUrl(p) {
         "name": "What areas do you serve besides {{CITY}}?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We serve homeowners in {{CITY}}, {{NEARBY_CITY_1}}, {{NEARBY_CITY_4}}, {{NEARBY_CITY_3}}, Bloomer, Osseo, and throughout the greater {{SERVICE_REGION}}."
+          "text": "We provide in-home care throughout {{SERVICE_REGION}}, including {{NEARBY_CITY_1}}, {{NEARBY_CITY_2}}, {{NEARBY_CITY_3}}, and surrounding communities."
         }
       },
       {
@@ -615,15 +611,15 @@ function getImageUrl(p) {
         "name": "What makes {{COMPANY_NAME}} different?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We combine industry expertise with quality materials, transparent pricing, and exceptional customer service. Our certifications and warranties give you confidence on every project."
+          "text": "We're locally owned and personally match caregivers based on personality and needs. Every client gets a dedicated care coordinator, not a national call center."
         }
       },
       {
         "@type": "Question",
-        "name": "Do you handle insurance claims for storm damage?",
+        "name": "What if we're not happy with our caregiver?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We work directly with your insurance company throughout the claims process, documenting damage, providing estimates, and coordinating with adjusters."
+          "text": "We'll make it right. If a caregiver isn't the right match, let your care coordinator know and we'll find someone better suited to your loved one quickly."
         }
       }
     ]
