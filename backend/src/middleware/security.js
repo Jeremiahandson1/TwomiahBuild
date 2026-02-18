@@ -179,6 +179,8 @@ export function detectSqlInjection(value) {
   return sqlPatterns.some(pattern => pattern.test(value));
 }
 
+const SAFE_FIELDS = ['primaryColor', 'secondaryColor', 'color', 'logo', 'favicon'];
+
 export function sqlInjectionDetector(req, res, next) {
   const checkObject = (obj, path = '') => {
     if (!obj) return;
@@ -186,6 +188,7 @@ export function sqlInjectionDetector(req, res, next) {
     for (const [key, value] of Object.entries(obj)) {
       const currentPath = path ? `${path}.${key}` : key;
       
+      if (SAFE_FIELDS.includes(key)) continue;
       if (typeof value === 'string' && detectSqlInjection(value)) {
         logger.warn('Potential SQL injection detected', {
           ip: req.ip,

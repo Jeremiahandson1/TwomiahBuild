@@ -224,9 +224,13 @@ export default function FactoryWizard() {
     setGenerating(true);
     setError(null);
     try {
+      const token = localStorage.getItem('accessToken');
       const res = await fetch(`${API_BASE}/api/factory/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(config),
       });
       const data = await res.json();
