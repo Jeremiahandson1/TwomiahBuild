@@ -47,7 +47,7 @@ export default function LoginPage() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 placeholder="you@example.com"
               />
             </div>
@@ -59,7 +59,7 @@ export default function LoginPage() {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 placeholder="••••••••"
               />
             </div>
@@ -78,12 +78,6 @@ export default function LoginPage() {
             <Link to="/register" className="text-orange-500 hover:text-orange-600 font-medium">
               Sign up
             </Link>
-          </div>
-
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
-            <p className="font-medium mb-1">Demo credentials:</p>
-            <p>Email: admin@democonstruction.com</p>
-            <p>Password: demo1234</p>
           </div>
         </div>
       </div>
