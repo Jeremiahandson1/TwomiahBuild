@@ -233,25 +233,26 @@ jobs:
     environment: production
     
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to production
+      - name: Deploy backend to Render
         run: |
-          echo "Deploying to production environment..."
-          # Add your deployment commands here
-          # Examples:
-          # - kubectl apply -f k8s/production/
-          # - flyctl deploy --config fly.production.toml
-          # - railway up --environment production
+          curl -s -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_BACKEND_SERVICE_ID }}/deploys" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": false}' \
+            | grep -o '"id":"[^"]*"' | head -1
+
+      - name: Deploy frontend to Render
+        run: |
+          curl -s -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_FRONTEND_SERVICE_ID }}/deploys" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": false}' \
+            | grep -o '"id":"[^"]*"' | head -1
 
       - name: Notify on success
         if: success()
-        run: |
-          echo "Deployment successful!"
-          # Add notification (Slack, Discord, etc.)
+        run: echo "✅ Deployed to Render successfully!"
 
       - name: Notify on failure
         if: failure()
-        run: |
-          echo "Deployment failed!"
-          # Add notification
+        run: echo "❌ Deployment failed!"
