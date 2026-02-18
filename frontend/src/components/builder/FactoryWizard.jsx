@@ -56,6 +56,42 @@ const CRM_PRESETS = [
 ];
 
 
+// ─── WEBSITE PRESETS ──────────────────────────────────────────────
+const WEBSITE_PRESETS = [
+  {
+    id: 'lead-capture',
+    name: 'Lead Capture',
+    description: 'Single page. Hero, services summary, contact form. Perfect for home care, cleaning, simple trades.',
+    icon: '📋',
+    example: 'e.g. Chippewa Valley Home Care',
+    features: ['contact_form'],
+  },
+  {
+    id: 'brochure',
+    name: 'Brochure Site',
+    description: '3–5 pages. Services, about, contact. No blog or gallery. Clean and fast.',
+    icon: '📄',
+    example: 'e.g. Small HVAC or plumbing co.',
+    features: ['contact_form', 'services_pages', 'testimonials'],
+  },
+  {
+    id: 'full-site',
+    name: 'Full Site',
+    description: 'All pages — services, gallery, blog, testimonials, contact form, and visualizer tool.',
+    icon: '🌐',
+    example: 'e.g. Claflin Construction',
+    features: ['contact_form', 'services_pages', 'gallery', 'blog', 'testimonials', 'analytics'],
+  },
+  {
+    id: 'custom',
+    name: 'Custom',
+    description: 'Pick exactly what you want. Full control over every feature.',
+    icon: '⚙️',
+    example: '',
+    features: null, // null = don't auto-select, let user pick manually
+  },
+];
+
 // ─── MAIN WIZARD ───────────────────────────────────────────────────
 
 const STORAGE_KEY = 'buildpro-factory-wizard';
@@ -788,6 +824,18 @@ function CRMFeatures({ selected, onChange, registry }) {
 
 function WebsiteFeatures({ selected, onChange, registry }) {
   const allIds = registry.flatMap(cat => (cat.features || []).map(f => f.id));
+  const [activePreset, setActivePreset] = useState(null);
+  const [showCustom, setShowCustom] = useState(false);
+
+  const applyPreset = (preset) => {
+    setActivePreset(preset.id);
+    if (preset.id === 'custom') {
+      setShowCustom(true);
+    } else {
+      setShowCustom(false);
+      onChange(preset.features || []);
+    }
+  };
 
   const toggleFeature = (id) => {
     onChange(selected.includes(id) ? selected.filter(f => f !== id) : [...selected, id]);
@@ -795,21 +843,86 @@ function WebsiteFeatures({ selected, onChange, registry }) {
 
   return (
     <div>
-      <button onClick={() => onChange([...allIds])} style={{ ...linkBtnStyle, marginBottom: 12 }}>Select All</button>
+      {/* Site type preset cards */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 12, color: '#111827' }}>
+          What kind of site?
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+          {WEBSITE_PRESETS.map(preset => {
+            const isActive = activePreset === preset.id;
+            return (
+              <div
+                key={preset.id}
+                onClick={() => applyPreset(preset)}
+                style={{
+                  padding: '14px 16px', borderRadius: 10, cursor: 'pointer',
+                  border: isActive ? '2px solid #3b82f6' : '2px solid #e5e7eb',
+                  background: isActive ? '#eff6ff' : 'white',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <div style={{ fontSize: 22, marginBottom: 6 }}>{preset.icon}</div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#111827', marginBottom: 3 }}>{preset.name}</div>
+                <div style={{ fontSize: '0.78rem', color: '#6b7280', lineHeight: 1.4, marginBottom: preset.example ? 6 : 0 }}>
+                  {preset.description}
+                </div>
+                {preset.example && (
+                  <div style={{ fontSize: '0.72rem', color: '#3b82f6', fontStyle: 'italic' }}>{preset.example}</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-      {registry.map(cat => (
-        <div key={cat.category} style={{ marginBottom: 16 }}>
-          <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 8, color: '#374151' }}>{cat.category}</div>
-          {(cat.features || []).map(feature => (
-            <FeatureRow
-              key={feature.id}
-              feature={feature}
-              checked={selected.includes(feature.id)}
-              onToggle={() => toggleFeature(feature.id)}
-            />
+      {/* Show selected features summary for non-custom presets */}
+      {activePreset && activePreset !== 'custom' && selected.length > 0 && (
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8 }}>
+          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#15803d', marginBottom: 4 }}>
+            ✅ {selected.length} features selected
+          </div>
+          <div style={{ fontSize: '0.78rem', color: '#166534' }}>
+            {selected.map(f => f.replace(/_/g, ' ')).join(', ')}
+          </div>
+          <button
+            onClick={() => { setActivePreset('custom'); setShowCustom(true); }}
+            style={{ ...linkBtnStyle, marginTop: 6, color: '#3b82f6' }}
+          >
+            Customize →
+          </button>
+        </div>
+      )}
+
+      {/* Custom feature picker */}
+      {(showCustom || activePreset === 'custom') && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151' }}>Custom Features</div>
+            <button onClick={() => onChange([...allIds])} style={linkBtnStyle}>Select All</button>
+          </div>
+          {registry.map(cat => (
+            <div key={cat.category} style={{ marginBottom: 16 }}>
+              <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 6, color: '#374151' }}>{cat.category}</div>
+              {(cat.features || []).map(feature => (
+                <FeatureRow
+                  key={feature.id}
+                  feature={feature}
+                  checked={selected.includes(feature.id)}
+                  onToggle={() => toggleFeature(feature.id)}
+                />
+              ))}
+            </div>
           ))}
         </div>
-      ))}
+      )}
+
+      {/* Prompt to pick a type if nothing selected yet */}
+      {!activePreset && (
+        <div style={{ textAlign: 'center', padding: '16px 0', color: '#9ca3af', fontSize: '0.85rem' }}>
+          ↑ Pick a site type above to get started
+        </div>
+      )}
     </div>
   );
 }
