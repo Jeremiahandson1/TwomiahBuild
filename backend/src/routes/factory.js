@@ -714,10 +714,41 @@ router.post('/customers/:id/deploy', async (req, res) => {
       return res.status(400).json({ error: 'No build found. Generate a package first.' });
     }
 
-    // Check zip exists
+    // Check zip exists — if not, regenerate it
     const { existsSync } = await import('fs');
-    if (!existsSync(latestBuild.zipPath)) {
-      return res.status(400).json({ error: 'Build zip not found on disk. Regenerate the package.' });
+    let zipPath = latestBuild.zipPath;
+    if (!existsSync(zipPath)) {
+      console.log(`[Deploy] Zip not on disk, regenerating for ${customer.slug}...`);
+      try {
+        const { generatePackage } = await import('../services/factory/generator.js');
+        const regen = await generatePackage(customer.wizardConfig || {
+          products: customer.products,
+          company: {
+            name: customer.name,
+            slug: customer.slug,
+            email: customer.email,
+            phone: customer.phone,
+            address: customer.address,
+            city: customer.city,
+            state: customer.state,
+            zip: customer.zip,
+            domain: customer.domain,
+          },
+          branding: {
+            primaryColor: customer.primaryColor || '#f97316',
+            secondaryColor: customer.secondaryColor || '#1e293b',
+          },
+          features: customer.enabledFeatures || [],
+        });
+        zipPath = regen.zipPath;
+        // Update the build record with new zip path
+        await prisma.factoryBuild.update({
+          where: { id: latestBuild.id },
+          data: { zipPath: regen.zipPath },
+        });
+      } catch (regenErr) {
+        return res.status(500).json({ error: `Could not regenerate package: ${regenErr.message}` });
+      }
     }
 
     // Update status to deploying
@@ -734,7 +765,7 @@ router.post('/customers/:id/deploy', async (req, res) => {
 
     // Run deployment in background
     try {
-      const result = await deployService.deployCustomer(customer, latestBuild.zipPath, {
+      const result = await deployService.deployCustomer(customer, zipPath, {
         region: region || 'ohio',
         plan: plan || 'free',
       });
