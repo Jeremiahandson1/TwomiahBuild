@@ -450,6 +450,30 @@ router.get('/stats', async (req, res) => {
  * GET /api/factory/customers
  * List all factory customers
  */
+/**
+ * DELETE /api/factory/builds/:id
+ */
+router.delete('/builds/:id', async (req, res) => {
+  try {
+    const { prisma } = await import('../index.js');
+    const build = await prisma.factoryBuild.findFirst({
+      where: { id: req.params.id, companyId: req.user.companyId },
+    });
+    if (!build) return res.status(404).json({ error: 'Build not found' });
+
+    // Delete zip from disk if it exists
+    if (build.zipPath && fs.existsSync(build.zipPath)) {
+      fs.unlinkSync(build.zipPath);
+    }
+
+    await prisma.factoryBuild.delete({ where: { id: build.id } });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete build error:', err);
+    res.status(500).json({ error: 'Failed to delete build' });
+  }
+});
+
 router.get('/builds', async (req, res) => {
   try {
     const { prisma } = await import('../index.js');

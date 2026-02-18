@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Download, Package, Plus, ArrowLeft } from 'lucide-react';
+import { Download, Package, Plus, Trash2 } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -8,6 +8,7 @@ export default function BuildsPage() {
   const [builds, setBuilds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(null);
+  const [deleting, setDeleting] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -40,6 +41,23 @@ export default function BuildsPage() {
       alert(err.message);
     }
     setDownloading(null);
+  };
+
+  const handleDelete = async (build) => {
+    if (!confirm(`Delete "${build.companyName}" build? This cannot be undone.`)) return;
+    setDeleting(build.id);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`${API_BASE}/api/factory/builds/${build.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      setBuilds(prev => prev.filter(b => b.id !== build.id));
+    } catch (err) {
+      alert(err.message);
+    }
+    setDeleting(null);
   };
 
   return (
@@ -117,6 +135,7 @@ export default function BuildsPage() {
                 </div>
               </div>
 
+              <div style={{ display: 'flex', gap: 8 }}>
               <button
                 onClick={() => handleDownload(build)}
                 disabled={downloading === build.id}
@@ -132,6 +151,21 @@ export default function BuildsPage() {
                 <Download size={14} />
                 {downloading === build.id ? 'Downloading...' : 'Download'}
               </button>
+              <button
+                onClick={() => handleDelete(build)}
+                disabled={deleting === build.id}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '8px 12px', borderRadius: 8, border: '1px solid #fecaca',
+                  background: deleting === build.id ? '#fef2f2' : 'white',
+                  color: deleting === build.id ? '#fca5a5' : '#ef4444',
+                  cursor: deleting === build.id ? 'default' : 'pointer',
+                  fontSize: '0.85rem',
+                }}
+              >
+                <Trash2 size={14} />
+              </button>
+              </div>
             </div>
           ))}
         </div>
