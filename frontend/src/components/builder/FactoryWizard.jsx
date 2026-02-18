@@ -960,6 +960,30 @@ function FeatureRow({ feature, checked, core, onToggle }) {
 // ─── STEP 5: REVIEW & GENERATE ─────────────────────────────────────
 
 function ReviewStep({ config, registry, generating, result, error, onGenerate }) {
+  const [deploying, setDeploying] = useState(false);
+  const [deployResult, setDeployResult] = useState(null);
+  const [deployError, setDeployError] = useState(null);
+
+  const handleDeploy = async () => {
+    if (!result?.customerId) return;
+    setDeploying(true);
+    setDeployError(null);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`${API_BASE}/api/factory/customers/${result.customerId}/deploy`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Deploy failed');
+      setDeployResult(data);
+    } catch (err) {
+      setDeployError(err.message);
+    }
+    setDeploying(false);
+  };
+
   if (result) {
     return (
       <div style={{ textAlign: 'center', padding: 20 }}>
@@ -970,15 +994,54 @@ function ReviewStep({ config, registry, generating, result, error, onGenerate })
         <p style={{ color: '#6b7280', marginBottom: 24 }}>
           Generated in {result.generatedIn}
         </p>
+
+        {/* Deploy to live URL */}
+        {!deployResult ? (
+          <div style={{ marginBottom: 16 }}>
+            <button
+              onClick={handleDeploy}
+              disabled={deploying}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 32px',
+                background: deploying ? '#9ca3af' : '#7c3aed', color: 'white', borderRadius: 10,
+                fontWeight: 700, fontSize: '1.05rem', border: 'none', cursor: deploying ? 'default' : 'pointer',
+                width: '100%', justifyContent: 'center', marginBottom: 10,
+              }}
+            >
+              {deploying ? <><Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> Deploying to Render...</> : '🚀 Deploy to Live URL'}
+            </button>
+            <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+              Creates a live preview URL automatically
+            </p>
+          </div>
+        ) : (
+          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 16, marginBottom: 16 }}>
+            <p style={{ fontWeight: 700, color: '#15803d', marginBottom: 8 }}>🎉 Deploying! Your site will be live in ~2 minutes.</p>
+            {deployResult.deployedUrl && (
+              <a href={deployResult.deployedUrl} target="_blank" rel="noopener noreferrer"
+                style={{ color: '#7c3aed', fontWeight: 600, wordBreak: 'break-all' }}>
+                {deployResult.deployedUrl}
+              </a>
+            )}
+          </div>
+        )}
+
+        {deployError && (
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: 12, marginBottom: 16, color: '#dc2626', fontSize: '0.85rem' }}>
+            Deploy error: {deployError}
+          </div>
+        )}
+
+        {/* Download zip as fallback */}
         <a
           href={`${API_BASE}${result.downloadUrl}`}
           style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 32px',
-            background: '#f97316', color: 'white', borderRadius: 10, fontWeight: 700,
-            textDecoration: 'none', fontSize: '1.05rem',
+            display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 24px',
+            background: 'white', color: '#374151', borderRadius: 10, fontWeight: 600,
+            textDecoration: 'none', fontSize: '0.9rem', border: '1px solid #e5e7eb',
           }}
         >
-          <Download size={20} /> Download {result.zipName}
+          <Download size={16} /> Download zip
         </a>
         <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: 12 }}>
           Build ID: {result.buildId}

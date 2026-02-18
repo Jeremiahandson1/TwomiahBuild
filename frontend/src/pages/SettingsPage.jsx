@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import api from '../services/api';
 import { Building2, User, Lock, Users } from 'lucide-react';
-import { Button } from '../components/ui/DataTable';
+import { Input } from '../components/ui/Input';
 
 export default function SettingsPage() {
   const { user, company, updateCompany } = useAuth();
@@ -52,71 +52,104 @@ export default function SettingsPage() {
     { id: 'users', label: 'Users', icon: Users },
   ];
 
+  const saveBtn = (label, onClick) => (
+    <button
+      onClick={onClick}
+      disabled={saving}
+      className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+    >
+      {saving ? 'Saving...' : label}
+    </button>
+  );
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
       <div className="flex gap-6">
+        {/* Sidebar */}
         <div className="w-48 space-y-1">
           {tabs.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-left ${tab === t.id ? 'bg-orange-50 text-orange-600' : 'hover:bg-gray-100'}`}>
-              <t.icon className="w-5 h-5" />{t.label}
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-left text-sm font-medium transition-colors ${tab === t.id ? 'bg-orange-50 text-orange-600' : 'text-slate-600 hover:bg-slate-100'}`}>
+              <t.icon className="w-4 h-4" />{t.label}
             </button>
           ))}
         </div>
-        <div className="flex-1 bg-white rounded-lg shadow-sm p-6">
+
+        {/* Content */}
+        <div className="flex-1 bg-white rounded-xl border border-slate-200 p-6">
+
           {tab === 'company' && (
             <div className="space-y-4 max-w-xl">
-              <h2 className="text-lg font-semibold">Company Information</h2>
-              <div><label className="block text-sm font-medium mb-1">Company Name</label><input value={companyForm.name} onChange={(e) => setCompanyForm({...companyForm, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
+              <h2 className="text-lg font-semibold text-slate-900">Company Information</h2>
+              <Input label="Company Name" value={companyForm.name} onChange={(e) => setCompanyForm({...companyForm, name: e.target.value})} />
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium mb-1">Email</label><input type="email" value={companyForm.email} onChange={(e) => setCompanyForm({...companyForm, email: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-                <div><label className="block text-sm font-medium mb-1">Phone</label><input value={companyForm.phone} onChange={(e) => setCompanyForm({...companyForm, phone: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
+                <Input label="Email" type="email" value={companyForm.email} onChange={(e) => setCompanyForm({...companyForm, email: e.target.value})} />
+                <Input label="Phone" value={companyForm.phone} onChange={(e) => setCompanyForm({...companyForm, phone: e.target.value})} />
               </div>
-              <div><label className="block text-sm font-medium mb-1">Address</label><input value={companyForm.address} onChange={(e) => setCompanyForm({...companyForm, address: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
+              <Input label="Address" value={companyForm.address} onChange={(e) => setCompanyForm({...companyForm, address: e.target.value})} />
               <div className="grid grid-cols-3 gap-4">
-                <div><label className="block text-sm font-medium mb-1">City</label><input value={companyForm.city} onChange={(e) => setCompanyForm({...companyForm, city: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-                <div><label className="block text-sm font-medium mb-1">State</label><input value={companyForm.state} onChange={(e) => setCompanyForm({...companyForm, state: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-                <div><label className="block text-sm font-medium mb-1">ZIP</label><input value={companyForm.zip} onChange={(e) => setCompanyForm({...companyForm, zip: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
+                <Input label="City" value={companyForm.city} onChange={(e) => setCompanyForm({...companyForm, city: e.target.value})} />
+                <Input label="State" value={companyForm.state} onChange={(e) => setCompanyForm({...companyForm, state: e.target.value})} />
+                <Input label="ZIP" value={companyForm.zip} onChange={(e) => setCompanyForm({...companyForm, zip: e.target.value})} />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium mb-1">Website</label><input value={companyForm.website} onChange={(e) => setCompanyForm({...companyForm, website: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-                <div><label className="block text-sm font-medium mb-1">License #</label><input value={companyForm.licenseNumber} onChange={(e) => setCompanyForm({...companyForm, licenseNumber: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
+                <Input label="Website" value={companyForm.website} onChange={(e) => setCompanyForm({...companyForm, website: e.target.value})} />
+                <Input label="License #" value={companyForm.licenseNumber} onChange={(e) => setCompanyForm({...companyForm, licenseNumber: e.target.value})} />
               </div>
-              <Button onClick={handleSaveCompany} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>
+              {saveBtn('Save Changes', handleSaveCompany)}
             </div>
           )}
+
           {tab === 'profile' && (
             <div className="space-y-4 max-w-xl">
-              <h2 className="text-lg font-semibold">Profile</h2>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p><span className="font-medium">Name:</span> {user?.firstName} {user?.lastName}</p>
-                <p><span className="font-medium">Email:</span> {user?.email}</p>
-                <p><span className="font-medium">Role:</span> {user?.role}</p>
+              <h2 className="text-lg font-semibold text-slate-900">Profile</h2>
+              <div className="p-4 bg-slate-50 rounded-lg space-y-2 text-sm">
+                <p><span className="font-medium text-slate-700">Name:</span> <span className="text-slate-900">{user?.firstName} {user?.lastName}</span></p>
+                <p><span className="font-medium text-slate-700">Email:</span> <span className="text-slate-900">{user?.email}</span></p>
+                <p><span className="font-medium text-slate-700">Role:</span> <span className="text-slate-900 capitalize">{user?.role}</span></p>
               </div>
             </div>
           )}
+
           {tab === 'security' && (
             <div className="space-y-4 max-w-xl">
-              <h2 className="text-lg font-semibold">Change Password</h2>
-              <div><label className="block text-sm font-medium mb-1">Current Password</label><input type="password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-1">New Password</label><input type="password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-1">Confirm Password</label><input type="password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-              <Button onClick={handleChangePassword} disabled={saving}>{saving ? 'Changing...' : 'Change Password'}</Button>
+              <h2 className="text-lg font-semibold text-slate-900">Change Password</h2>
+              <Input label="Current Password" type="password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})} />
+              <Input label="New Password" type="password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})} />
+              <Input label="Confirm New Password" type="password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} />
+              {saveBtn('Change Password', handleChangePassword)}
             </div>
           )}
+
           {tab === 'users' && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Users</h2>
-              <div className="border rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50"><tr><th className="px-4 py-2 text-left text-xs font-medium">Name</th><th className="px-4 py-2 text-left text-xs font-medium">Email</th><th className="px-4 py-2 text-left text-xs font-medium">Role</th><th className="px-4 py-2 text-left text-xs font-medium">Status</th></tr></thead>
-                  <tbody className="divide-y">{users.map(u => (
-                    <tr key={u.id}><td className="px-4 py-3">{u.firstName} {u.lastName}</td><td className="px-4 py-3">{u.email}</td><td className="px-4 py-3 capitalize">{u.role}</td><td className="px-4 py-3">{u.isActive ? <span className="text-green-600">Active</span> : <span className="text-gray-400">Inactive</span>}</td></tr>
-                  ))}</tbody>
+              <h2 className="text-lg font-semibold text-slate-900">Users</h2>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Role</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {users.map(u => (
+                      <tr key={u.id} className="hover:bg-slate-50">
+                        <td className="px-4 py-3 text-slate-900 font-medium">{u.firstName} {u.lastName}</td>
+                        <td className="px-4 py-3 text-slate-600">{u.email}</td>
+                        <td className="px-4 py-3 text-slate-600 capitalize">{u.role}</td>
+                        <td className="px-4 py-3">{u.isActive ? <span className="text-emerald-600 font-medium">Active</span> : <span className="text-slate-400">Inactive</span>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
                 </table>
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>

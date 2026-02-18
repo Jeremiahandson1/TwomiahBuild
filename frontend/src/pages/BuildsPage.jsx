@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Download, Package, Plus, Trash2 } from 'lucide-react';
+import { Download, Package, Plus, Trash2, Rocket } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -9,6 +9,8 @@ export default function BuildsPage() {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [deploying, setDeploying] = useState(null);
+  const [deployedUrls, setDeployedUrls] = useState({});
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -41,6 +43,33 @@ export default function BuildsPage() {
       alert(err.message);
     }
     setDownloading(null);
+  };
+
+  const handleDeploy = async (build) => {
+    if (!build.customer?.name) return;
+    setDeploying(build.id);
+    try {
+      const token = localStorage.getItem('accessToken');
+      // Need customerId — get it from the build's customer
+      const res = await fetch(`${API_BASE}/api/factory/customers?search=${encodeURIComponent(build.companyName)}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const customers = await res.json();
+      const customer = customers.find(c => c.slug === build.slug || c.name === build.companyName);
+      if (!customer) throw new Error('Customer not found');
+
+      const deployRes = await fetch(`${API_BASE}/api/factory/customers/${customer.id}/deploy`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await deployRes.json();
+      if (!deployRes.ok) throw new Error(data.error || 'Deploy failed');
+      setDeployedUrls(prev => ({ ...prev, [build.id]: `https://${build.slug}.onrender.com` }));
+    } catch (err) {
+      alert(err.message);
+    }
+    setDeploying(null);
   };
 
   const handleDelete = async (build) => {
@@ -136,6 +165,37 @@ export default function BuildsPage() {
               </div>
 
               <div style={{ display: 'flex', gap: 8 }}>
+              {deployedUrls[build.id] ? (
+                <a
+                  href={deployedUrls[build.id]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '8px 16px', borderRadius: 8, border: '1px solid #ddd6fe',
+                    background: '#f5f3ff', color: '#7c3aed',
+                    fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                >
+                  🟢 View Live
+                </a>
+              ) : (
+                <button
+                  onClick={() => handleDeploy(build)}
+                  disabled={deploying === build.id}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '8px 16px', borderRadius: 8, border: '1px solid #ddd6fe',
+                    background: deploying === build.id ? '#f5f3ff' : 'white',
+                    color: deploying === build.id ? '#a78bfa' : '#7c3aed',
+                    cursor: deploying === build.id ? 'default' : 'pointer',
+                    fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap',
+                  }}
+                >
+                  <Rocket size={14} />
+                  {deploying === build.id ? 'Deploying...' : 'Deploy'}
+                </button>
+              )}
               <button
                 onClick={() => handleDownload(build)}
                 disabled={downloading === build.id}
