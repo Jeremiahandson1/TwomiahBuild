@@ -395,17 +395,17 @@ function AdminSiteSettings() {
         {activeTab === 'analytics' && (
           <div className="settings-panel">
             <p style={{ color: 'var(--admin-text-secondary)', marginBottom: '20px' }}>
-              Connect third-party analytics services to track detailed visitor data.
+              Connect tracking and analytics services. All fields are optional — only paste IDs for the platforms you use. Code is injected automatically; no manual script editing required.
             </p>
             <div className="form-group">
-              <label>Google Analytics ID</label>
+              <label>Google Analytics 4 ID</label>
               <input 
                 type="text" 
                 value={settings.analytics?.googleAnalyticsId || ''} 
                 onChange={e => handleNestedChange('analytics', 'googleAnalyticsId', e.target.value)}
                 placeholder="G-XXXXXXXXXX"
               />
-              <span className="field-hint">Your Google Analytics 4 measurement ID</span>
+              <span className="field-hint">Enables GA4 + 6 custom events: generate_lead, phone_call, email_click, cta_click, view_service, view_gallery</span>
             </div>
             <div className="form-group">
               <label>Google Tag Manager ID</label>
@@ -415,6 +415,17 @@ function AdminSiteSettings() {
                 onChange={e => handleNestedChange('analytics', 'googleTagManagerId', e.target.value)}
                 placeholder="GTM-XXXXXXX"
               />
+              <span className="field-hint">Add/manage future tracking without code changes. Also pushes custom events to dataLayer.</span>
+            </div>
+            <div className="form-group">
+              <label>Google Ads Conversion ID</label>
+              <input 
+                type="text" 
+                value={settings.analytics?.googleAdsId || ''} 
+                onChange={e => handleNestedChange('analytics', 'googleAdsId', e.target.value)}
+                placeholder="AW-XXXXXXXXXX"
+              />
+              <span className="field-hint">Fires a conversion event when the contact form is submitted. Required for Google Ads conversion tracking.</span>
             </div>
             <div className="form-group">
               <label>Facebook Pixel ID</label>
@@ -424,6 +435,17 @@ function AdminSiteSettings() {
                 onChange={e => handleNestedChange('analytics', 'facebookPixelId', e.target.value)}
                 placeholder="123456789012345"
               />
+              <span className="field-hint">Tracks PageView on all pages + Lead event on form submit. Required for Facebook/Instagram ad retargeting.</span>
+            </div>
+            <div className="form-group">
+              <label>Microsoft Clarity ID</label>
+              <input 
+                type="text" 
+                value={settings.analytics?.microsoftClarityId || ''} 
+                onChange={e => handleNestedChange('analytics', 'microsoftClarityId', e.target.value)}
+                placeholder="xxxxxxxxxx"
+              />
+              <span className="field-hint">Free heatmaps + session recordings at clarity.microsoft.com — shows exactly how visitors interact with your site.</span>
             </div>
           </div>
         )}

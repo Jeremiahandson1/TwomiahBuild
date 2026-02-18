@@ -1,0 +1,44 @@
+[
+  {
+    "id": "residential",
+    "name": "Residential Services",
+    "slug": "residential",
+    "shortDescription": "Expert residential work for homeowners across {{SERVICE_REGION}}. Quality materials, skilled crews, and clean job sites.",
+    "description": "{{COMPANY_NAME}} specializes in residential work that stands the test of time. We use only quality materials and work with skilled crews who take pride in every project. Every job site is kept clean, and we communicate clearly throughout the entire process.",
+    "icon": "home",
+    "image": "",
+    "features": ["Free estimates", "Quality materials", "Licensed & insured", "Clean job sites", "Satisfaction guaranteed"],
+    "seoTitle": "Residential {{INDUSTRY}} Services in {{CITY}}, {{STATE}} | {{COMPANY_NAME}}",
+    "seoDescription": "Residential {{INDUSTRY}} services in {{CITY}}, {{STATE}}. Quality work, fair pricing, and a satisfaction guarantee from {{COMPANY_NAME}}.",
+    "visible": true,
+    "order": 1
+  },
+  {
+    "id": "commercial",
+    "name": "Commercial Services",
+    "slug": "commercial",
+    "shortDescription": "Commercial-scale work for businesses, property managers, and developers throughout {{SERVICE_REGION}}.",
+    "description": "{{COMPANY_NAME}} handles commercial projects of all sizes with the same attention to detail we bring to every job. We work efficiently to minimize disruption to your business operations and keep projects on time and on budget.",
+    "icon": "building",
+    "image": "",
+    "features": ["Project management", "Competitive commercial pricing", "Flexible scheduling", "Insurance certificates available", "Bonded crews"],
+    "seoTitle": "Commercial {{INDUSTRY}} Services in {{CITY}}, {{STATE}} | {{COMPANY_NAME}}",
+    "seoDescription": "Commercial {{INDUSTRY}} services in {{CITY}}, {{STATE}}. {{COMPANY_NAME}} handles projects of all sizes with expert crews and reliable scheduling.",
+    "visible": true,
+    "order": 2
+  },
+  {
+    "id": "emergency",
+    "name": "Emergency & Repair Services",
+    "slug": "emergency-repairs",
+    "shortDescription": "Fast response when you need it most. Emergency repairs and urgent service calls across {{SERVICE_REGION}}.",
+    "description": "When something goes wrong, {{COMPANY_NAME}} responds quickly. Our emergency service team is equipped to handle urgent repairs and get your property protected. We prioritize safety and work to minimize further damage from the moment we arrive.",
+    "icon": "alert-circle",
+    "image": "",
+    "features": ["Fast response times", "Emergency availability", "Temporary protection", "Insurance claim assistance", "Detailed documentation"],
+    "seoTitle": "Emergency {{INDUSTRY}} Repairs in {{CITY}}, {{STATE}} | {{COMPANY_NAME}}",
+    "seoDescription": "Emergency {{INDUSTRY}} repair services in {{CITY}}, {{STATE}}. Fast response, expert repairs, and insurance claim assistance from {{COMPANY_NAME}}.",
+    "visible": true,
+    "order": 3
+  }
+]

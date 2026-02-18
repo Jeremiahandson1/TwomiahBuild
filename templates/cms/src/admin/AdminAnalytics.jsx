@@ -1,381 +1,403 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from './AdminLayout';
 import { useToast } from './Toast';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
+// ─── Mini chart components (no deps) ──────────────────────────────
+
+function BarChart({ data, valueKey = 'views', labelKey = 'date', height = 180, color = 'var(--admin-primary)' }) {
+  if (!data || data.length === 0) return (
+    <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--admin-text-muted, #9ca3af)', fontSize: 13 }}>
+      No data yet — views will appear as visitors browse the site.
+    </div>
+  );
+  const max = Math.max(...data.map(d => d[valueKey] || 0), 1);
+  const showEvery = Math.max(1, Math.floor(data.length / 7));
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height, paddingTop: 24, overflowX: 'auto' }}>
+      {data.map((d, i) => {
+        const h = Math.max(((d[valueKey] || 0) / max) * (height - 32), d[valueKey] ? 3 : 0);
+        const showLabel = (i % showEvery === 0) || i === data.length - 1;
+        const label = d[labelKey] ? d[labelKey].slice(5) : ''; // MM-DD
+        return (
+          <div key={i} title={`${d[labelKey]}: ${d[valueKey] || 0}`}
+            style={{ flex: 1, minWidth: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            {d[valueKey] > 0 && <span style={{ fontSize: 8, color: 'var(--admin-text-muted,#9ca3af)', whiteSpace: 'nowrap' }}>{d[valueKey]}</span>}
+            <div style={{ width: '100%', maxWidth: 24, background: color, borderRadius: '3px 3px 0 0', height: h, minHeight: d[valueKey] ? 3 : 0, transition: 'height .3s' }} />
+            {showLabel && <span style={{ fontSize: 8, color: 'var(--admin-text-muted,#9ca3af)', marginTop: 2, whiteSpace: 'nowrap' }}>{label}</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function MultiBarChart({ data, height = 180 }) {
+  if (!data || data.length === 0) return null;
+  const max = Math.max(...data.map(d => (d.views || 0) + (d.leads || 0)), 1);
+  const showEvery = Math.max(1, Math.floor(data.length / 7));
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height, paddingTop: 24 }}>
+      {data.map((d, i) => {
+        const viewH = Math.max(((d.views || 0) / max) * (height - 32), d.views ? 2 : 0);
+        const leadH = Math.max(((d.leads || 0) / max) * (height - 32), d.leads ? 2 : 0);
+        const showLabel = (i % showEvery === 0) || i === data.length - 1;
+        return (
+          <div key={i} title={`${d.date}: ${d.views} views, ${d.leads} leads`}
+            style={{ flex: 1, minWidth: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1, width: '100%', justifyContent: 'center' }}>
+              <div style={{ width: '45%', maxWidth: 10, background: 'var(--admin-primary)', borderRadius: '2px 2px 0 0', height: viewH }} />
+              <div style={{ width: '45%', maxWidth: 10, background: '#f59e0b', borderRadius: '2px 2px 0 0', height: leadH }} />
+            </div>
+            {showLabel && <span style={{ fontSize: 8, color: 'var(--admin-text-muted,#9ca3af)', marginTop: 2, whiteSpace: 'nowrap' }}>{d.date?.slice(5)}</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DonutChart({ data, size = 120 }) {
+  if (!data || data.length === 0) return null;
+  const total = data.reduce((s, d) => s + d.count, 0);
+  if (total === 0) return null;
+  const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+  let offset = 0;
+  const r = 40, cx = 60, cy = 60, stroke = 16;
+  const circ = 2 * Math.PI * r;
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120">
+      {data.map((d, i) => {
+        const pct = d.count / total;
+        const dash = pct * circ;
+        const gap = circ - dash;
+        const rotate = offset * 360 - 90;
+        offset += pct;
+        return (
+          <circle key={i} cx={cx} cy={cy} r={r} fill="none"
+            stroke={colors[i % colors.length]} strokeWidth={stroke}
+            strokeDasharray={`${dash} ${gap}`}
+            strokeDashoffset={0}
+            transform={`rotate(${rotate} ${cx} ${cy})`}
+            style={{ transition: 'stroke-dasharray .4s' }}
+          >
+            <title>{d.label || d.device}: {d.count} ({(pct * 100).toFixed(1)}%)</title>
+          </circle>
+        );
+      })}
+    </svg>
+  );
+}
+
+function Funnel({ steps }) {
+  if (!steps || steps.length === 0) return null;
+  const max = steps[0]?.value || 1;
+  const colors = ['#3b82f6', '#8b5cf6', '#f59e0b'];
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {steps.map((step, i) => {
+        const pct = max > 0 ? (step.value / max) * 100 : 0;
+        const dropOff = i > 0 && steps[i - 1].value > 0
+          ? (((steps[i - 1].value - step.value) / steps[i - 1].value) * 100).toFixed(0)
+          : null;
+        return (
+          <div key={i}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 12 }}>
+              <span style={{ fontWeight: 500 }}>{step.label}</span>
+              <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {dropOff && <span style={{ color: '#ef4444', fontSize: 11 }}>↓ {dropOff}% drop</span>}
+                <strong>{step.value.toLocaleString()}</strong>
+              </span>
+            </div>
+            <div style={{ height: 10, background: '#f3f4f6', borderRadius: 5, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${pct}%`, background: colors[i % colors.length], borderRadius: 5, transition: 'width .4s' }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Stat card ─────────────────────────────────────────────────────
+function StatCard({ label, value, sub, accent, delta }) {
+  return (
+    <div style={{
+      background: 'var(--admin-surface, white)',
+      border: '1px solid var(--admin-border, #e5e7eb)',
+      borderLeft: accent ? `3px solid ${accent}` : '1px solid var(--admin-border, #e5e7eb)',
+      borderRadius: 10, padding: '14px 16px'
+    }}>
+      <div style={{ fontSize: 11, color: 'var(--admin-text-muted, #9ca3af)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: 'var(--admin-text-muted, #9ca3af)', marginTop: 4 }}>{sub}</div>}
+      {delta !== undefined && (
+        <div style={{ fontSize: 11, color: delta >= 0 ? '#10b981' : '#ef4444', marginTop: 4 }}>
+          {delta >= 0 ? '▲' : '▼'} {Math.abs(delta)} vs yesterday
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Legend dot ────────────────────────────────────────────────────
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+function Legend({ items }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {items.map((item, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: COLORS[i % COLORS.length], flexShrink: 0 }} />
+          <span style={{ flex: 1 }}>{item.label || item.source || item.device}</span>
+          <strong>{(item.visits || item.count || 0).toLocaleString()}</strong>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Section wrapper ───────────────────────────────────────────────
+function Section({ title, children, action }) {
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{title}</h3>
+        {action}
+      </div>
+      <div style={{ background: 'var(--admin-surface, white)', border: '1px solid var(--admin-border, #e5e7eb)', borderRadius: 10, padding: '16px 20px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main component ────────────────────────────────────────────────
 function AdminAnalytics() {
-  const [analytics, setAnalytics] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState(30);
   const [gaId, setGaId] = useState('');
   const toast = useToast();
 
-  useEffect(() => {
-    loadAnalytics();
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API_BASE}/admin/settings`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setGaId(data.googleAnalyticsId || data.gaId || '');
-      }
-    } catch (e) { /* ignore */ }
-  };
-
-  const loadAnalytics = async () => {
+  const load = useCallback(async (p = period) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
-      
-      // Try admin endpoint first (returns pre-computed stats)
-      let data = null;
-      try {
-        const res = await fetch(`${API_BASE}/admin/analytics`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) data = await res.json();
-      } catch (e) { /* fall through */ }
-
-      // If admin endpoint failed or returned raw data, compute from raw analytics
-      if (!data || (!data.totalPageViews && data.pageViews)) {
-        data = normalizeRawAnalytics(data);
+      const res = await fetch(`${API_BASE}/admin/analytics?period=${p}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setData(await res.json());
+      } else {
+        toast.error('Failed to load analytics');
       }
-
-      // If still nothing, try raw analytics endpoint
-      if (!data) {
-        try {
-          const res = await fetch(`${API_BASE}/analytics`);
-          if (res.ok) {
-            const raw = await res.json();
-            data = normalizeRawAnalytics(raw);
-          }
-        } catch (e) { /* fall through */ }
-      }
-
-      setAnalytics(data || getEmptyAnalytics());
-    } catch (err) {
+    } catch (e) {
       toast.error('Failed to load analytics');
-      setAnalytics(getEmptyAnalytics());
     }
     setLoading(false);
+  }, [period]);
+
+  useEffect(() => {
+    load(period);
+    // Load GA ID
+    const token = localStorage.getItem('adminToken');
+    fetch(`${API_BASE}/admin/settings`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : {})
+      .then(s => setGaId(s.googleAnalyticsId || s.gaId || s?.analytics?.googleAnalyticsId || ''))
+      .catch(() => {});
+  }, []);
+
+  const fmt = n => {
+    if (!n) return '0';
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+    return n.toLocaleString();
   };
 
-  // Convert raw analytics.json format into the display format
-  const normalizeRawAnalytics = (raw) => {
-    if (!raw) return null;
-    const today = new Date().toISOString().slice(0, 10);
-    const lastWeek = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-
-    // Handle pageViews — could be { page: N } or { page: { total: N } }
-    const pageViews = raw.pageViews || {};
-    let totalPageViews = 0;
-    const topPages = [];
-
-    Object.entries(pageViews).forEach(([page, val]) => {
-      const views = typeof val === 'number' ? val : (val?.total || 0);
-      totalPageViews += views;
-      topPages.push({ page, views });
-    });
-
-    topPages.sort((a, b) => b.views - a.views);
-
-    // Handle dailyViews — could be { date: N } or { date: { page: N } }
-    const dailyViews = raw.dailyViews || {};
-    let todayPageViews = 0;
-    let weekPageViews = 0;
-    const dailyArray = [];
-
-    Object.entries(dailyViews).forEach(([date, val]) => {
-      const count = typeof val === 'number' ? val : Object.values(val || {}).reduce((s, n) => s + n, 0);
-      if (date === today) todayPageViews = count;
-      if (date >= lastWeek) weekPageViews += count;
-      dailyArray.push({ date, views: count });
-    });
-
-    dailyArray.sort((a, b) => a.date.localeCompare(b.date));
-
-    return {
-      totalPageViews,
-      todayPageViews,
-      weekPageViews,
-      totalLeads: raw.totalLeads || 0,
-      newLeads: raw.newLeads || 0,
-      topPages: topPages.slice(0, 10),
-      dailyViews: dailyArray.slice(-30)
-    };
+  const changePeriod = (p) => {
+    setPeriod(p);
+    load(p);
   };
 
-  const getEmptyAnalytics = () => ({
-    totalPageViews: 0, todayPageViews: 0, weekPageViews: 0,
-    totalLeads: 0, newLeads: 0, topPages: [], dailyViews: []
-  });
-
-  const fmt = (num) => {
-    if (!num) return '0';
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
-    return num.toString();
-  };
-
-  const fmtDate = (dateStr) => {
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
-  // Bar chart
-  const renderChart = (data) => {
-    if (!data || data.length === 0) {
-      return (
-        <div className="analytics-empty">
-          <p>No page view data yet. Views will start appearing as visitors browse your site.</p>
-        </div>
-      );
-    }
-
-    const maxViews = Math.max(...data.map(d => d.views), 1);
-
-    return (
-      <div className="analytics-chart">
-        {data.map((day, i) => {
-          const height = (day.views / maxViews) * 160;
-          return (
-            <div key={day.date} className="analytics-bar-col" title={`${fmtDate(day.date)}: ${day.views} views`}>
-              {day.views > 0 && <span className="analytics-bar-val">{day.views}</span>}
-              <div className="analytics-bar" style={{ height: `${Math.max(height, 3)}px` }} />
-              {(i % Math.max(1, Math.floor(data.length / 6)) === 0 || i === data.length - 1) && (
-                <span className="analytics-bar-label">{fmtDate(day.date)}</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  if (loading) {
-    return (
-      <AdminLayout title="Analytics">
-        <div className="loading-skeleton">
-          <div className="skeleton-content" style={{ height: '400px' }}></div>
-        </div>
-      </AdminLayout>
-    );
-  }
+  const s = data?.summary || {};
+  const delta = (s.todayViews || 0) - (s.yesterdayViews || 0);
 
   return (
     <AdminLayout
       title="Analytics"
-      subtitle="Track your website performance"
+      subtitle={`Last ${period} days`}
       actions={
-        <button className="admin-btn admin-btn-secondary" onClick={loadAnalytics}>
-          🔄 Refresh
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {[7, 30, 90].map(p => (
+            <button key={p} onClick={() => changePeriod(p)}
+              style={{
+                padding: '5px 12px', borderRadius: 6, border: '1px solid var(--admin-border, #e5e7eb)',
+                background: period === p ? 'var(--admin-primary)' : 'white',
+                color: period === p ? 'white' : 'var(--admin-text)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer'
+              }}>
+              {p}d
+            </button>
+          ))}
+          <button onClick={() => load(period)}
+            style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--admin-border, #e5e7eb)', background: 'white', cursor: 'pointer', fontSize: 12 }}>
+            ↺ Refresh
+          </button>
+        </div>
       }
     >
-      {/* Google Analytics Status */}
       {gaId && (
-        <div className="admin-section">
-          <div className="analytics-ga-badge">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            <span>Google Analytics connected: <strong>{gaId}</strong></span>
-            <a href={`https://analytics.google.com`} target="_blank" rel="noopener noreferrer" className="analytics-ga-link">
-              Open GA Dashboard →
-            </a>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, marginBottom: 20, fontSize: 13 }}>
+          <span style={{ color: '#10b981' }}>✓</span>
+          <span>Google Analytics connected: <strong>{gaId}</strong></span>
+          <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer"
+            style={{ marginLeft: 'auto', color: 'var(--admin-primary)', fontWeight: 600, textDecoration: 'none', fontSize: 12 }}>
+            Open GA Dashboard →
+          </a>
         </div>
       )}
 
-      {/* Stats Cards */}
-      <div className="admin-section">
-        <div className="stat-cards">
-          <div className="stat-card">
-            <div className="stat-card-label">Total Page Views</div>
-            <div className="stat-card-value">{fmt(analytics?.totalPageViews)}</div>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--admin-text-muted)' }}>Loading analytics…</div>
+      ) : (
+        <>
+          {/* ── Summary stats ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
+            <StatCard label="Page Views" value={fmt(s.periodViews)} sub={`${fmt(s.totalViews)} all-time`} accent="#3b82f6" delta={delta} />
+            <StatCard label="Unique Sessions" value={fmt(s.periodSessions)} sub="approx." accent="#8b5cf6" />
+            <StatCard label="Today" value={fmt(s.todayViews)} sub={`Yesterday: ${fmt(s.yesterdayViews)}`} />
+            <StatCard label="Leads (period)" value={fmt(s.periodLeads)} sub={`${fmt(s.newLeads)} unread`} accent="#f59e0b" />
+            <StatCard label="Conversion Rate" value={`${s.conversionRate}%`} sub="leads ÷ views" accent="#10b981" />
           </div>
-          <div className="stat-card" style={{ borderLeft: '3px solid var(--admin-primary)' }}>
-            <div className="stat-card-label">Today</div>
-            <div className="stat-card-value">{fmt(analytics?.todayPageViews)}</div>
-          </div>
-          <div className="stat-card" style={{ borderLeft: '3px solid #10b981' }}>
-            <div className="stat-card-label">Last 7 Days</div>
-            <div className="stat-card-value">{fmt(analytics?.weekPageViews)}</div>
-          </div>
-          <div className="stat-card" style={{ borderLeft: '3px solid #f59e0b' }}>
-            <div className="stat-card-label">Total Leads</div>
-            <div className="stat-card-value">{fmt(analytics?.totalLeads)}</div>
-          </div>
-          <div className="stat-card" style={{ borderLeft: '3px solid #ef4444' }}>
-            <div className="stat-card-label">New Leads</div>
-            <div className="stat-card-value">{fmt(analytics?.newLeads)}</div>
-          </div>
-        </div>
-      </div>
 
-      {/* Chart */}
-      <div className="admin-section">
-        <h3 style={{ marginBottom: '16px' }}>Page Views — Last 30 Days</h3>
-        <div className="card" style={{ padding: '20px' }}>
-          {renderChart(analytics?.dailyViews)}
-        </div>
-      </div>
+          {/* ── Views + Leads chart ── */}
+          <Section title="Views & Leads Over Time"
+            action={<div style={{ display: 'flex', gap: 12, fontSize: 11 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--admin-primary)', display: 'inline-block' }} />Views</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />Leads</span>
+            </div>}
+          >
+            <MultiBarChart data={data?.dailyViews} height={200} />
+          </Section>
 
-      {/* Top Pages */}
-      <div className="admin-section">
-        <h3 style={{ marginBottom: '16px' }}>Top Pages</h3>
-        <div className="card">
-          {analytics?.topPages?.length > 0 ? (
-            <div className="analytics-pages-table">
-              {analytics.topPages.map((page, i) => {
-                const maxViews = analytics.topPages[0]?.views || 1;
-                const barWidth = (page.views / maxViews) * 100;
-                return (
-                  <div key={page.page} className="analytics-page-row">
-                    <span className="analytics-page-rank">{i + 1}</span>
-                    <span className="analytics-page-name">/{page.page || '(homepage)'}</span>
-                    <span className="analytics-page-views">{fmt(page.views)}</span>
-                    <div className="analytics-page-bar-wrap">
-                      <div className="analytics-page-bar" style={{ width: `${barWidth}%` }} />
-                    </div>
+          {/* ── Sources + Devices ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+            <Section title="Traffic Sources">
+              {data?.sources?.length > 0 ? (
+                <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+                  <DonutChart
+                    data={data.sources.map(s => ({ label: s.label, count: s.visits }))}
+                    size={120}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <Legend items={data.sources.map(s => ({ label: s.label, count: s.visits }))} />
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="analytics-empty" style={{ padding: '40px' }}>
-              <p>No page data yet.</p>
-            </div>
-          )}
-        </div>
-      </div>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: 13, padding: '20px 0' }}>
+                  Traffic source data will appear as visitors arrive.
+                </div>
+              )}
+            </Section>
 
-      {/* Info */}
-      <div className="admin-section">
-        <div className="card" style={{ padding: '20px', background: 'var(--admin-info-bg, var(--admin-bg))' }}>
-          <h4 style={{ margin: '0 0 8px 0' }}>📊 How Analytics Work</h4>
-          <p style={{ color: 'var(--admin-text-secondary)', margin: 0 }}>
-            Page views are tracked automatically on every page load — no JavaScript required.
-            {gaId
-              ? ' For detailed traffic sources, devices, and behavior data, check your Google Analytics dashboard.'
-              : ' For more detailed analytics, add your Google Analytics ID in Site Settings.'
-            }
-          </p>
-        </div>
-      </div>
+            <Section title="Device Breakdown">
+              {data?.devices?.length > 0 ? (
+                <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+                  <DonutChart
+                    data={data.devices.map(d => ({ label: d.device.charAt(0).toUpperCase() + d.device.slice(1), count: d.count }))}
+                    size={120}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <Legend items={data.devices.map(d => ({ label: d.device.charAt(0).toUpperCase() + d.device.slice(1), count: d.count }))} />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: 13, padding: '20px 0' }}>
+                  Device data will appear as visitors arrive.
+                </div>
+              )}
+            </Section>
+          </div>
 
-      <style>{`
-        .analytics-ga-badge {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 16px;
-          background: var(--admin-surface);
-          border: 1px solid var(--admin-border);
-          border-radius: 10px;
-          font-size: 0.875rem;
-          color: var(--admin-text-secondary);
-          flex-wrap: wrap;
-        }
-        .analytics-ga-link {
-          margin-left: auto;
-          color: var(--admin-primary);
-          text-decoration: none;
-          font-weight: 600;
-          font-size: 0.8rem;
-        }
+          {/* ── Conversion Funnel ── */}
+          <Section title="Lead Conversion Funnel">
+            <Funnel steps={data?.funnel} />
+          </Section>
 
-        .analytics-chart {
-          display: flex;
-          align-items: flex-end;
-          gap: 3px;
-          height: 220px;
-          padding: 20px 0 10px;
-        }
-        .analytics-bar-col {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          min-width: 0;
-        }
-        .analytics-bar-val {
-          font-size: 9px;
-          color: var(--admin-text-muted);
-          white-space: nowrap;
-        }
-        .analytics-bar {
-          width: 100%;
-          max-width: 20px;
-          background: var(--admin-primary);
-          border-radius: 3px 3px 0 0;
-          transition: height 0.3s ease;
-        }
-        .analytics-bar-label {
-          font-size: 9px;
-          color: var(--admin-text-muted);
-          margin-top: 4px;
-          white-space: nowrap;
-        }
+          {/* ── Top Pages ── */}
+          <Section title="Top Pages">
+            {data?.topPages?.length > 0 ? (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--admin-border, #e5e7eb)' }}>
+                    <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--admin-text-muted)', fontSize: 11 }}>#</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--admin-text-muted)', fontSize: 11 }}>Page</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600, color: 'var(--admin-text-muted)', fontSize: 11 }}>Views (period)</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600, color: 'var(--admin-text-muted)', fontSize: 11 }}>All-time</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--admin-text-muted)', fontSize: 11, width: 120 }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.topPages.map((p, i) => {
+                    const max = data.topPages[0]?.views || 1;
+                    return (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--admin-border, #e5e7eb)' }}>
+                        <td style={{ padding: '8px', color: 'var(--admin-text-muted)', fontSize: 11 }}>{i + 1}</td>
+                        <td style={{ padding: '8px', fontWeight: 500 }}>/{p.page || '(homepage)'}</td>
+                        <td style={{ padding: '8px', textAlign: 'right', fontWeight: 700 }}>{p.views.toLocaleString()}</td>
+                        <td style={{ padding: '8px', textAlign: 'right', color: 'var(--admin-text-muted)' }}>{(p.total || p.views).toLocaleString()}</td>
+                        <td style={{ padding: '8px' }}>
+                          <div style={{ height: 6, background: '#f3f4f6', borderRadius: 3 }}>
+                            <div style={{ height: '100%', width: `${(p.views / max) * 100}%`, background: 'var(--admin-primary)', borderRadius: 3 }} />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            ) : (
+              <div style={{ textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: 13, padding: '20px 0' }}>No page data yet.</div>
+            )}
+          </Section>
 
-        .analytics-pages-table {
-          display: flex;
-          flex-direction: column;
-        }
-        .analytics-page-row {
-          display: grid;
-          grid-template-columns: 28px 1fr auto 120px;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 16px;
-          border-bottom: 1px solid var(--admin-border);
-        }
-        .analytics-page-row:last-child { border-bottom: none; }
-        .analytics-page-rank {
-          font-size: 12px;
-          color: var(--admin-text-muted);
-        }
-        .analytics-page-name {
-          font-size: 0.9rem;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        .analytics-page-views {
-          font-weight: 600;
-          text-align: right;
-          font-size: 0.9rem;
-        }
-        .analytics-page-bar-wrap {
-          height: 8px;
-          background: var(--admin-bg);
-          border-radius: 4px;
-          overflow: hidden;
-        }
-        .analytics-page-bar {
-          height: 100%;
-          background: var(--admin-primary);
-          border-radius: 4px;
-        }
+          {/* ── Lead Sources + UTM ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+            <Section title="Where Leads Come From">
+              {data?.leadSources?.length > 0 ? (
+                <Legend items={data.leadSources.map(s => ({ label: s.label, count: s.count }))} />
+              ) : (
+                <div style={{ textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: 13, padding: '20px 0' }}>No lead source data yet.</div>
+              )}
+            </Section>
 
-        .analytics-empty {
-          text-align: center;
-          padding: 40px 20px;
-          color: var(--admin-text-secondary);
-        }
+            <Section title="UTM Campaigns">
+              {data?.utmCampaigns?.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {data.utmCampaigns.map((c, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', borderBottom: '1px solid var(--admin-border, #f3f4f6)' }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>{c.campaign}</span>
+                      <strong>{c.visits.toLocaleString()} visits</strong>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: 13, padding: '20px 0' }}>
+                  No UTM campaigns tracked yet. Add <code>?utm_campaign=name</code> to links in your ads, emails, or social posts.
+                </div>
+              )}
+            </Section>
+          </div>
 
-        @media (max-width: 600px) {
-          .analytics-page-row {
-            grid-template-columns: 24px 1fr auto;
-          }
-          .analytics-page-bar-wrap { display: none; }
-          .analytics-bar-val { display: none; }
-        }
-      `}</style>
+          {/* ── How it works ── */}
+          <div style={{ padding: '14px 16px', background: 'var(--admin-bg, #f9fafb)', border: '1px solid var(--admin-border, #e5e7eb)', borderRadius: 10, fontSize: 12, color: 'var(--admin-text-muted)' }}>
+            <strong style={{ color: 'var(--admin-text)' }}>📊 How tracking works</strong><br />
+            Page views, device type, and traffic source are tracked automatically on every page load with no external scripts. UTM parameters are captured from ad and email links. Session tracking uses anonymous browser session IDs. For geographic data and deeper behavior analytics, connect Google Analytics in{' '}
+            <a href="/admin/settings" style={{ color: 'var(--admin-primary)' }}>Site Settings</a>.
+          </div>
+        </>
+      )}
     </AdminLayout>
   );
 }
