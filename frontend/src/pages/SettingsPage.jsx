@@ -47,7 +47,7 @@ export default function SettingsPage() {
       const res = await fetch(`${API_BASE}/api/company/users/${user.userId || user.id}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName: profileForm.firstName, lastName: profileForm.lastName, phone: profileForm.phone }),
+        body: JSON.stringify({ firstName: profileForm.firstName, lastName: profileForm.lastName, phone: profileForm.phone, email: profileForm.email }),
       });
       if (!res.ok) throw new Error('Failed to update profile');
       toast.success('Profile updated');
@@ -142,9 +142,7 @@ export default function SettingsPage() {
                 <Input label="Last Name" value={profileForm.lastName} onChange={(e) => setProfileForm({...profileForm, lastName: e.target.value})} />
               </div>
               <Input label="Phone" value={profileForm.phone} onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})} />
-              <div className="p-3 bg-slate-50 rounded-lg text-sm text-slate-500">
-                Email: <span className="text-slate-700 font-medium">{profileForm.email}</span> — contact support to change your login email.
-              </div>
+              <Input label="Email" type="email" value={profileForm.email} onChange={(e) => setProfileForm({...profileForm, email: e.target.value})} />
               <div className="p-3 bg-slate-50 rounded-lg text-sm text-slate-500">
                 Role: <span className="text-slate-700 font-medium capitalize">{user?.role}</span>
               </div>

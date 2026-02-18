@@ -41,8 +41,13 @@ router.post('/users', requireAdmin, async (req, res, next) => {
 
 router.put('/users/:id', requireAdmin, async (req, res, next) => {
   try {
-    const schema = z.object({ firstName: z.string().optional(), lastName: z.string().optional(), phone: z.string().optional(), role: z.enum(['admin', 'manager', 'user', 'field']).optional(), isActive: z.boolean().optional() });
+    const schema = z.object({ firstName: z.string().optional(), lastName: z.string().optional(), email: z.string().email().optional(), phone: z.string().optional(), role: z.enum(['admin', 'manager', 'user', 'field']).optional(), isActive: z.boolean().optional() });
     const data = schema.parse(req.body);
+    // If email is changing, check it's not already taken
+    if (data.email) {
+      const existing = await prisma.user.findFirst({ where: { email: data.email, NOT: { id: req.params.id } } });
+      if (existing) return res.status(400).json({ error: 'Email already in use' });
+    }
     const user = await prisma.user.update({ where: { id: req.params.id }, data, select: { id: true, email: true, firstName: true, lastName: true, role: true, isActive: true } });
     res.json(user);
   } catch (error) { next(error); }
