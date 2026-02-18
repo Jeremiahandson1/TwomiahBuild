@@ -970,16 +970,29 @@ function ReviewStep({ config, registry, generating, result, error, onGenerate })
         <p style={{ color: '#6b7280', marginBottom: 24 }}>
           Generated in {result.generatedIn}
         </p>
-        <a
-          href={`${API_BASE}${result.downloadUrl}`}
+        <button
+          onClick={async () => {
+            const token = localStorage.getItem('accessToken');
+            const res = await fetch(`${API_BASE}${result.downloadUrl}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) { alert('Download failed - please try again'); return; }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = result.zipName;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 32px',
             background: '#f97316', color: 'white', borderRadius: 10, fontWeight: 700,
-            textDecoration: 'none', fontSize: '1.05rem',
+            border: 'none', cursor: 'pointer', fontSize: '1.05rem',
           }}
         >
           <Download size={20} /> Download {result.zipName}
-        </a>
+        </button>
         <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: 12 }}>
           Build ID: {result.buildId}
         </p>
