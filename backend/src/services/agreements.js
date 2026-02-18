@@ -10,6 +10,9 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import Stripe from 'stripe';
+
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 const prisma = new PrismaClient();
 
@@ -219,8 +222,21 @@ export async function updateAgreement(agreementId, companyId, data) {
  * Cancel agreement
  */
 export async function cancelAgreement(agreementId, companyId, reason) {
-  // TODO: Cancel Stripe subscription if exists
-  
+  // Cancel Stripe subscription if one exists
+  const agreement = await prisma.serviceAgreement.findFirst({
+    where: { id: agreementId, companyId },
+    select: { stripeSubscriptionId: true },
+  });
+
+  if (agreement?.stripeSubscriptionId && stripe) {
+    try {
+      await stripe.subscriptions.cancel(agreement.stripeSubscriptionId);
+    } catch (stripeErr) {
+      // Log but don't block — cancellation should still proceed in our DB
+      console.error('Stripe subscription cancel failed:', stripeErr.message);
+    }
+  }
+
   return prisma.serviceAgreement.updateMany({
     where: { id: agreementId, companyId },
     data: {

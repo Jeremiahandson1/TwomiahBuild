@@ -419,6 +419,57 @@ const templates = {
     `,
     text: `Hi ${data.contactName}, access your customer portal for ${data.companyName}: ${data.portalUrl}`,
   }),
+
+  // ============ BOOKING ============
+  bookingConfirmation: (data) => ({
+    subject: `Booking Confirmed — ${data.serviceName} on ${data.scheduledDate}`,
+    html: `
+      <!DOCTYPE html><html><head><style>${baseStyles}</style></head>
+      <body><div class="container">
+        <div class="header"><h1 style="margin:0;">${data.companyName}</h1></div>
+        <div class="content">
+          <h2>Your Appointment is Confirmed!</h2>
+          <p>Hi ${data.customerName},</p>
+          <p>We've received your booking and look forward to seeing you.</p>
+          <div class="highlight">
+            <p><strong>Service:</strong> ${data.serviceName}</p>
+            <p><strong>Date:</strong> ${data.scheduledDate}</p>
+            <p><strong>Time:</strong> ${data.scheduledTime}</p>
+            <p><strong>Confirmation Code:</strong> <span style="font-family:monospace;font-size:18px;letter-spacing:2px;">${data.confirmationCode}</span></p>
+            ${data.notes ? `<p><strong>Notes:</strong> ${data.notes}</p>` : ''}
+          </div>
+          <p>If you need to reschedule or have questions, please contact us directly and reference your confirmation code.</p>
+        </div>
+        <div class="footer">${data.companyName}</div>
+      </div></body></html>
+    `,
+    text: `Booking Confirmed!\n\nHi ${data.customerName},\n\nService: ${data.serviceName}\nDate: ${data.scheduledDate}\nTime: ${data.scheduledTime}\nConfirmation Code: ${data.confirmationCode}\n\nContact us to reschedule.`,
+  }),
+
+  // ============ INVENTORY ============
+  lowStock: (data) => ({
+    subject: `⚠️ Low Stock Alert: ${data.itemName}`,
+    html: `
+      <!DOCTYPE html><html><head><style>${baseStyles}</style></head>
+      <body><div class="container">
+        <div class="header"><h1 style="margin:0;">${data.companyName}</h1></div>
+        <div class="content">
+          <h2>⚠️ Low Stock Alert</h2>
+          <p>An inventory item has dropped to or below its reorder point.</p>
+          <div class="highlight">
+            <p><strong>Item:</strong> ${data.itemName}</p>
+            ${data.sku ? `<p><strong>SKU:</strong> ${data.sku}</p>` : ''}
+            <p><strong>Current Quantity:</strong> <span style="color:#ef4444;font-weight:bold;">${data.currentQuantity} ${data.unit || 'units'}</span></p>
+            <p><strong>Reorder Point:</strong> ${data.reorderPoint} ${data.unit || 'units'}</p>
+            ${data.reorderQuantity ? `<p><strong>Suggested Reorder Qty:</strong> ${data.reorderQuantity}</p>` : ''}
+          </div>
+          <p>Please review your inventory and place a reorder as needed.</p>
+        </div>
+        <div class="footer">${data.companyName}</div>
+      </div></body></html>
+    `,
+    text: `Low Stock Alert: ${data.itemName}\n\nCurrent stock: ${data.currentQuantity} ${data.unit || 'units'}\nReorder point: ${data.reorderPoint}\n\nPlease reorder soon.`,
+  }),
 };
 
 // ============================================

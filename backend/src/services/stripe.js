@@ -10,6 +10,7 @@
 
 import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
+import emailService from './email.js';
 
 const prisma = new PrismaClient();
 
@@ -288,8 +289,23 @@ async function handlePaymentSuccess(paymentIntent) {
     },
   });
 
-  // TODO: Send payment confirmation email
-  // await emailService.sendPaymentReceived(invoice.contact.email, {...});
+  // Send payment confirmation email
+  if (invoice.contact?.email) {
+    try {
+      await emailService.sendPaymentReceived(invoice.contact.email, {
+        contactName: invoice.contact.name,
+        companyName: invoice.company?.name || 'Your Service Provider',
+        invoiceNumber: invoice.number,
+        amount: `$${amount.toFixed(2)}`,
+        invoiceTotal: `$${Number(invoice.total).toFixed(2)}`,
+        balance: `$${Math.max(0, newBalance).toFixed(2)}`,
+        status: newStatus,
+        paidAt: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      });
+    } catch (emailErr) {
+      console.error('Payment confirmation email failed:', emailErr.message);
+    }
+  }
 
   return { 
     handled: true, 

@@ -16,6 +16,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import emailService from './email.js';
 
 const prisma = new PrismaClient();
 
@@ -295,9 +296,26 @@ export async function adjustStock(companyId, {
   });
 
   // Check for low stock alert
-  const item = await prisma.inventoryItem.findUnique({ where: { id: itemId } });
+  const item = await prisma.inventoryItem.findUnique({
+    where: { id: itemId },
+    include: { company: { select: { name: true, email: true } } },
+  });
   if (item && newQuantity <= item.reorderPoint && newQuantity > 0) {
-    // TODO: Send low stock notification
+    try {
+      if (item.company?.email) {
+        await emailService.send(item.company.email, 'lowStock', {
+          companyName: item.company.name || 'BuildPro',
+          itemName: item.name,
+          sku: item.sku,
+          currentQuantity: newQuantity,
+          reorderPoint: item.reorderPoint,
+          reorderQuantity: item.reorderQuantity,
+          unit: item.unit,
+        });
+      }
+    } catch (emailErr) {
+      console.error('Low stock notification failed:', emailErr.message);
+    }
   }
 
   return updated;

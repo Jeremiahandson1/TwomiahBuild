@@ -12,6 +12,7 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { prisma } from '../index.js';
 import Stripe from 'stripe';
+import * as quickbooksService from '../services/quickbooks.js';
 
 const router = Router();
 
@@ -263,8 +264,19 @@ router.post('/quickbooks/sync', authenticate, async (req, res, next) => {
       return res.status(400).json({ error: 'QuickBooks not connected' });
     }
 
-    // TODO: Implement actual sync logic
-    // For now, just update last sync time
+    const { syncType = 'all' } = req.body;
+
+    const results = { customers: null, invoices: null };
+
+    if (syncType === 'all' || syncType === 'customers') {
+      results.customers = await quickbooksService.syncAllCustomers(req.user.companyId);
+    }
+
+    if (syncType === 'all' || syncType === 'invoices') {
+      results.invoices = await quickbooksService.syncAllInvoices(req.user.companyId);
+    }
+
+    // Update last sync timestamp
     await prisma.company.update({
       where: { id: req.user.companyId },
       data: {
@@ -275,7 +287,18 @@ router.post('/quickbooks/sync', authenticate, async (req, res, next) => {
       },
     });
 
-    res.json({ success: true, message: 'Sync started' });
+    const totalSynced = [
+      ...(results.customers || []),
+      ...(results.invoices || []),
+    ];
+    const failed = totalSynced.filter(r => !r.success);
+
+    res.json({
+      success: true,
+      message: `Sync complete. ${totalSynced.length} records synced, ${failed.length} failed.`,
+      results,
+      syncedAt: new Date(),
+    });
   } catch (error) {
     next(error);
   }

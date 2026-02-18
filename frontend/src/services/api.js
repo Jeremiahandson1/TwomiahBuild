@@ -324,6 +324,21 @@ class ApiClient {
     stats: () => this.get('/api/dashboard/stats'),
     recentActivity: () => this.get('/api/dashboard/recent-activity'),
   };
+
+  // Job Costing
+  jobCosting = {
+    forJob: (jobId) => this.get(`/api/job-costing/job/${jobId}`),
+    report: (params) => this.get('/api/job-costing/report', params),
+    trends: (params) => this.get('/api/job-costing/trends', params),
+  };
+
+  // Reports
+  reports = {
+    summary: (params) => this.get('/api/reports/summary', params),
+    revenue: (params) => this.get('/api/reports/revenue', params),
+    expenses: (params) => this.get('/api/reports/expenses', params),
+    profitability: (params) => this.get('/api/reports/profitability', params),
+  };
 }
 
 export const api = new ApiClient();

@@ -10,6 +10,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import emailService from './email.js';
 
 const prisma = new PrismaClient();
 
@@ -336,7 +337,31 @@ export async function createBooking(companyId, data) {
     },
   });
 
-  // TODO: Send confirmation email/SMS
+  // Send booking confirmation email/SMS
+  if (email) {
+    try {
+      // Get company name for the email
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { name: true },
+      });
+
+      await emailService.send(email, 'bookingConfirmation', {
+        customerName: `${firstName} ${lastName}`,
+        companyName: company?.name || 'Your Service Provider',
+        serviceName: service?.name || 'Service',
+        scheduledDate: new Date(scheduledDate).toLocaleDateString('en-US', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        }),
+        scheduledTime: time,
+        confirmationCode: booking.confirmationCode,
+        notes,
+      });
+    } catch (emailErr) {
+      // Don't fail the booking if email fails — log and continue
+      console.error('Booking confirmation email failed:', emailErr.message);
+    }
+  }
 
   return {
     booking,

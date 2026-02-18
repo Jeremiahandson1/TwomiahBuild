@@ -413,6 +413,20 @@ export async function generateG702Data(drawId, companyId) {
   const previousRetainage = allDraws.reduce((sum, d) => sum + Number(d.retainageAmount || 0), 0);
   const previousNet = allDraws.reduce((sum, d) => sum + Number(d.netAmount || 0), 0);
 
+  // Sum approved change orders for this project
+  const approvedChangeOrders = await prisma.changeOrder.findMany({
+    where: {
+      projectId: project.id,
+      companyId,
+      status: 'approved',
+    },
+    select: { amount: true },
+  });
+  const netChangeByChangeOrders = approvedChangeOrders.reduce(
+    (sum, co) => sum + Number(co.amount || 0), 0
+  );
+  const contractSumToDate = Number(sov.contractAmount) + netChangeByChangeOrders;
+
   return {
     applicationNumber: draw.drawNumber,
     periodTo: draw.periodTo,
@@ -420,8 +434,8 @@ export async function generateG702Data(drawId, companyId) {
     projectAddress: project?.address,
     
     originalContractSum: Number(sov.contractAmount),
-    netChangeByChangeOrders: 0, // TODO: link to change orders
-    contractSumToDate: Number(sov.contractAmount),
+    netChangeByChangeOrders,
+    contractSumToDate,
     
     totalCompletedAndStored: previousGross + Number(draw.grossAmount),
     retainagePercent: Number(sov.retainagePercent),
@@ -431,7 +445,7 @@ export async function generateG702Data(drawId, companyId) {
     lessPreviousCertificates: previousNet,
     currentPaymentDue: Number(draw.netAmount),
     
-    balanceToFinish: Number(sov.contractAmount) - (previousGross + Number(draw.grossAmount)),
+    balanceToFinish: contractSumToDate - (previousGross + Number(draw.grossAmount)),
   };
 }
 
@@ -478,7 +492,7 @@ export async function generateG703Data(drawId, companyId) {
       scheduledValue,
       previousWork,
       thisPeriod,
-      materialsStored: 0, // TODO: support materials presently stored
+      materialsStored: Number(currentItem?.materialsStored || 0),
       totalCompleted,
       percentComplete: Math.round(percentComplete * 10) / 10,
       balanceToFinish,

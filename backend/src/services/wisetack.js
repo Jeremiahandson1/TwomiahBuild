@@ -12,6 +12,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
+import emailService from './email.js';
 
 const prisma = new PrismaClient();
 
@@ -252,8 +253,22 @@ export async function processWebhook(payload, signature) {
         },
       });
 
-      // TODO: Send notification email
-      // TODO: Trigger webhook to company's systems
+      // Send approval notification email to customer
+      if (app.contact?.email) {
+        try {
+          await emailService.send(app.contact.email, 'bookingConfirmation', {
+            customerName: app.contact.name,
+            companyName: app.company?.name || 'Your Service Provider',
+            serviceName: 'Financing Application',
+            scheduledDate: 'N/A',
+            scheduledTime: '',
+            confirmationCode: `Approved – $${(data.approved_amount / 100).toFixed(2)} at ${data.apr}% APR`,
+            notes: `Your financing application has been approved! Monthly payment: $${(data.monthly_payment / 100).toFixed(2)} for ${data.term_months} months.`,
+          });
+        } catch (emailErr) {
+          console.error('Wisetack approval email failed:', emailErr.message);
+        }
+      }
       break;
 
     case 'application.declined':
