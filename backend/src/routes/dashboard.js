@@ -16,7 +16,7 @@ router.get('/stats', async (req, res, next) => {
       prisma.project.groupBy({ by: ['status'], where: { companyId }, _count: true }),
       prisma.job.groupBy({ by: ['status'], where: { companyId }, _count: true }),
       prisma.quote.findMany({ where: { companyId }, select: { status: true, total: true } }),
-      prisma.invoice.findMany({ where: { companyId }, select: { status: true, total: true, balance: true } }),
+      prisma.invoice.findMany({ where: { companyId }, select: { status: true, total: true, amountPaid: true } }),
       prisma.job.count({ where: { companyId, scheduledDate: { gte: today, lt: new Date(today.getTime() + 86400000) } } }),
     ]);
 
@@ -24,7 +24,7 @@ router.get('/stats', async (req, res, next) => {
     quotes.forEach(q => { if (['draft', 'sent'].includes(q.status)) quoteStats.pending++; if (q.status === 'approved') quoteStats.approved++; quoteStats.totalValue += Number(q.total); });
 
     const invoiceStats = { total: invoices.length, outstanding: 0, paid: 0, totalValue: 0, outstandingValue: 0 };
-    invoices.forEach(inv => { invoiceStats.totalValue += Number(inv.total); invoiceStats.outstandingValue += Number(inv.balance); if (inv.status === 'paid') invoiceStats.paid++; else invoiceStats.outstanding++; });
+    invoices.forEach(inv => { const balance = Number(inv.total) - Number(inv.amountPaid); invoiceStats.totalValue += Number(inv.total); invoiceStats.outstandingValue += balance; if (inv.status === 'paid') invoiceStats.paid++; else invoiceStats.outstanding++; });
 
     res.json({
       contacts,
@@ -42,7 +42,7 @@ router.get('/recent-activity', async (req, res, next) => {
     const [recentJobs, recentQuotes, recentInvoices] = await Promise.all([
       prisma.job.findMany({ where: { companyId }, orderBy: { updatedAt: 'desc' }, take: 5, select: { id: true, number: true, title: true, status: true, updatedAt: true } }),
       prisma.quote.findMany({ where: { companyId }, orderBy: { updatedAt: 'desc' }, take: 5, select: { id: true, number: true, name: true, status: true, total: true, updatedAt: true } }),
-      prisma.invoice.findMany({ where: { companyId }, orderBy: { updatedAt: 'desc' }, take: 5, select: { id: true, number: true, status: true, total: true, balance: true, updatedAt: true } }),
+      prisma.invoice.findMany({ where: { companyId }, orderBy: { updatedAt: 'desc' }, take: 5, select: { id: true, number: true, status: true, total: true, amountPaid: true, updatedAt: true } }),
     ]);
     res.json({ recentJobs, recentQuotes, recentInvoices });
   } catch (error) { next(error); }
