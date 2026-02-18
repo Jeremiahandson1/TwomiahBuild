@@ -450,6 +450,29 @@ router.get('/stats', async (req, res) => {
  * GET /api/factory/customers
  * List all factory customers
  */
+router.get('/builds', async (req, res) => {
+  try {
+    const { prisma } = await import('../index.js');
+    const companyId = req.user.companyId;
+    const builds = await prisma.factoryBuild.findMany({
+      where: { companyId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        companyName: true,
+        slug: true,
+        products: true,
+        buildId: true,
+        zipName: true,
+        zipPath: true,
+        createdAt: true,
+        customer: { select: { name: true, status: true } }
+      }
+    });
+    res.json({ builds });
+  } catch (err) { next(err); }
+});
+
 router.get('/customers', async (req, res) => {
   try {
     const { prisma } = await import('../index.js');

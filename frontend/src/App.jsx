@@ -28,6 +28,7 @@ import SettingsPage from './pages/SettingsPage';
 import BillingSettingsPage from './pages/settings/BillingSettingsPage';
 import IntegrationsPage from './pages/settings/IntegrationsPage';
 import FactoryWizard from './components/builder/FactoryWizard';
+import BuildsPage from './pages/BuildsPage';
 
 // CRM Demo Pages (nested under /demo)
 import AppLayout from './components/layout/AppLayout';
@@ -100,6 +101,7 @@ function App() {
                     <Route path="customers" element={<CustomersPage />} />
                     <Route path="customers/:id" element={<CustomerDetailPage />} />
                     <Route path="factory" element={<FactoryWizard />} />
+                    <Route path="builds" element={<BuildsPage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="settings/billing" element={<BillingSettingsPage />} />
                     <Route path="settings/integrations" element={<IntegrationsPage />} />

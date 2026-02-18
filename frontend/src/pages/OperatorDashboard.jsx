@@ -136,7 +136,7 @@ export default function OperatorDashboard() {
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <h3 className="font-semibold text-slate-900">Recent Builds</h3>
           <button 
-            onClick={() => navigate('/factory')}
+            onClick={() => navigate('/builds')}
             className="text-sm text-orange-500 hover:text-orange-600 font-medium"
           >
             View all
