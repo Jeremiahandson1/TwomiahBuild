@@ -5,7 +5,7 @@
 
 
 
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export const ACTIONS = {
   CREATE: 'create',
   UPDATE: 'update',

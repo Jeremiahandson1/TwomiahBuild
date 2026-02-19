@@ -13,7 +13,7 @@
 /**
  * Get detailed job cost breakdown
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function getJobCostAnalysis(jobId, companyId) {
   const job = await prisma.job.findFirst({
     where: { id: jobId, companyId },

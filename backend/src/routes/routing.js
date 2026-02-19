@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import routing from '../services/routing.js';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 const router = Router();
 

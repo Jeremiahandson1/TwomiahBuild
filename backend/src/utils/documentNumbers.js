@@ -8,7 +8,7 @@
  * both write INV-00042. This uses SELECT FOR UPDATE semantics via
  * Prisma's $transaction to serialize the read + increment.
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 /**
  * Get next document number for a given prefix + company.

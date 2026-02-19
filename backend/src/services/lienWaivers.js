@@ -11,7 +11,7 @@
 
 
 // Waiver types
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export const WAIVER_TYPES = {
   CONDITIONAL_PARTIAL: 'conditional_partial',     // Conditional upon payment clearing - partial payment
   UNCONDITIONAL_PARTIAL: 'unconditional_partial', // Payment received - partial payment

@@ -10,7 +10,7 @@
 /**
  * Search all entities
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function globalSearch(companyId, query, options = {}) {
   const { limit = 20, types = null } = options;
   

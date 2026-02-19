@@ -18,7 +18,7 @@
 /**
  * Get revenue overview
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function getRevenueOverview(companyId, { startDate, endDate }) {
   const dateFilter = buildDateFilter(startDate, endDate);
 

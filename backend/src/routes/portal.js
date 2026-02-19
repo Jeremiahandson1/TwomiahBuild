@@ -7,7 +7,7 @@
 
 import { Router } from 'express';
 import crypto from 'crypto';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
 import emailService from '../services/email.js';

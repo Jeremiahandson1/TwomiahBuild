@@ -5,7 +5,7 @@
  */
 
 import emailService from './email.js';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 
 /**

@@ -14,7 +14,7 @@
 /**
  * Create a task
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function createTask({
   companyId,
   createdById,

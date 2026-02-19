@@ -17,7 +17,7 @@
  *   const record = await assertOwnership(prisma.invoice, id, companyId, 'Invoice');
  */
 
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 /**
  * Middleware factory.

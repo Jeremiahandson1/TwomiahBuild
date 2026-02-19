@@ -13,7 +13,7 @@
 
 
 // Measurement types
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 const MEASUREMENT_TYPES = {
   AREA: 'area',           // Square feet
   LINEAR: 'linear',       // Linear feet

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { nextDocumentNumber } from '../utils/documentNumbers.js';
 import { z } from 'zod';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
 import { withCompany } from '../middleware/ownership.js';

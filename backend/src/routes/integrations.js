@@ -10,7 +10,7 @@
 
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 import Stripe from 'stripe';
 import * as quickbooksService from '../services/quickbooks.js';
 

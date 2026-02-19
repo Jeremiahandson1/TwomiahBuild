@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission, requireRole } from '../middleware/permissions.js';
 import geocoding from '../services/geocoding.js';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 const router = Router();
 router.use(authenticate);

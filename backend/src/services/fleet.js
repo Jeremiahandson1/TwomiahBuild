@@ -19,7 +19,7 @@
 /**
  * Create vehicle
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function createVehicle(companyId, data) {
   return prisma.vehicle.create({
     data: {

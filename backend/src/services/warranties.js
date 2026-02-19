@@ -18,7 +18,7 @@
 /**
  * Create warranty template
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function createWarrantyTemplate(companyId, data) {
   return prisma.warrantyTemplate.create({
     data: {

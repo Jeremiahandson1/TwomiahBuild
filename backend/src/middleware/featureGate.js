@@ -13,7 +13,7 @@
  *   router.use(checkUsageLimits); // Check usage limits
  */
 
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 import { PLAN_FEATURES, PLAN_LIMITS, PLAN_HIERARCHY, CORE_FEATURES } from '../config/plans.js';
 

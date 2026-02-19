@@ -12,7 +12,7 @@
 
 
 // Dependency types
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 const DEPENDENCY_TYPES = {
   FS: 'finish_to_start',  // Task B starts when Task A finishes (most common)
   SS: 'start_to_start',   // Task B starts when Task A starts

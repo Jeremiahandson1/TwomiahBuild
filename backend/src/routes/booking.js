@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
 import booking from '../services/booking.js';
 

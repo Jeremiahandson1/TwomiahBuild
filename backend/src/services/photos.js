@@ -12,7 +12,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import sharp from 'sharp';
 import { v4 as uuid } from 'uuid';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';

@@ -8,7 +8,7 @@
 
 
 // Simple in-memory cache (in production, use Redis)
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 const cache = new Map();
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 

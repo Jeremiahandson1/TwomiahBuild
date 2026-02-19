@@ -14,7 +14,7 @@
 /**
  * Start a time entry (clock in)
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function clockIn({ userId, companyId, jobId, projectId, notes }) {
   // Check for existing active entry
   const activeEntry = await prisma.timeEntry.findFirst({

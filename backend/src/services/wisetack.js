@@ -12,7 +12,7 @@
 
 import crypto from 'crypto';
 import emailService from './email.js';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 
 const WISETACK_API_URL = process.env.WISETACK_API_URL || 'https://api.wisetack.com/v1';

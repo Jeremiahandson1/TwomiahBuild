@@ -17,7 +17,7 @@
 /**
  * Create Schedule of Values for a project
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function createScheduleOfValues(companyId, projectId, data) {
   const project = await prisma.project.findFirst({
     where: { id: projectId, companyId },

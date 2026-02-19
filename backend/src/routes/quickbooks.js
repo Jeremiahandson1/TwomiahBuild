@@ -3,7 +3,7 @@ import { authenticate } from '../middleware/auth.js';
 import { requireRole } from '../middleware/permissions.js';
 import quickbooks from '../services/quickbooks.js';
 import audit from '../services/audit.js';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 const router = Router();
 

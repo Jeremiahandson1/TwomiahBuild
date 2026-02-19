@@ -6,7 +6,7 @@
  */
 
 import webpush from 'web-push';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 
 // Configure VAPID keys

@@ -10,7 +10,7 @@
  */
 
 import { parse } from 'csv-parse/sync';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 
 /**

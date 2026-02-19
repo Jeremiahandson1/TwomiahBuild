@@ -11,7 +11,7 @@
 
 
 // Field types
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export const FIELD_TYPES = {
   TEXT: 'text',
   TEXTAREA: 'textarea',

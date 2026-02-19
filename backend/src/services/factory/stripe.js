@@ -13,10 +13,6 @@
 
 import { stripe } from '../../config/stripe.js';
 
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY)
-  : null;
-
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // ============================================

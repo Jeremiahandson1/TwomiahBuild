@@ -11,7 +11,7 @@
  */
 
 import sgMail from '@sendgrid/mail';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 
 // Initialize SendGrid

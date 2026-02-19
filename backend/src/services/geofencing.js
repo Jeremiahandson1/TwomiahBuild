@@ -11,7 +11,7 @@
 
 
 // Default geofence radius in meters
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 const DEFAULT_RADIUS = 100;
 
 // ============================================

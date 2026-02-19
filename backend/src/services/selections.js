@@ -19,7 +19,7 @@
 /**
  * Create selection category template
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function createCategory(companyId, data) {
   return prisma.selectionCategory.create({
     data: {

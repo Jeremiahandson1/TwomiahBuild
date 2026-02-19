@@ -5,7 +5,7 @@ import { withCompany } from '../middleware/ownership.js';
 
 import recurringService from '../services/recurring.js';
 import audit from '../services/audit.js';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 const router = Router();
 router.use(authenticate);

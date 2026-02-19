@@ -11,7 +11,7 @@
 
 import { stripe } from '../config/stripe.js';
 import { SAAS_TIERS, SELF_HOSTED_PACKAGES, SELF_HOSTED_ADDONS, FEATURE_BUNDLES, calculateUserPrice } from '../config/pricing.js';
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY)

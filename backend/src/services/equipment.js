@@ -18,7 +18,7 @@
 /**
  * Create equipment type (template)
  */
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function createEquipmentType(companyId, data) {
   return prisma.equipmentType.create({
     data: {

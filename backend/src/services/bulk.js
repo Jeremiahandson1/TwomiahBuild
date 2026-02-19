@@ -10,7 +10,7 @@
 // CONTACTS
 // ============================================
 
-import { prisma } from '../index.js';
+import { prisma } from '../config/prisma.js';
 export async function bulkUpdateContacts(companyId, contactIds, updates) {
   const result = await prisma.contact.updateMany({
     where: {
