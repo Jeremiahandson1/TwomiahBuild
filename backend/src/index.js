@@ -259,16 +259,13 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 // ── Startup validation ─────────────────────────────────────────────────────
 function runStartupChecks() {
   // #1 — File storage
-  const { validateStorageConfig, USE_S3 } = await import('./services/fileUpload.js').catch(() => ({ validateStorageConfig: () => true, USE_S3: false }));
-  if (!USE_S3 && process.env.NODE_ENV === 'production') {
+  const useS3 = process.env.STORAGE_BACKEND === 's3';
+  if (!useS3 && process.env.NODE_ENV === 'production') {
     logger.error('CRITICAL: STORAGE_BACKEND is not set to "s3". All uploaded files will be lost on the next Render deploy. Set STORAGE_BACKEND=s3 and configure R2_* or S3_* env vars immediately.');
   }
 
   // #3 — Database backup check
   if (process.env.NODE_ENV === 'production') {
-    const dbUrl = process.env.DATABASE_URL || '';
-    // Render free-tier postgres URLs contain "oregon-postgres.render.com" or similar
-    // There's no API to verify backup status, so we warn unless explicitly acknowledged
     if (!process.env.DB_BACKUPS_CONFIRMED) {
       logger.warn(
         'DB_BACKUPS_CONFIRMED is not set. Confirm that your Render PostgreSQL instance is on a paid plan with automated backups enabled, then set DB_BACKUPS_CONFIRMED=true in your environment. Free-tier Render Postgres has NO automated backups — a bad migration is unrecoverable.'
