@@ -9,11 +9,10 @@
  * - Baseline tracking
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // Dependency types
+import { prisma } from '../index.js';
 const DEPENDENCY_TYPES = {
   FS: 'finish_to_start',  // Task B starts when Task A finishes (most common)
   SS: 'start_to_start',   // Task B starts when Task A starts

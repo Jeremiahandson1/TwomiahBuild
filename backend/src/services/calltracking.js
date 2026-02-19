@@ -8,11 +8,10 @@
  * - Attribution reporting
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // Provider configuration
+import { prisma } from '../index.js';
 const PROVIDER = process.env.CALL_TRACKING_PROVIDER; // callrail, ctm, twilio
 const CALLRAIL_API_KEY = process.env.CALLRAIL_API_KEY;
 const CALLRAIL_ACCOUNT_ID = process.env.CALLRAIL_ACCOUNT_ID;

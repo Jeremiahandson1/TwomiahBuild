@@ -10,11 +10,10 @@
  * API Docs: https://docs.wisetack.com
  */
 
-import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import emailService from './email.js';
+import { prisma } from '../index.js';
 
-const prisma = new PrismaClient();
 
 const WISETACK_API_URL = process.env.WISETACK_API_URL || 'https://api.wisetack.com/v1';
 const WISETACK_PARTNER_ID = process.env.WISETACK_PARTNER_ID;

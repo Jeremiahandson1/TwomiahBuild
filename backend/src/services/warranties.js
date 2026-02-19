@@ -9,9 +9,7 @@
  * - Warranty documentation
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // ============================================
 // WARRANTY TEMPLATES
@@ -20,6 +18,7 @@ const prisma = new PrismaClient();
 /**
  * Create warranty template
  */
+import { prisma } from '../index.js';
 export async function createWarrantyTemplate(companyId, data) {
   return prisma.warrantyTemplate.create({
     data: {

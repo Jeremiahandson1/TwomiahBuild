@@ -4,14 +4,13 @@
  * Mass update, delete, and other bulk operations
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // ============================================
 // CONTACTS
 // ============================================
 
+import { prisma } from '../index.js';
 export async function bulkUpdateContacts(companyId, contactIds, updates) {
   const result = await prisma.contact.updateMany({
     where: {

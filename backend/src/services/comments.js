@@ -9,9 +9,7 @@
  * - Quotes
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // ============================================
 // COMMENTS
@@ -20,6 +18,7 @@ const prisma = new PrismaClient();
 /**
  * Add a comment to any entity
  */
+import { prisma } from '../index.js';
 export async function addComment({
   companyId,
   userId,

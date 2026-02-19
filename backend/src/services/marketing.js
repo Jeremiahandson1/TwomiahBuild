@@ -10,10 +10,9 @@
  * - Integration with SendGrid/Mailchimp
  */
 
-import { PrismaClient } from '@prisma/client';
 import sgMail from '@sendgrid/mail';
+import { prisma } from '../index.js';
 
-const prisma = new PrismaClient();
 
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {

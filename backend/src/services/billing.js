@@ -10,10 +10,9 @@
  */
 
 import Stripe from 'stripe';
-import { PrismaClient } from '@prisma/client';
 import { SAAS_TIERS, SELF_HOSTED_PACKAGES, SELF_HOSTED_ADDONS, FEATURE_BUNDLES, calculateUserPrice } from '../config/pricing.js';
+import { prisma } from '../index.js';
 
-const prisma = new PrismaClient();
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;

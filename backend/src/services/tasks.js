@@ -9,13 +9,12 @@
  * - Checklists
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 /**
  * Create a task
  */
+import { prisma } from '../index.js';
 export async function createTask({
   companyId,
   createdById,

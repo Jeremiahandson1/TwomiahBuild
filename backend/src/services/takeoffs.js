@@ -10,11 +10,10 @@
  * - Export to purchase orders
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // Measurement types
+import { prisma } from '../index.js';
 const MEASUREMENT_TYPES = {
   AREA: 'area',           // Square feet
   LINEAR: 'linear',       // Linear feet

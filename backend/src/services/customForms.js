@@ -8,11 +8,10 @@
  * - Required fields, conditional logic
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // Field types
+import { prisma } from '../index.js';
 export const FIELD_TYPES = {
   TEXT: 'text',
   TEXTAREA: 'textarea',

@@ -10,9 +10,8 @@
  */
 
 import { parse } from 'csv-parse/sync';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../index.js';
 
-const prisma = new PrismaClient();
 
 /**
  * Parse CSV content

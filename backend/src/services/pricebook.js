@@ -10,9 +10,7 @@
  * - Good-Better-Best options
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // ============================================
 // PRICEBOOK CATEGORIES
@@ -21,6 +19,7 @@ const prisma = new PrismaClient();
 /**
  * Create category
  */
+import { prisma } from '../index.js';
 export async function createCategory(companyId, data) {
   const sortOrder = await getNextSortOrder(companyId, data.parentId);
   

@@ -27,6 +27,14 @@ const AgencyProgramPage         = lazy(() => import('./pages/public/AgencyProgra
 const TermsPage                 = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage               = lazy(() => import('./pages/PrivacyPage'));
 
+// Customer portal
+const PortalLayout              = lazy(() => import('./components/portal/PortalLayout'));
+const PortalDashboard           = lazy(() => import('./components/portal/PortalDashboard'));
+const PortalInvoices            = lazy(() => import('./components/portal/PortalInvoices'));
+const PortalQuotes              = lazy(() => import('./components/portal/PortalQuotes'));
+const PortalChangeOrders        = lazy(() => import('./components/portal/PortalChangeOrders'));
+const PortalProjects            = lazy(() => import('./components/portal/PortalProjects'));
+
 // Operator
 const OperatorLayout        = lazy(() => import('./components/layout/OperatorLayout'));
 const OperatorDashboard     = lazy(() => import('./pages/OperatorDashboard'));
@@ -112,6 +120,15 @@ function App() {
                     <Route path="/home"           element={<HomePage />} />
                     <Route path="/terms"          element={<TermsPage />} />
                     <Route path="/privacy"        element={<PrivacyPage />} />
+
+                    {/* ── CUSTOMER PORTAL ── */}
+                    <Route path="/portal/:token" element={<PortalLayout />}>
+                      <Route index                     element={<PortalDashboard />} />
+                      <Route path="invoices"           element={<PortalInvoices />} />
+                      <Route path="quotes"             element={<PortalQuotes />} />
+                      <Route path="change-orders"      element={<PortalChangeOrders />} />
+                      <Route path="projects"           element={<PortalProjects />} />
+                    </Route>
 
                     {/* Auth */}
                     <Route path="/login"          element={<PublicRoute><LoginPage /></PublicRoute>} />

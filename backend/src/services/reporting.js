@@ -9,9 +9,7 @@
  * - Customer insights
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // ============================================
 // REVENUE REPORTS
@@ -20,6 +18,7 @@ const prisma = new PrismaClient();
 /**
  * Get revenue overview
  */
+import { prisma } from '../index.js';
 export async function getRevenueOverview(companyId, { startDate, endDate }) {
   const dateFilter = buildDateFilter(startDate, endDate);
 

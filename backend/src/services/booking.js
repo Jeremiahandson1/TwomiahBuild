@@ -9,10 +9,9 @@
  * - Creates job in system
  */
 
-import { PrismaClient } from '@prisma/client';
 import emailService from './email.js';
+import { prisma } from '../index.js';
 
-const prisma = new PrismaClient();
 
 // ============================================
 // BOOKING SETTINGS

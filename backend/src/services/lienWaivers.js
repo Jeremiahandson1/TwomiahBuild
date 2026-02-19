@@ -8,11 +8,10 @@
  * - Compliance status per project
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // Waiver types
+import { prisma } from '../index.js';
 export const WAIVER_TYPES = {
   CONDITIONAL_PARTIAL: 'conditional_partial',     // Conditional upon payment clearing - partial payment
   UNCONDITIONAL_PARTIAL: 'unconditional_partial', // Payment received - partial payment

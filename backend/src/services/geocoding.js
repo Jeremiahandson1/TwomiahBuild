@@ -5,11 +5,10 @@
  * Caches results to avoid rate limits.
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // Simple in-memory cache (in production, use Redis)
+import { prisma } from '../index.js';
 const cache = new Map();
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 

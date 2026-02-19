@@ -12,13 +12,13 @@ const router = Router();
 router.get('/project/:projectId/selections', async (req, res, next) => {
   try {
     // req.portal is set by portal auth middleware
-    if (!req.portal?.contactId) {
+    if (!req.portal?.contact?.id) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const data = await selections.getClientSelections(
       req.params.projectId,
-      req.portal.contactId
+      req.portal.contact.id
     );
     res.json(data);
   } catch (error) {
@@ -34,7 +34,7 @@ router.get('/project/:projectId/selections', async (req, res, next) => {
  */
 router.post('/project/:projectId/selections/:selectionId', async (req, res, next) => {
   try {
-    if (!req.portal?.contactId) {
+    if (!req.portal?.contact?.id) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -47,7 +47,7 @@ router.post('/project/:projectId/selections/:selectionId', async (req, res, next
     const result = await selections.clientMakeSelection(
       req.params.projectId,
       req.params.selectionId,
-      req.portal.contactId,
+      req.portal.contact.id,
       { optionId, notes }
     );
 

@@ -10,9 +10,7 @@
  * - Deadline tracking
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // ============================================
 // SELECTION CATEGORIES
@@ -21,6 +19,7 @@ const prisma = new PrismaClient();
 /**
  * Create selection category template
  */
+import { prisma } from '../index.js';
 export async function createCategory(companyId, data) {
   return prisma.selectionCategory.create({
     data: {

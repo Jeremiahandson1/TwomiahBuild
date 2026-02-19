@@ -8,11 +8,10 @@
  * - Auto clock out when leaving geofence
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // Default geofence radius in meters
+import { prisma } from '../index.js';
 const DEFAULT_RADIUS = 100;
 
 // ============================================

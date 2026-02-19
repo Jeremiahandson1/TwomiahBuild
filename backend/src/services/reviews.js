@@ -9,10 +9,9 @@
  * - Intelligent timing and follow-ups
  */
 
-import { PrismaClient } from '@prisma/client';
 import email from './email.js';
+import { prisma } from '../index.js';
 
-const prisma = new PrismaClient();
 
 // Twilio for SMS (optional)
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;

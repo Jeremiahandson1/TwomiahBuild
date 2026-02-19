@@ -9,10 +9,9 @@
  * - Job status updates
  */
 
-import { PrismaClient } from '@prisma/client';
 import twilio from 'twilio';
+import { prisma } from '../index.js';
 
-const prisma = new PrismaClient();
 
 // Initialize Twilio client
 const twilioClient = twilio(

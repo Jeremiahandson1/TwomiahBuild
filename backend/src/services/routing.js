@@ -10,6 +10,7 @@
  */
 
 // Using OSRM (free) or Google Maps Directions API
+import { prisma } from '../index.js';
 const OSRM_URL = process.env.OSRM_URL || 'https://router.project-osrm.org';
 const GOOGLE_MAPS_KEY = process.env.GOOGLE_MAPS_API_KEY;
 

@@ -9,12 +9,11 @@
  * - Revenue tracking
  */
 
-import { PrismaClient } from '@prisma/client';
 import Stripe from 'stripe';
+import { prisma } from '../index.js';
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
-const prisma = new PrismaClient();
 
 // ============================================
 // AGREEMENT PLANS (Templates)

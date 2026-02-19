@@ -8,9 +8,7 @@
  * - G702/G703 document generation
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // ============================================
 // SCHEDULE OF VALUES (SOV)
@@ -19,6 +17,7 @@ const prisma = new PrismaClient();
 /**
  * Create Schedule of Values for a project
  */
+import { prisma } from '../index.js';
 export async function createScheduleOfValues(companyId, projectId, data) {
   const project = await prisma.project.findFirst({
     where: { id: projectId, companyId },

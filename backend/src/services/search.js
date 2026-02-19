@@ -5,13 +5,12 @@
  * Returns unified results with type, name, and link.
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 /**
  * Search all entities
  */
+import { prisma } from '../index.js';
 export async function globalSearch(companyId, query, options = {}) {
   const { limit = 20, types = null } = options;
   

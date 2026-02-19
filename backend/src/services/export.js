@@ -4,9 +4,7 @@
  * Export any entity to CSV or Excel format
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // Field definitions for each entity type
 const ENTITY_CONFIGS = {

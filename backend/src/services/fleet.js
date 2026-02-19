@@ -10,9 +10,7 @@
  * - Driver assignment
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // ============================================
 // VEHICLES
@@ -21,6 +19,7 @@ const prisma = new PrismaClient();
 /**
  * Create vehicle
  */
+import { prisma } from '../index.js';
 export async function createVehicle(companyId, data) {
   return prisma.vehicle.create({
     data: {

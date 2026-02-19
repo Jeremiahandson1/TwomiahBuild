@@ -12,9 +12,8 @@ import path from 'path';
 import fs from 'fs/promises';
 import sharp from 'sharp';
 import { v4 as uuid } from 'uuid';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../index.js';
 
-const prisma = new PrismaClient();
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
 const PHOTOS_DIR = path.join(UPLOAD_DIR, 'photos');

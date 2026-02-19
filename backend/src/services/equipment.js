@@ -9,9 +9,7 @@
  * - Replacement recommendations
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // ============================================
 // EQUIPMENT TYPES
@@ -20,6 +18,7 @@ const prisma = new PrismaClient();
 /**
  * Create equipment type (template)
  */
+import { prisma } from '../index.js';
 export async function createEquipmentType(companyId, data) {
   return prisma.equipmentType.create({
     data: {

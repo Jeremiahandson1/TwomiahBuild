@@ -3,10 +3,9 @@
  * Tracks who changed what when
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
+import { prisma } from '../index.js';
 export const ACTIONS = {
   CREATE: 'create',
   UPDATE: 'update',

@@ -8,13 +8,12 @@
  * - Compare to quote/estimate
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 /**
  * Get detailed job cost breakdown
  */
+import { prisma } from '../index.js';
 export async function getJobCostAnalysis(jobId, companyId) {
   const job = await prisma.job.findFirst({
     where: { id: jobId, companyId },

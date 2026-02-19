@@ -8,11 +8,10 @@
  * - Items/Services
  */
 
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 // QuickBooks API URLs
+import { prisma } from '../index.js';
 const QBO_AUTH_URL = 'https://appcenter.intuit.com/connect/oauth2';
 const QBO_TOKEN_URL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
 const QBO_API_BASE = 'https://quickbooks.api.intuit.com/v3/company';
