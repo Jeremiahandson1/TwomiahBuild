@@ -67,7 +67,7 @@ router.post('/', requirePermission('invoices:create'), async (req, res, next) =>
     const totals = calcTotals(lineItems, data.taxRate, data.discount);
     const docNumber = await nextDocumentNumber('INV', req.user.companyId);
     const invoice = await prisma.invoice.create({
-      data: { ...invoiceData, ...totals, number: `INV-${String(count + 1).padStart(5, '0')}`, dueDate: data.dueDate ? new Date(data.dueDate) : null, companyId: req.user.companyId, lineItems: { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } },
+      data: { ...invoiceData, ...totals, number: docNumber, dueDate: data.dueDate ? new Date(data.dueDate) : null, companyId: req.user.companyId, lineItems: { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } },
       include: { lineItems: true },
     });
     emitToCompany(req.user.companyId, EVENTS.INVOICE_CREATED, invoice);

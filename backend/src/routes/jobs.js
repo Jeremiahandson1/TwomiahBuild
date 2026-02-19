@@ -97,7 +97,7 @@ router.post('/', async (req, res, next) => {
     const job = await prisma.job.create({
       data: {
         ...data,
-        number: `JOB-${String(count + 1).padStart(5, '0')}`,
+        number: docNumber,
         scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
         companyId: req.user.companyId,
       },

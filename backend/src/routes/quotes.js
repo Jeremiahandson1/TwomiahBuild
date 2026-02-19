@@ -67,7 +67,7 @@ router.post('/', async (req, res, next) => {
     const totals = calcTotals(lineItems, data.taxRate, data.discount);
     const docNumber = await nextDocumentNumber('QTE', req.user.companyId);
     const quote = await prisma.quote.create({
-      data: { ...quoteData, ...totals, number: `QTE-${String(count + 1).padStart(5, '0')}`, expiryDate: data.expiryDate ? new Date(data.expiryDate) : null, companyId: req.user.companyId, lineItems: { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } },
+      data: { ...quoteData, ...totals, number: docNumber, expiryDate: data.expiryDate ? new Date(data.expiryDate) : null, companyId: req.user.companyId, lineItems: { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } },
       include: { lineItems: true },
     });
     emitToCompany(req.user.companyId, EVENTS.QUOTE_CREATED, quote);
@@ -128,7 +128,7 @@ router.post('/:id/convert-to-invoice', async (req, res, next) => {
     const count = await prisma.invoice.count({ where: { companyId: req.user.companyId } });
     const invoice = await prisma.invoice.create({
       data: {
-        number: `INV-${String(count + 1).padStart(5, '0')}`,
+        number: docNumber,
         contactId: quote.contactId,
         projectId: quote.projectId,
         quoteId: quote.id,
