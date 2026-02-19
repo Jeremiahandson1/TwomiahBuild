@@ -66,6 +66,9 @@ jobs:
       - name: Install backend dependencies
         run: cd backend && npm ci
 
+      - name: Fix circular prisma imports and duplicate stripe declarations
+        run: node fix_buildpro2.js
+
       - name: Generate Prisma client
         run: cd backend && npx prisma generate
 
