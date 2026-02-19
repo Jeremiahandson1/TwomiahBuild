@@ -406,8 +406,6 @@ router.post('/reset-password', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-export default router;
-
 // ── Agency Admin Promotion ────────────────────────────────────────────────────
 // Promotes a user to agency_admin role. Only callable by existing agency_admins
 // or via direct DB seed for first setup.
