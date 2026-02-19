@@ -1,28 +1,53 @@
 {
   "hero": {
-    "tagline": "Quality Work, Every Time",
-    "title": "Austin Home Services",
+    "tagline": "Websites + CRM + Analytics. Done in Minutes.",
+    "title": "Your Business, Online and Running",
     "subtitle": "",
-    "description": "Professional contracting services for residential and commercial properties.",
+    "description": "BuildPro generates a complete, professional web presence for local service businesses \u2014 contractor, home care, and beyond. Full CMS, lead tracking, and analytics included.",
     "image": "",
     "animation": "ken-burns",
-    "primaryButtonText": "Get Started",
-    "primaryButtonLink": "#contact",
-    "secondaryButtonText": "Learn More",
-    "secondaryButtonLink": "/services"
+    "primaryButtonText": "See How It Works",
+    "primaryButtonLink": "#services",
+    "secondaryButtonText": "View a Live Demo",
+    "secondaryButtonLink": "/contact"
   },
-  "trustBadges": [],
+  "trustBadges": [
+    {
+      "type": "custom",
+      "label": "Deployed in Minutes",
+      "sublabel": "Not months"
+    },
+    {
+      "type": "custom",
+      "label": "No Monthly Fees",
+      "sublabel": "You own it"
+    },
+    {
+      "type": "custom",
+      "label": "SEO Ready",
+      "sublabel": "From day one"
+    },
+    {
+      "type": "custom",
+      "label": "Full CMS Included",
+      "sublabel": "No coding needed"
+    }
+  ],
   "ctaSection": {
-    "title": "Ready to get started?",
-    "description": "Contact us today for a free consultation.",
-    "primaryButtonText": "Contact Us",
-    "primaryButtonLink": "#contact",
-    "secondaryButtonText": "Call (555) 123-4567",
-    "secondaryButtonLink": "tel:5551234567",
+    "title": "Ready to get a real website that works?",
+    "description": "We'll have your site live, your leads tracked, and your analytics running before your competitors finish their morning coffee.",
+    "primaryButtonText": "Get Started",
+    "primaryButtonLink": "/contact",
+    "secondaryButtonText": "Call Us",
+    "secondaryButtonLink": "tel:7159990000",
     "backgroundImage": ""
   },
   "serviceAreas": [
-    "Austin"
+    "Eau Claire",
+    "Chippewa Falls",
+    "Menomonie",
+    "Hudson",
+    "Rice Lake"
   ],
   "businessHours": {
     "monday": {
@@ -51,13 +76,13 @@
       "closed": false
     },
     "saturday": {
-      "open": "Closed",
-      "close": "Closed",
-      "closed": true
+      "open": "By Appointment",
+      "close": "",
+      "closed": false
     },
     "sunday": {
       "open": "Closed",
-      "close": "Closed",
+      "close": "",
       "closed": true
     }
   }

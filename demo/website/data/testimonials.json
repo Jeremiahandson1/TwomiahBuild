@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "id": "t1",
+    "name": "Dave Claflin",
+    "company": "Claflin Construction",
+    "location": "Eau Claire, WI",
+    "text": "We went from no online presence to a fully functional website with lead tracking in one afternoon. The analytics dashboard shows us exactly where our calls are coming from.",
+    "rating": 5,
+    "active": true
+  },
+  {
+    "id": "t2",
+    "name": "Local Business Owner",
+    "company": "Home Care Agency",
+    "location": "Chippewa Valley, WI",
+    "text": "The intake form captures everything we need \u2014 type of care, urgency, relationship to the client. Our care coordinator gets an email the second someone submits. It just works.",
+    "rating": 5,
+    "active": true
+  }
+]
