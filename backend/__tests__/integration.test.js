@@ -123,7 +123,9 @@ async function loginAs(user) {
     password: 'TestPass123!',
   });
   expect(res.status).toBe(200);
-  return res.body.token || res.headers['set-cookie'];
+  const token = res.body.accessToken || res.body.token;
+  expect(token).toBeTruthy();
+  return token;
 }
 
 // ── Auth tests ─────────────────────────────────────────────────────────────────
@@ -329,17 +331,17 @@ describe('Role-Based Access Control', () => {
   it('viewer can read invoices', async () => {
     if (!TEST_DB_URL) return;
     const res = await request.get('/api/v1/invoices').set('Authorization', `Bearer ${viewerToken}`);
-    expect([200, 403]).toContain(res.status); // Depends on permission config
+    // Viewer may or may not have read access depending on permission config — both are valid
+    expect([200, 403]).toContain(res.status);
   });
 
   it('viewer cannot delete invoices', async () => {
     if (!TEST_DB_URL) return;
-    // Try to delete something — should be 403 or 404
     const res = await request
       .delete('/api/v1/invoices/non-existent-id')
       .set('Authorization', `Bearer ${viewerToken}`);
+    // Should be forbidden (403) or not found (404) — never a successful delete
     expect([403, 404]).toContain(res.status);
-    expect(res.status).not.toBe(200);
     expect(res.status).not.toBe(204);
   });
 });
