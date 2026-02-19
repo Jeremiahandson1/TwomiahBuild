@@ -73,6 +73,8 @@ async function seedTestData() {
     data: {
       email: `userA-${Date.now()}@test.buildpro.io`,
       passwordHash: hash,
+      firstName: 'Test',
+      lastName: 'UserA',
       role: 'admin',
       companyId: companyA.id,
       isActive: true,
@@ -91,6 +93,8 @@ async function seedTestData() {
     data: {
       email: `userB-${Date.now()}@test.buildpro.io`,
       passwordHash: hash,
+      firstName: 'Test',
+      lastName: 'UserB',
       role: 'admin',
       companyId: companyB.id,
       isActive: true,
@@ -312,6 +316,8 @@ describe('Role-Based Access Control', () => {
       data: {
         email: `viewer-${Date.now()}@test.buildpro.io`,
         passwordHash: hash,
+        firstName: 'Test',
+        lastName: 'Viewer',
         role: 'viewer',
         companyId: companyA.id,
         isActive: true,
