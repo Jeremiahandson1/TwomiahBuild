@@ -129,7 +129,7 @@ async function initializeSchema(database: SQLite.SQLiteDatabase) {
       name        TEXT,
       email       TEXT,
       role        TEXT,
-      token       TEXT,
+      -- token intentionally omitted: stored in SecureStore, not SQLite
       expires_at  TEXT
     );
   `);
@@ -213,9 +213,9 @@ export async function saveSession(session: {
 }) {
   const database = await getDatabase();
   await database.runAsync(
-    `INSERT OR REPLACE INTO session (id, user_id, company_id, name, email, role, token, expires_at)
-     VALUES (1, ?, ?, ?, ?, ?, ?, ?)`,
-    [session.userId, session.companyId, session.name, session.email, session.role, session.token, session.expiresAt ?? null]
+    `INSERT OR REPLACE INTO session (id, user_id, company_id, name, email, role, expires_at)
+     VALUES (1, ?, ?, ?, ?, ?, ?)`,
+    [session.userId, session.companyId, session.name, session.email, session.role, session.expiresAt ?? null]
   );
 }
 

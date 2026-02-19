@@ -8,7 +8,7 @@
  * - Payment methods
  */
 
-import Stripe from 'stripe';
+import { stripe } from '../config/stripe.js';
 import emailService from './email.js';
 import { prisma } from '../index.js';
 
@@ -229,10 +229,78 @@ export async function handleWebhook(event) {
     case 'checkout.session.completed':
       return handleCheckoutComplete(event.data.object);
 
+    case 'customer.subscription.deleted':
+    case 'customer.subscription.updated':
+      return handleSubscriptionChange(event.data.object);
+
+    case 'invoice.payment_failed':
+      return handleSubscriptionPaymentFailed(event.data.object);
+
+    case 'charge.refund.updated':
+      return handleRefundUpdate(event.data.object);
+
+    case 'payment_intent.canceled':
+      return handlePaymentCanceled(event.data.object);
+
     default:
       console.log(`Unhandled Stripe event: ${event.type}`);
       return { handled: false };
   }
+}
+
+async function handleSubscriptionChange(subscription) {
+  const { status, customer: stripeCustomerId } = subscription;
+  const company = await prisma.company.findFirst({ where: { stripeCustomerId } });
+  if (!company) return { handled: false };
+
+  if (status === 'canceled' || status === 'unpaid') {
+    await prisma.company.update({
+      where: { id: company.id },
+      data: { subscriptionTier: null, enabledFeatures: [] },
+    });
+    logger.info('Subscription canceled — features disabled', { companyId: company.id });
+  } else if (status === 'active') {
+    await prisma.company.update({
+      where: { id: company.id },
+      data: { subscriptionTier: subscription.items?.data?.[0]?.price?.lookup_key ?? 'active' },
+    });
+  }
+  return { handled: true };
+}
+
+async function handleSubscriptionPaymentFailed(stripeInvoice) {
+  const company = await prisma.company.findFirst({ where: { stripeCustomerId: stripeInvoice.customer } });
+  if (!company) return { handled: false };
+  logger.warn('Subscription payment failed', { companyId: company.id, stripeInvoiceId: stripeInvoice.id });
+  // TODO: send dunning email via email service
+  return { handled: true };
+}
+
+async function handleRefundUpdate(charge) {
+  // Find invoice by Stripe payment intent
+  const invoice = await prisma.invoice.findFirst({ where: { stripePaymentIntentId: charge.payment_intent } });
+  if (!invoice) return { handled: false };
+
+  const totalRefunded = (charge.amount_refunded || 0) / 100;
+  await prisma.invoice.update({
+    where: { id: invoice.id },
+    data: {
+      refundAmount: totalRefunded,
+      amountPaid: Math.max(0, Number(invoice.subtotal) - totalRefunded),
+      status: totalRefunded > 0 ? 'refunded' : invoice.status,
+    },
+  });
+  return { handled: true };
+}
+
+async function handlePaymentCanceled(paymentIntent) {
+  const { invoice_id } = paymentIntent.metadata;
+  if (!invoice_id) return { handled: false };
+  await prisma.invoice.update({
+    where: { id: invoice_id },
+    data: { status: 'sent' }, // Reset to sent so they can retry
+  });
+  return { handled: true };
 }
 
 /**

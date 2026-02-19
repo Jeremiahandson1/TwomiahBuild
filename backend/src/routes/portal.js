@@ -208,6 +208,15 @@ async function portalAuth(req, res, next) {
     if (!contact) {
       return res.status(401).json({ error: 'Invalid or expired portal link' });
     }
+
+    // Timing-safe token comparison to prevent timing oracle attacks
+    const storedToken = contact.portalToken || '';
+    const providedToken = token || '';
+    const storedBuf = Buffer.from(storedToken.padEnd(64, '0'));
+    const providedBuf = Buffer.from(providedToken.padEnd(64, '0').slice(0, storedBuf.length));
+    if (!crypto.timingSafeEqual(storedBuf, providedBuf)) {
+      return res.status(401).json({ error: 'Invalid or expired portal link' });
+    }
     
     if (contact.portalTokenExp && new Date() > contact.portalTokenExp) {
       return res.status(401).json({ error: 'Portal link has expired. Please contact the company for a new link.' });

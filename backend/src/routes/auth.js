@@ -14,8 +14,8 @@ import { seedDefaultTemplates as seedWarrantyTemplates } from '../services/warra
 
 const router = Router();
 
-const generateTokens = (userId, companyId, email, role) => {
-  const accessToken = jwt.sign({ userId, companyId, email, role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+const generateTokens = (userId, companyId, email, role, agencyId = null) => {
+  const accessToken = jwt.sign({ userId, companyId, email, role, ...(agencyId && { agencyId }) }, process.env.JWT_SECRET, { expiresIn: '15m' });
   const refreshToken = jwt.sign({ userId, companyId, type: 'refresh' }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
   return { accessToken, refreshToken };
 };
@@ -231,7 +231,7 @@ router.post('/register', async (req, res, next) => {
       return { company, user };
     });
 
-    const tokens = generateTokens(result.user.id, result.company.id, result.user.email, result.user.role);
+    const tokens = generateTokens(result.user.id, result.company.id, result.user.email, result.user.role, result.user.agencyId);
     await prisma.user.update({ where: { id: result.user.id }, data: { refreshToken: tokens.refreshToken } });
 
     res.status(201).json({
@@ -255,7 +255,7 @@ router.post('/login', async (req, res, next) => {
     const valid = await bcrypt.compare(data.password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
 
-    const tokens = generateTokens(user.id, user.companyId, user.email, user.role);
+    const tokens = generateTokens(user.id, user.companyId, user.email, user.role, user.agencyId);
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken: tokens.refreshToken, lastLogin: new Date() } });
 
     res.json({
@@ -281,7 +281,7 @@ router.post('/refresh', async (req, res, next) => {
       return res.status(401).json({ error: 'Invalid refresh token' });
     }
 
-    const tokens = generateTokens(user.id, user.companyId, user.email, user.role);
+    const tokens = generateTokens(user.id, user.companyId, user.email, user.role, user.agencyId);
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken: tokens.refreshToken } });
 
     res.json(tokens);
@@ -405,5 +405,34 @@ router.post('/reset-password', async (req, res, next) => {
     res.json({ message: 'Password reset successfully' });
   } catch (error) { next(error); }
 });
+
+export default router;
+
+// ── Agency Admin Promotion ────────────────────────────────────────────────────
+// Promotes a user to agency_admin role. Only callable by existing agency_admins
+// or via direct DB seed for first setup.
+// POST /api/v1/auth/promote-agency-admin
+router.post('/promote-agency-admin', authenticate, async (req, res, next) => {
+  try {
+    // Only an existing agency_admin can promote others
+    if (req.user.role !== 'agency_admin') {
+      return res.status(403).json({ error: 'Only agency admins can promote users' });
+    }
+
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        role: 'agency_admin',
+        agencyId: req.user.agencyId || req.user.companyId,
+      },
+    });
+
+    res.json({ message: 'User promoted to agency_admin', userId: user.id });
+  } catch (err) { next(err); }
+});
+
 
 export default router;

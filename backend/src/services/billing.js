@@ -9,7 +9,7 @@
  * - Stripe integration
  */
 
-import Stripe from 'stripe';
+import { stripe } from '../config/stripe.js';
 import { SAAS_TIERS, SELF_HOSTED_PACKAGES, SELF_HOSTED_ADDONS, FEATURE_BUNDLES, calculateUserPrice } from '../config/pricing.js';
 import { prisma } from '../index.js';
 

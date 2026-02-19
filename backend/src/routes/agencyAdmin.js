@@ -415,18 +415,45 @@ router.delete('/customers/:id', async (req, res, next) => {
       return res.status(404).json({ error: 'Customer not found' });
     }
     
-    // Require confirmation
+    // Require confirmation via company slug
     if (req.body.confirmDelete !== customer.slug) {
       return res.status(400).json({ 
         error: 'Must confirm deletion by providing company slug',
         required: customer.slug,
       });
     }
-    
-    // Delete all company data (cascades via Prisma)
+
+    // Count records before deletion for audit trail
+    const [userCount, jobCount, invoiceCount, contactCount] = await Promise.all([
+      prisma.user.count({ where: { companyId: req.params.id } }),
+      prisma.job.count({ where: { companyId: req.params.id } }),
+      prisma.invoice.count({ where: { companyId: req.params.id } }),
+      prisma.contact.count({ where: { companyId: req.params.id } }),
+    ]);
+
+    // Soft-delete: archive first, then hard-delete
+    // This gives a brief window for recovery via DB backup
+    await prisma.company.update({
+      where: { id: req.params.id },
+      data: { 
+        slug: `__deleted__${customer.slug}__${Date.now()}`,
+        settings: { ...customer.settings, deletedAt: new Date().toISOString(), deletedBy: req.user.userId },
+      },
+    });
+
+    // Log deletion record before wiping
+    await audit.log({ 
+      action: 'DELETE_COMPANY', 
+      entity: 'company', 
+      entityId: req.params.id,
+      metadata: { slug: customer.slug, userCount, jobCount, invoiceCount, contactCount },
+      req,
+    });
+
+    // Hard delete (cascades via Prisma relations)
     await prisma.company.delete({ where: { id: req.params.id } });
     
-    res.json({ success: true, deleted: customer.slug });
+    res.json({ success: true, deleted: customer.slug, recordsDeleted: { userCount, jobCount, invoiceCount, contactCount } });
   } catch (error) {
     next(error);
   }

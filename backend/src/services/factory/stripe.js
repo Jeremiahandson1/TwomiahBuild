@@ -11,7 +11,7 @@
  * end-user invoice payments. This handles BuildPro → Customer billing.
  */
 
-import Stripe from 'stripe';
+import { stripe } from '../../config/stripe.js';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)

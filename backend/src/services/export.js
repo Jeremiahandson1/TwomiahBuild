@@ -242,7 +242,7 @@ export async function exportToCSV(entityType, companyId, filters = {}) {
     where,
     include: config.include,
     orderBy: config.orderBy,
-    take: filters.limit || 10000, // Safety limit
+    take: Math.min(filters.limit || 5000, 5000), // Hard cap at 5000 rows per export
   });
 
   // Build CSV

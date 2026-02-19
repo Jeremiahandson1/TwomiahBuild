@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import api from '../services/api';
-import { Building2, User, Lock, Users, Trash2 } from 'lucide-react';
+import { Building2, User, Lock, Users, CreditCard, Trash2 } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -88,6 +88,7 @@ export default function SettingsPage() {
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Lock },
     { id: 'users', label: 'Users', icon: Users },
+    { id: 'billing', label: 'Billing', icon: CreditCard },
   ];
 
   const saveBtn = (label, onClick) => (
@@ -160,7 +161,16 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {tab === 'users' && (
+          {tab === 'billing' && (
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h2 className="text-lg font-semibold mb-4">Billing & Subscription</h2>
+            <p className="text-slate-500 mb-4">Manage your subscription, payment methods, and billing history.</p>
+            <a href="/settings/billing" className="inline-block px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors">
+              Go to Billing Settings
+            </a>
+          </div>
+        )}
+        {tab === 'users' && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-slate-900">Users</h2>
               <div className="border border-slate-200 rounded-lg overflow-hidden">

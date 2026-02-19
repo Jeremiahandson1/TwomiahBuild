@@ -38,6 +38,10 @@ model Company {
   twilioAccountSid  String?
   twilioAuthToken   String?
 
+  // Agency support
+  isAgency  Boolean @default(false)
+  agencyId  String?  // if this company is managed by an agency
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -174,6 +178,8 @@ model User {
   resetTokenExp DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  agencyId  String?  // set when user has agency_admin role
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
