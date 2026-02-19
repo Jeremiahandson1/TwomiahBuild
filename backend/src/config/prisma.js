@@ -3,7 +3,7 @@
  *
  * Extracted from index.js to break circular import chains.
  * All services and routes should import prisma from here,
- * NOT from '../index.js'.
+ * NOT from '../config/prisma.js'.
  */
 import { PrismaClient } from '@prisma/client';
 
