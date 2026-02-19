@@ -152,11 +152,13 @@ describe('Authentication', () => {
   });
 
   it('rejects unauthenticated requests to protected routes', async () => {
+    if (!TEST_DB_URL) return;
     const res = await request.get('/api/v1/invoices');
     expect(res.status).toBe(401);
   });
 
   it('rejects expired/invalid tokens', async () => {
+    if (!TEST_DB_URL) return;
     const res = await request
       .get('/api/v1/invoices')
       .set('Authorization', 'Bearer this.is.not.a.real.token');

@@ -10,14 +10,7 @@
 
 import { stripe } from '../config/stripe.js';
 import emailService from './email.js';
-import { prisma } from '../index.js';
-
-
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2023-10-16',
-    })
-  : null;
+import { prisma } from '../config/prisma.js';
 
 // ============================================
 // CUSTOMER MANAGEMENT

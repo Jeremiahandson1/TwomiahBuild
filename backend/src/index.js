@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './config/prisma.js';
 
 // Services
 import logger from './services/logger.js';
@@ -92,10 +92,6 @@ const server = createServer(app);
 
 // Initialize WebSocket
 const io = initializeSocket(server);
-
-const prisma = new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-});
 
 export { prisma, io };
 

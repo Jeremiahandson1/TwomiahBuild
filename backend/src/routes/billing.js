@@ -13,13 +13,10 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { requireRole } from '../middleware/permissions.js';
 import billing from '../services/billing.js';
-import { prisma } from '../index.js';
-import Stripe from 'stripe';
+import { prisma } from '../config/prisma.js';
+import { stripe } from '../config/stripe.js';
 
 const router = Router();
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY)
-  : null;
 
 // Plan pricing in cents
 const PLAN_PRICING = {
