@@ -8,62 +8,28 @@ on:
 
 env:
   NODE_VERSION: '20'
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # Deploy immediately on push to main (don't wait for tests)
-  deploy-production:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment: production
-
-    steps:
-      - name: Deploy backend to Render
-        run: |
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            "https://api.render.com/v1/services/${{ secrets.RENDER_BACKEND_SERVICE_ID }}/deploys" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
-          echo "Response: $RESPONSE"
-          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
-          echo "HTTP Status: $HTTP_STATUS"
-          if [ "$HTTP_STATUS" != "201" ]; then exit 1; fi
-
-      - name: Deploy frontend to Render
-        run: |
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            "https://api.render.com/v1/services/${{ secrets.RENDER_FRONTEND_SERVICE_ID }}/deploys" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
-          echo "Response: $RESPONSE"
-          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
-          echo "HTTP Status: $HTTP_STATUS"
-          if [ "$HTTP_STATUS" != "201" ]; then exit 1; fi
-
-      - name: Notify on success
-        if: success()
-        run: echo "✅ Deployed to Render successfully!"
-
-      - name: Notify on failure
-        if: failure()
-        run: echo "❌ Deployment failed!"
-
-  # Tests run in parallel - don't block deploy
+  # ── Lint ────────────────────────────────────────────────────────────────────
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
       - name: Install frontend dependencies
         run: cd frontend && npm ci
       - name: Lint frontend
         run: cd frontend && npm run lint || true
 
+  # ── Backend tests (unit + integration) ─────────────────────────────────────
   backend-test:
     runs-on: ubuntu-latest
     needs: lint
+
     services:
       postgres:
         image: postgres:16-alpine
@@ -78,42 +44,81 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/buildpro_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/buildpro_test
+      JWT_SECRET: test-jwt-secret-key-for-ci-testing-only
+      JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci-testing-only
+      NODE_ENV: test
+      STORAGE_BACKEND: local
+      FIELD_ENCRYPTION_KEY: 0000000000000000000000000000000000000000000000000000000000000001
+
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
-      - name: Install dependencies
+
+      - name: Install backend dependencies
         run: cd backend && npm ci
+
       - name: Generate Prisma client
         run: cd backend && npx prisma generate
-      - name: Run database migrations
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/buildpro_test
-        run: cd backend && npx prisma db push
-      - name: Run tests
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/buildpro_test
-          JWT_SECRET: test-jwt-secret-key-for-ci-testing-only
-          JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci-testing
-          NODE_ENV: test
-        run: cd backend && npm test
 
+      - name: Run database migrations
+        run: cd backend && npx prisma db push --force-reset
+
+      - name: Run unit tests
+        run: cd backend && npm run test:unit
+
+      - name: Run integration tests
+        run: cd backend && npm run test:integration
+
+  # ── Frontend tests ──────────────────────────────────────────────────────────
   frontend-test:
     runs-on: ubuntu-latest
     needs: lint
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: cd frontend && npm ci
-      - name: Run tests
+      - name: Run frontend tests
         run: cd frontend && npm test -- --run
+
+  # ── Deploy (only after ALL tests pass) ─────────────────────────────────────
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Deploy backend to Render
+        run: |
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_BACKEND_SERVICE_ID }}/deploys" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
+          echo "Backend deploy status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" != "201" ]; then echo "❌ Backend deploy failed"; exit 1; fi
+
+      - name: Deploy frontend to Render
+        run: |
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_FRONTEND_SERVICE_ID }}/deploys" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
+          echo "Frontend deploy status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" != "201" ]; then echo "❌ Frontend deploy failed"; exit 1; fi
+
+      - name: Success
+        run: echo "✅ All tests passed. Deployed to Render."
