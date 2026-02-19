@@ -2265,3 +2265,12 @@ model FactoryBuild {
   @@index([companyId])
   @@index([customerId])
 }
+
+// Atomic document number sequences — prevents INV/JOB/QTE duplicates under concurrency
+model DocumentSequence {
+  key        String   @id  // e.g. "INV:company123"
+  lastNumber Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@index([key])
+}

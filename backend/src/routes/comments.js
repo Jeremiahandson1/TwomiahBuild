@@ -3,6 +3,15 @@ import { authenticate } from '../middleware/auth.js';
 import comments from '../services/comments.js';
 
 const router = Router();
+
+const VALID_ENTITY_TYPES = new Set(['job', 'project', 'contact', 'invoice', 'quote', 'task', 'change_order', 'estimate', 'lead']);
+
+function validateEntityType(req, res, next) {
+  if (!VALID_ENTITY_TYPES.has(req.params.entityType)) {
+    return res.status(400).json({ error: 'Invalid entity type', code: 'VALIDATION_ERROR' });
+  }
+  next();
+}
 router.use(authenticate);
 
 // ============================================
@@ -10,7 +19,7 @@ router.use(authenticate);
 // ============================================
 
 // Get comments for an entity
-router.get('/:entityType/:entityId', async (req, res, next) => {
+router.get('/:entityType/:entityId', validateEntityType, async (req, res, next) => {
   try {
     const { entityType, entityId } = req.params;
     const result = await comments.getComments(req.user.companyId, entityType, entityId);
@@ -21,7 +30,7 @@ router.get('/:entityType/:entityId', async (req, res, next) => {
 });
 
 // Add a comment
-router.post('/:entityType/:entityId', async (req, res, next) => {
+router.post('/:entityType/:entityId', validateEntityType, async (req, res, next) => {
   try {
     const { entityType, entityId } = req.params;
     const { content, mentions, attachments, parentId } = req.body;

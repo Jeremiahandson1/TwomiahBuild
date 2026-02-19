@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
 import sms from '../services/sms.js';
+import { validateTwilioWebhook } from '../middleware/twilioWebhook.js';
 
 const router = Router();
 
@@ -10,7 +11,7 @@ const router = Router();
 // ============================================
 
 // Incoming SMS webhook
-router.post('/webhook/incoming', async (req, res) => {
+router.post('/webhook/incoming', validateTwilioWebhook, async (req, res) => {
   try {
     await sms.handleIncomingSMS(req.body);
     // Twilio expects TwiML response
@@ -22,7 +23,7 @@ router.post('/webhook/incoming', async (req, res) => {
 });
 
 // Message status webhook
-router.post('/webhook/status', async (req, res) => {
+router.post('/webhook/status', validateTwilioWebhook, async (req, res) => {
   try {
     await sms.handleStatusUpdate(req.body);
     res.sendStatus(200);

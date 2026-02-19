@@ -136,8 +136,13 @@ router.get('/track/:requestId/click', async (req, res, next) => {
 });
 
 // Process scheduled requests (called by cron job)
-router.post('/process-scheduled', requireRole('admin', 'owner'), async (req, res, next) => {
+// Protect with CRON_SECRET env var — set in Render and pass as X-Cron-Secret header
+router.post('/process-scheduled', async (req, res, next) => {
   try {
+    const cronSecret = req.headers['x-cron-secret'];
+    if (!process.env.CRON_SECRET || cronSecret !== process.env.CRON_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
     const results = await reviews.processScheduledRequests();
     res.json({ processed: results.length, results });
   } catch (error) {

@@ -1,10 +1,19 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
 import booking from '../services/booking.js';
 
 const router = Router();
+
+const publicBookingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Too many booking requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // ============================================
 // PUBLIC ROUTES (no auth - for the widget)
@@ -13,7 +22,7 @@ const router = Router();
 /**
  * Get booking page info for a company (public)
  */
-router.get('/public/:companySlug', async (req, res, next) => {
+router.get('/public/:companySlug', publicBookingLimiter, async (req, res, next) => {
   try {
     const company = await prisma.company.findUnique({
       where: { slug: req.params.companySlug },
@@ -116,7 +125,7 @@ const bookingSchema = z.object({
   notes: z.string().optional(),
 });
 
-router.post('/public/:companySlug', async (req, res, next) => {
+router.post('/public/:companySlug', publicBookingLimiter, async (req, res, next) => {
   try {
     const data = bookingSchema.parse(req.body);
 

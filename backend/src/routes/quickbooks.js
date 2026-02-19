@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/auth.js';
 import { requireRole } from '../middleware/permissions.js';
 import quickbooks from '../services/quickbooks.js';
 import audit from '../services/audit.js';
+import { prisma } from '../index.js';
 
 const router = Router();
 
@@ -251,6 +252,5 @@ router.post('/import/customers', requireRole('admin'), async (req, res, next) =>
 });
 
 // Prisma client for route handlers
-import { prisma } from '../index.js';
 
 export default router;

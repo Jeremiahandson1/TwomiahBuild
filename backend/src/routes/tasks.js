@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
+import { requirePermission } from '../middleware/permissions.js';
 import tasks from '../services/tasks.js';
 
 const router = Router();
 router.use(authenticate);
 
 // Get tasks
-router.get('/', async (req, res, next) => {
+router.get('/', requirePermission('jobs:read'), async (req, res, next) => {
   try {
     const { 
       assignedToId, projectId, jobId, contactId, 
@@ -87,7 +88,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // Create task
-router.post('/', async (req, res, next) => {
+router.post('/', requirePermission('jobs:update'), async (req, res, next) => {
   try {
     const {
       title, description, dueDate, priority,
@@ -119,7 +120,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // Update task
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', requirePermission('jobs:update'), async (req, res, next) => {
   try {
     const task = await tasks.updateTask(req.params.id, req.user.companyId, req.body);
     if (!task) {
@@ -162,7 +163,7 @@ router.post('/:id/checklist/:itemId/toggle', async (req, res, next) => {
 });
 
 // Delete task
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requirePermission('jobs:delete'), async (req, res, next) => {
   try {
     const deleted = await tasks.deleteTask(req.params.id, req.user.companyId);
     if (!deleted) {

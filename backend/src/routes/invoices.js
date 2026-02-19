@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { nextDocumentNumber } from '../utils/documentNumbers.js';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
@@ -64,7 +65,7 @@ router.post('/', requirePermission('invoices:create'), async (req, res, next) =>
     const data = schema.parse(req.body);
     const { lineItems, ...invoiceData } = data;
     const totals = calcTotals(lineItems, data.taxRate, data.discount);
-    const count = await prisma.invoice.count({ where: { companyId: req.user.companyId } });
+    const docNumber = await nextDocumentNumber('INV', req.user.companyId);
     const invoice = await prisma.invoice.create({
       data: { ...invoiceData, ...totals, number: `INV-${String(count + 1).padStart(5, '0')}`, dueDate: data.dueDate ? new Date(data.dueDate) : null, companyId: req.user.companyId, lineItems: { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } },
       include: { lineItems: true },

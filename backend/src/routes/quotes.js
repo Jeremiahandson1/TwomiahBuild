@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { nextDocumentNumber } from '../utils/documentNumbers.js';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
@@ -64,7 +65,7 @@ router.post('/', async (req, res, next) => {
     const data = schema.parse(req.body);
     const { lineItems, ...quoteData } = data;
     const totals = calcTotals(lineItems, data.taxRate, data.discount);
-    const count = await prisma.quote.count({ where: { companyId: req.user.companyId } });
+    const docNumber = await nextDocumentNumber('QTE', req.user.companyId);
     const quote = await prisma.quote.create({
       data: { ...quoteData, ...totals, number: `QTE-${String(count + 1).padStart(5, '0')}`, expiryDate: data.expiryDate ? new Date(data.expiryDate) : null, companyId: req.user.companyId, lineItems: { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } },
       include: { lineItems: true },

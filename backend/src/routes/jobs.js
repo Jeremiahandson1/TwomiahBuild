@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { nextDocumentNumber } from '../utils/documentNumbers.js';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
@@ -92,7 +93,7 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const data = schema.parse(req.body);
-    const count = await prisma.job.count({ where: { companyId: req.user.companyId } });
+    const docNumber = await nextDocumentNumber('JOB', req.user.companyId);
     const job = await prisma.job.create({
       data: {
         ...data,

@@ -11,6 +11,7 @@
 
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
+import { requireRole } from '../middleware/permissions.js';
 import billing from '../services/billing.js';
 import { prisma } from '../index.js';
 import Stripe from 'stripe';
@@ -83,7 +84,7 @@ router.get('/pricing', (req, res) => {
 /**
  * Start free trial (after signup)
  */
-router.post('/start-trial', authenticate, async (req, res, next) => {
+router.post('/start-trial', authenticate, requireRole('admin'), async (req, res, next) => {
   try {
     const { plan } = req.body;
     
@@ -818,7 +819,7 @@ router.post('/self-hosted/purchase', async (req, res, next) => {
 /**
  * Handle self-hosted purchase success
  */
-router.get('/self-hosted/success', async (req, res, next) => {
+router.get('/self-hosted/success', authenticate, async (req, res, next) => {
   try {
     const { session_id } = req.query;
 
@@ -866,10 +867,10 @@ router.get('/self-hosted/success', async (req, res, next) => {
 /**
  * Download self-hosted package
  */
-router.get('/self-hosted/download/:licenseId', async (req, res, next) => {
+router.post('/self-hosted/download/:licenseId', authenticate, async (req, res, next) => {
   try {
     const { licenseId } = req.params;
-    const { key } = req.query;
+    const { key } = req.body; // key in body, not query param — keeps it out of logs/history
 
     const license = await prisma.selfHostedLicense.findUnique({
       where: { id: licenseId },

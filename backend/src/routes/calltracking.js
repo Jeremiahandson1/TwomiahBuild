@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
 import calltracking from '../services/calltracking.js';
+import { validateTwilioWebhook } from '../middleware/twilioWebhook.js';
+import logger from '../services/logger.js';
 
 const router = Router();
 
@@ -12,6 +14,15 @@ const router = Router();
 // CallRail webhook
 router.post('/webhook/callrail/:companyId', async (req, res) => {
   try {
+    // Verify CallRail shared secret if configured
+    const secret = process.env.CALLRAIL_WEBHOOK_SECRET;
+    if (secret) {
+      const provided = req.headers['x-callrail-secret'] || req.body?.secret;
+      if (provided !== secret) {
+        logger.warn('CallRail webhook rejected — invalid secret', { companyId: req.params.companyId });
+        return res.status(403).json({ error: 'Invalid webhook secret' });
+      }
+    }
     await calltracking.handleCallRailWebhook(req.params.companyId, req.body);
     res.sendStatus(200);
   } catch (error) {
@@ -21,7 +32,7 @@ router.post('/webhook/callrail/:companyId', async (req, res) => {
 });
 
 // Twilio webhook
-router.post('/webhook/twilio/:companyId', async (req, res) => {
+router.post('/webhook/twilio/:companyId', validateTwilioWebhook, async (req, res) => {
   try {
     await calltracking.handleTwilioWebhook(req.params.companyId, req.body);
     res.sendStatus(200);
