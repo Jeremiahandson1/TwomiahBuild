@@ -226,10 +226,6 @@ export function applySecurity(app) {
   app.use(securityHeaders);
   app.use(sanitizeMiddleware);
   app.use(sqlInjectionDetector);
-  // Issue CSRF cookie on every request so the frontend can read it
-  app.use(setCsrfCookie);
-  // Enforce CSRF token on all state-changing requests
-  app.use(csrfProtection);
 }
 
 export default {
