@@ -1,0 +1,126 @@
+# BuildPro — Render Blueprint
+# Defines the backend web service + two cron jobs.
+#
+# CRON JOBS (audit issues #19 & #20)
+# ─────────────────────────────────────────────────────────────────────────────
+# Both endpoints exist and are protected by X-Cron-Secret. They were never
+# auto-triggered because no scheduler was configured. This file fixes that.
+#
+# SETUP: Make sure CRON_SECRET is set in your Render environment variables.
+# Generate one with:  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+#
+# DEPLOY: In Render dashboard → New → Blueprint → point to this repo.
+
+services:
+  # ── Backend Web Service ────────────────────────────────────────────────────
+  - type: web
+    name: buildpro-backend
+    runtime: node
+    plan: starter
+    rootDir: backend
+    buildCommand: npm install && npx prisma migrate deploy
+    startCommand: node src/index.js
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: buildpro-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
+      - key: FIELD_ENCRYPTION_KEY
+        sync: false   # Set manually — must be a 64-char hex string
+      - key: STORAGE_BACKEND
+        value: s3     # CRITICAL: change to s3 before go-live
+      - key: FRONTEND_URL
+        sync: false   # e.g. https://app.buildpro.com
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+
+  # ── Cron Job: Recurring Invoices ───────────────────────────────────────────
+  # Runs daily at 8am UTC. Finds all recurring invoice schedules where
+  # next_due_date <= today and generates invoices for them.
+  - type: cron
+    name: buildpro-recurring-invoices
+    runtime: node
+    plan: starter
+    rootDir: backend
+    buildCommand: npm install
+    schedule: "0 8 * * *"
+    startCommand: >
+      node -e "
+        fetch(
+          process.env.API_URL + '/api/v1/recurring/process-due',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Cron-Secret': process.env.CRON_SECRET
+            }
+          }
+        )
+        .then(r => r.json())
+        .then(d => { console.log('Recurring invoices processed:', d); process.exit(0); })
+        .catch(e => { console.error('Recurring invoice cron failed:', e); process.exit(1); })
+      "
+    envVars:
+      - key: API_URL
+        sync: false   # e.g. https://buildpro-backend.onrender.com
+      - key: CRON_SECRET
+        fromService:
+          name: buildpro-backend
+          type: web
+          property: CRON_SECRET
+
+  # ── Cron Job: Scheduled Reviews ────────────────────────────────────────────
+  # Runs daily at 9am UTC. Sends review request emails for jobs completed
+  # N days ago (configurable via the reviews settings in the app).
+  - type: cron
+    name: buildpro-scheduled-reviews
+    runtime: node
+    plan: starter
+    rootDir: backend
+    buildCommand: npm install
+    schedule: "0 9 * * *"
+    startCommand: >
+      node -e "
+        fetch(
+          process.env.API_URL + '/api/v1/reviews/process-scheduled',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Cron-Secret': process.env.CRON_SECRET
+            }
+          }
+        )
+        .then(r => r.json())
+        .then(d => { console.log('Scheduled reviews processed:', d); process.exit(0); })
+        .catch(e => { console.error('Review cron failed:', e); process.exit(1); })
+      "
+    envVars:
+      - key: API_URL
+        sync: false   # e.g. https://buildpro-backend.onrender.com
+      - key: CRON_SECRET
+        fromService:
+          name: buildpro-backend
+          type: web
+          property: CRON_SECRET
+
+databases:
+  - name: buildpro-db
+    plan: starter

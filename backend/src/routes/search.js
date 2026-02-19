@@ -9,7 +9,11 @@ router.use(authenticate);
 router.get('/', async (req, res, next) => {
   try {
     const { q, limit = '20', types } = req.query;
-    
+
+    if (q && q.length > 200) {
+      return res.status(400).json({ error: 'Search query too long (max 200 characters)' });
+    }
+
     const result = await search.globalSearch(
       req.user.companyId,
       q,
@@ -29,6 +33,11 @@ router.get('/', async (req, res, next) => {
 router.get('/quick', async (req, res, next) => {
   try {
     const { q, limit = '10' } = req.query;
+
+    if (q && q.length > 200) {
+      return res.status(400).json({ error: 'Search query too long (max 200 characters)' });
+    }
+
     const results = await search.quickSearch(
       req.user.companyId,
       q,

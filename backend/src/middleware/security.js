@@ -16,7 +16,24 @@ export function securityHeaders(req, res, next) {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   
   // Content Security Policy
-  res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline';");
+  // NOTE: JWTs are currently stored in localStorage (audit issue #30). This CSP
+  // limits XSS attack surface until we migrate to httpOnly cookies.
+  // - script-src: only self + Stripe JS (payment forms)
+  // - connect-src: self + Sentry + wss for Socket.io
+  // - object-src / base-uri 'none': block plugin injection and base-tag hijacking
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "img-src 'self' data: https:",
+      "script-src 'self' https://js.stripe.com",
+      "frame-src https://js.stripe.com",
+      "style-src 'self' 'unsafe-inline'",
+      "connect-src 'self' https://sentry.io https://*.sentry.io wss:",
+      "object-src 'none'",
+      "base-uri 'self'",
+    ].join('; ')
+  );
   
   // Remove X-Powered-By
   res.removeHeader('X-Powered-By');
