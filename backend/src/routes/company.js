@@ -58,7 +58,7 @@ router.delete('/users/:id', requireAdmin, async (req, res, next) => {
     if (req.params.id === req.user.userId) return res.status(400).json({ error: 'Cannot delete yourself' });
     const target = await prisma.user.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!target) return res.status(404).json({ error: 'User not found' });
-    await prisma.user.delete({ where: { id: req.params.id } });
+    await prisma.user.delete({ where: { id: req.params.id, companyId: req.user.companyId } });
     res.status(204).send();
   } catch (error) { next(error); }
 });

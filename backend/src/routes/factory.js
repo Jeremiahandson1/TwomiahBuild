@@ -162,7 +162,7 @@ router.post('/generate', async (req, res) => {
 /**
  * GET /api/factory/download/:buildId/:filename
  */
-router.get('/download/:buildId/:filename', (req, res) => {
+router.get('/download/:buildId/:filename', async (req, res) => {
   const { buildId, filename } = req.params;
 
   // Sanitize
@@ -170,10 +170,20 @@ router.get('/download/:buildId/:filename', (req, res) => {
     return res.status(400).json({ error: 'Invalid download parameters' });
   }
 
-  const zipPath = path.join(OUTPUT_DIR, filename);
+  // Look up build scoped to requesting company — prevents cross-tenant downloads
+  const { prisma } = await import('../index.js');
+  const build = await prisma.factoryBuild.findFirst({
+    where: { id: buildId, companyId: req.user.companyId },
+  });
+
+  if (!build || !build.zipPath) {
+    return res.status(404).json({ error: 'Build not found. It may have expired.' });
+  }
+
+  const zipPath = build.zipPath;
 
   if (!fs.existsSync(zipPath)) {
-    return res.status(404).json({ error: 'Build not found. It may have expired.' });
+    return res.status(404).json({ error: 'Build file not found. It may have expired.' });
   }
 
   res.download(zipPath, filename, (err) => {
