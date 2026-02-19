@@ -155,3 +155,10 @@ export function handleUncaughtExceptions() {
     if (process.env.SENTRY_DSN) Sentry.captureException(reason);
   });
 }
+
+// Async route handler wrapper — eliminates try/catch boilerplate in routes
+export function asyncHandler(fn) {
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
