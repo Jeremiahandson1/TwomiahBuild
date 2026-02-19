@@ -25,7 +25,7 @@ const calcTotals = (items, taxRate, discount) => {
   const subtotal = items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
   const taxAmount = subtotal * (taxRate / 100);
   const total = subtotal + taxAmount - discount;
-  return { subtotal, taxAmount, total, balance: total };
+  return { subtotal, taxAmount, total };
 };
 
 router.get('/', requirePermission('invoices:read'), async (req, res, next) => {
@@ -44,9 +44,9 @@ router.get('/', requirePermission('invoices:read'), async (req, res, next) => {
 
 router.get('/stats', requirePermission('invoices:read'), async (req, res, next) => {
   try {
-    const invoices = await prisma.invoice.findMany({ where: { companyId: req.user.companyId }, select: { status: true, total: true, balance: true } });
+    const invoices = await prisma.invoice.findMany({ where: { companyId: req.user.companyId }, select: { status: true, total: true, amountPaid: true } });
     const stats = { total: invoices.length, draft: 0, sent: 0, paid: 0, overdue: 0, totalAmount: 0, paidAmount: 0, outstanding: 0 };
-    invoices.forEach(inv => { stats[inv.status] = (stats[inv.status] || 0) + 1; stats.totalAmount += Number(inv.total); stats.outstanding += Number(inv.balance); if (inv.status === 'paid') stats.paidAmount += Number(inv.total); });
+    invoices.forEach(inv => { stats[inv.status] = (stats[inv.status] || 0) + 1; stats.totalAmount += Number(inv.total); stats.outstanding += Number(inv.total) - Number(inv.amountPaid); if (inv.status === 'paid') stats.paidAmount += Number(inv.total); });
     res.json(stats);
   } catch (error) { next(error); }
 });
@@ -84,7 +84,7 @@ router.put('/:id', requirePermission('invoices:update'), async (req, res, next) 
     if (lineItems) {
       await prisma.invoiceLineItem.deleteMany({ where: { invoiceId: req.params.id } });
       totals = calcTotals(lineItems, data.taxRate ?? Number(existing.taxRate), data.discount ?? Number(existing.discount));
-      totals.balance = totals.total - Number(existing.amountPaid);
+      // Update amountPaid won't change on edit, balance is derived not stored
     }
     const invoice = await prisma.invoice.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...invoiceData, ...totals, dueDate: data.dueDate ? new Date(data.dueDate) : undefined, lineItems: lineItems ? { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } : undefined }, include: { lineItems: true } });
     emitToCompany(req.user.companyId, EVENTS.INVOICE_UPDATED, invoice);
@@ -119,7 +119,7 @@ router.post('/:id/payments', requirePermission('invoices:update'), async (req, r
     const newAmountPaid = Number(invoice.amountPaid) + data.amount;
     const newBalance = Number(invoice.total) - newAmountPaid;
     const newStatus = newBalance <= 0 ? 'paid' : newAmountPaid > 0 ? 'partial' : invoice.status;
-    const updatedInvoice = await prisma.invoice.update({ where: withCompany(req.params.id, req.user.companyId), data: { amountPaid: newAmountPaid, balance: Math.max(0, newBalance), status: newStatus, paidAt: newBalance <= 0 ? new Date() : null } });
+    const updatedInvoice = await prisma.invoice.update({ where: withCompany(req.params.id, req.user.companyId), data: { amountPaid: newAmountPaid, status: newStatus, paidAt: newBalance <= 0 ? new Date() : null } });
     emitToCompany(req.user.companyId, EVENTS.PAYMENT_RECEIVED, { invoiceId: invoice.id, invoiceNumber: invoice.number, amount: data.amount, newBalance, status: newStatus });
     if (newStatus === 'paid') {
       emitToCompany(req.user.companyId, EVENTS.INVOICE_PAID, { id: invoice.id, number: invoice.number, total: invoice.total });

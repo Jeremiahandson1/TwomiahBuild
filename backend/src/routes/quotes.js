@@ -136,7 +136,6 @@ router.post('/:id/convert-to-invoice', async (req, res, next) => {
         taxAmount: quote.taxAmount,
         discount: quote.discount,
         total: quote.total,
-        balance: quote.total,
         notes: quote.notes,
         terms: quote.terms,
         companyId: req.user.companyId,

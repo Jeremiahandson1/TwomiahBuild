@@ -97,7 +97,7 @@ router.post('/payment-intent', requirePermission('invoices:read'), async (req, r
     }
 
     let result;
-    if (amount && amount < Number(invoice.balance)) {
+    if (amount && amount < Number(invoice.total) - Number(invoice.amountPaid)) {
       result = await stripeService.createPartialPaymentIntent(invoice, invoice.contact, amount);
     } else {
       result = await stripeService.createPaymentIntent(invoice, invoice.contact);
@@ -168,7 +168,7 @@ router.post('/payment-link', requirePermission('invoices:update'), async (req, r
       return res.status(404).json({ error: 'Invoice not found' });
     }
 
-    if (Number(invoice.balance) <= 0) {
+    if (Number(invoice.total) - Number(invoice.amountPaid) <= 0) {
       return res.status(400).json({ error: 'Invoice has no balance due' });
     }
 
@@ -304,7 +304,7 @@ router.post('/portal/payment-intent', async (req, res, next) => {
     }
 
     let result;
-    if (amount && amount < Number(invoice.balance)) {
+    if (amount && amount < Number(invoice.total) - Number(invoice.amountPaid)) {
       result = await stripeService.createPartialPaymentIntent(invoice, contact, amount);
     } else {
       result = await stripeService.createPaymentIntent(invoice, contact);

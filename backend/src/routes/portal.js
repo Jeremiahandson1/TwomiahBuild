@@ -243,7 +243,7 @@ router.get('/p/:token', portalAuth, async (req, res, next) => {
       prisma.invoice.count({ where: { contactId: contact.id } }),
       prisma.invoice.aggregate({
         where: { contactId: contact.id, status: { in: ['sent', 'partial', 'overdue'] } },
-        _sum: { balance: true },
+        _sum: { total: true, amountPaid: true },
       }),
     ]);
     
@@ -263,7 +263,7 @@ router.get('/p/:token', portalAuth, async (req, res, next) => {
         activeProjects: projectCount,
         pendingQuotes: quoteCount,
         totalInvoices: invoiceCount,
-        outstandingBalance: Number(openInvoiceBalance._sum.balance || 0),
+        outstandingBalance: Number(openInvoiceBalance._sum.total || 0) - Number(openInvoiceBalance._sum.amountPaid || 0),
       },
     });
   } catch (error) {
@@ -470,7 +470,7 @@ router.get('/p/:token/invoices', portalAuth, async (req, res, next) => {
         number: true,
         status: true,
         total: true,
-        balance: true,
+        amountPaid: true,
         dueDate: true,
         createdAt: true,
       },

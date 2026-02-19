@@ -163,7 +163,7 @@ router.get('/full-backup', requirePermission('dashboard:read'), async (req, res,
     }
 
     // Invoices
-    archive.append(toCSV(invoices, ['id', 'number', 'status', 'contact.name', 'subtotal', 'taxAmount', 'total', 'balance', 'amountPaid', 'dueDate', 'paidAt', 'createdAt']), { name: 'invoices.csv' });
+    archive.append(toCSV(invoices, ['id', 'number', 'status', 'contact.name', 'subtotal', 'taxAmount', 'total', 'amountPaid', 'dueDate', 'paidAt', 'createdAt']), { name: 'invoices.csv' });
 
     // Quotes
     archive.append(toCSV(quotes, ['id', 'number', 'status', 'contact.name', 'subtotal', 'taxAmount', 'total', 'expiryDate', 'createdAt']), { name: 'quotes.csv' });

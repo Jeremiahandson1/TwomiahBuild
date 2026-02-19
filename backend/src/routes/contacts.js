@@ -63,7 +63,7 @@ router.get('/:id', requirePermission('contacts:read'), async (req, res, next) =>
       include: {
         projects: { select: { id: true, name: true, status: true } },
         quotes: { select: { id: true, number: true, total: true, status: true } },
-        invoices: { select: { id: true, number: true, total: true, balance: true, status: true } },
+        invoices: { select: { id: true, number: true, total: true, amountPaid: true, status: true } },
       },
     });
     if (!contact) return res.status(404).json({ error: 'Contact not found' });
