@@ -9,19 +9,21 @@
  */
 
 import NetInfo from '@react-native-community/netinfo';
-import { getSession, enqueueSync } from '../utils/database';
+import * as SecureStore from 'expo-secure-store';
+import { enqueueSync } from '../utils/database';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://api.buildpro.io';
+const TOKEN_KEY = 'buildpro_auth_token';
 
 class ApiClient {
   private async getAuthHeaders(): Promise<Record<string, string>> {
-    const session = await getSession();
+    const token = await SecureStore.getItemAsync(TOKEN_KEY);
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'X-Client': 'buildpro-mobile',
     };
-    if (session?.token) {
-      headers['Authorization'] = `Bearer ${session.token}`;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
     return headers;
   }
@@ -133,7 +135,7 @@ class ApiClient {
       return null;
     }
 
-    const session = await getSession();
+    const token = await SecureStore.getItemAsync(TOKEN_KEY);
     const formData = new FormData();
 
     formData.append('file', {
@@ -149,7 +151,7 @@ class ApiClient {
     const response = await fetch(`${API_BASE}${endpoint}`, {
       method: 'POST',
       headers: {
-        Authorization: session?.token ? `Bearer ${session.token}` : '',
+        Authorization: token ? `Bearer ${token}` : '',
         'X-Client': 'buildpro-mobile',
       },
       body: formData,

@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { saveSession, getSession, clearSession } from '../utils/database';
+import * as SecureStore from 'expo-secure-store';
 import api, { ApiError } from '../api/client';
+
+const TOKEN_KEY = 'buildpro_auth_token';
 
 interface User {
   id: string;
@@ -33,19 +36,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     );
     if (!response) throw new Error('Login failed');
 
+    // Store JWT in SecureStore (encrypted, not readable on rooted devices)
+    await SecureStore.setItemAsync(TOKEN_KEY, response.token);
+
+    // Store non-sensitive session data in SQLite for offline use
     await saveSession({
       userId: response.user.id,
       companyId: response.user.companyId,
       name: response.user.name,
       email: response.user.email,
       role: response.user.role,
-      token: response.token,
+      token: '', // token no longer stored in SQLite
     });
 
     set({ user: response.user, token: response.token, isAuthenticated: true });
   },
 
   logout: async () => {
+    await SecureStore.deleteItemAsync(TOKEN_KEY);
     await clearSession();
     set({ user: null, token: null, isAuthenticated: false });
   },
@@ -53,8 +61,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   restoreSession: async () => {
     set({ isLoading: true });
     try {
+      // Get token from SecureStore
+      const token = await SecureStore.getItemAsync(TOKEN_KEY);
+      if (!token) {
+        set({ isLoading: false });
+        return;
+      }
+      // Get user profile from SQLite cache
       const session = await getSession();
-      if (session?.token) {
+      if (session) {
         set({
           user: {
             id: session.user_id,
@@ -63,7 +78,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             email: session.email,
             role: session.role,
           },
-          token: session.token,
+          token,
           isAuthenticated: true,
         });
       }

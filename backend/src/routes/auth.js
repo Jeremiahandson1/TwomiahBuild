@@ -7,7 +7,6 @@ import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
 import emailService from '../services/email.js';
 import logger from '../services/logger.js';
-import { PLAN_FEATURES, PLAN_LIMITS } from '../config/plans.js';
 
 const router = Router();
 
@@ -17,8 +16,7 @@ const generateTokens = (userId, companyId, email, role) => {
   return { accessToken, refreshToken };
 };
 
-// Feature sets for each plan tier
-
+import { PLAN_FEATURES, PLAN_LIMITS } from '../config/plans.js';
 
 // Self-serve signup (multi-step flow)
 router.post('/signup', async (req, res, next) => {

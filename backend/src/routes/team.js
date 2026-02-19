@@ -24,7 +24,7 @@ router.post('/', requirePermission('team:create'), async (req, res, next) => {
   try { const data = schema.parse(req.body); const member = await prisma.teamMember.create({ data: { ...data, hireDate: data.hireDate ? new Date(data.hireDate) : null, companyId: req.user.companyId } }); res.status(201).json(member); } catch (error) { next(error); }
 });
 
-router.put('/:id', requirePermission('team:update'), async (req, res, next) => { try { const data = schema.partial().parse(req.body); const member = await prisma.teamMember.update({ where: { id: req.params.id }, data: { ...data, hireDate: data.hireDate ? new Date(data.hireDate) : undefined } }); res.json(member); } catch (error) { next(error); } });
-router.delete('/:id', requirePermission('team:delete'), async (req, res, next) => { try { await prisma.teamMember.delete({ where: { id: req.params.id } }); res.status(204).send(); } catch (error) { next(error); } });
+router.put('/:id', requirePermission('team:update'), async (req, res, next) => { try { const data = schema.partial().parse(req.body); const existing = await prisma.teamMember.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } }); if (!existing) return res.status(404).json({ error: 'Team member not found' }); const member = await prisma.teamMember.update({ where: { id: req.params.id }, data: { ...data, hireDate: data.hireDate ? new Date(data.hireDate) : undefined } }); res.json(member); } catch (error) { next(error); } });
+router.delete('/:id', requirePermission('team:delete'), async (req, res, next) => { try { const existing = await prisma.teamMember.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } }); if (!existing) return res.status(404).json({ error: 'Team member not found' }); await prisma.teamMember.delete({ where: { id: req.params.id } }); res.status(204).send(); } catch (error) { next(error); } });
 
 export default router;

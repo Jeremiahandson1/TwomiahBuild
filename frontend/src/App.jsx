@@ -1,5 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Suspense, lazy } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { SocketProvider } from './contexts/SocketContext';
@@ -21,7 +20,9 @@ const HomePage              = lazy(() => import('./pages/public/HomePage'));
 const PricingPage           = lazy(() => import('./pages/public/PricingPage'));
 const SignupPage             = lazy(() => import('./pages/public/SignupPage'));
 const SignupSuccessPage      = lazy(() => import('./pages/public/SignupSuccessPage'));
-const SelfHostedPurchasePage = lazy(() => import('./pages/public/SelfHostedPurchasePage'));
+const SelfHostedPurchasePage    = lazy(() => import('./pages/public/SelfHostedPurchasePage'));
+const BuildertrendMigrationPage = lazy(() => import('./pages/public/BuildertrendMigrationPage'));
+const AgencyProgramPage         = lazy(() => import('./pages/public/AgencyProgramPage'));
 
 // Operator
 const OperatorLayout        = lazy(() => import('./components/layout/OperatorLayout'));
@@ -103,6 +104,8 @@ function App() {
                     <Route path="/signup"         element={<SignupPage />} />
                     <Route path="/signup/success" element={<SignupSuccessPage />} />
                     <Route path="/self-hosted"    element={<SelfHostedPurchasePage />} />
+                    <Route path="/migrate-from-buildertrend" element={<BuildertrendMigrationPage />} />
+                    <Route path="/agency"         element={<AgencyProgramPage />} />
                     <Route path="/home"           element={<HomePage />} />
 
                     {/* Auth */}

@@ -45,16 +45,22 @@ router.put('/users/:id', requireAdmin, async (req, res, next) => {
     const data = schema.parse(req.body);
     // If email is changing, check it's not already taken
     if (data.email) {
-      const existing = await prisma.user.findFirst({ where: { email: data.email, NOT: { id: req.params.id } } });
+    const existing = await prisma.user.findFirst({ where: { email: data.email, NOT: { id: req.params.id } } });
       if (existing) return res.status(400).json({ error: 'Email already in use' });
     }
-    const user = await prisma.user.update({ where: { id: req.params.id }, data, select: { id: true, email: true, firstName: true, lastName: true, role: true, isActive: true } });
+    const user = await prisma.user.update({ where: { id: req.params.id, companyId: req.user.companyId }, data, select: { id: true, email: true, firstName: true, lastName: true, role: true, isActive: true } });
     res.json(user);
   } catch (error) { next(error); }
 });
 
 router.delete('/users/:id', requireAdmin, async (req, res, next) => {
-  try { if (req.params.id === req.user.userId) return res.status(400).json({ error: 'Cannot delete yourself' }); await prisma.user.delete({ where: { id: req.params.id } }); res.status(204).send(); } catch (error) { next(error); }
+  try {
+    if (req.params.id === req.user.userId) return res.status(400).json({ error: 'Cannot delete yourself' });
+    const target = await prisma.user.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
+    if (!target) return res.status(404).json({ error: 'User not found' });
+    await prisma.user.delete({ where: { id: req.params.id } });
+    res.status(204).send();
+  } catch (error) { next(error); }
 });
 
 export default router;
