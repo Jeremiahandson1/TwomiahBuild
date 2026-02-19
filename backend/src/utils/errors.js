@@ -1,5 +1,17 @@
 import logger from '../services/logger.js';
 
+// ── Sentry error monitoring ──────────────────────────────────────────────────
+// Set SENTRY_DSN in your Render backend environment variables.
+// Install: npm install @sentry/node  (run in /backend)
+let sentryCaptureException = null;
+if (process.env.SENTRY_DSN) {
+  import('@sentry/node').then(({ init, getDefaultIntegrations, captureException }) => {
+    init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV, tracesSampleRate: 0.1 });
+    sentryCaptureException = captureException;
+    logger.info('Sentry initialized');
+  }).catch(() => logger.warn('Sentry failed to initialize — check SENTRY_DSN'));
+}
+
 // Custom error classes
 export class AppError extends Error {
   constructor(message, statusCode = 500, code = 'INTERNAL_ERROR', details = null) {
@@ -52,6 +64,11 @@ export class RateLimitError extends AppError {
 export function errorHandler(err, req, res, next) {
   // Log error
   logger.logError(err, req);
+
+  // Send to Sentry for unexpected errors (5xx)
+  if (sentryCaptureException && (!err.isOperational || err.statusCode >= 500)) {
+    sentryCaptureException(err, { user: req.user ? { id: req.user.userId } : undefined });
+  }
 
   // Handle Prisma errors
   if (err.code === 'P2002') {

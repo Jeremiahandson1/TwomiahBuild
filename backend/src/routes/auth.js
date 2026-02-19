@@ -7,6 +7,10 @@ import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
 import emailService from '../services/email.js';
 import logger from '../services/logger.js';
+import { seedDefaultAssemblies } from '../services/takeoffs.js';
+import { seedDefaultCategories } from '../services/selections.js';
+import { seedDefaultTemplates as seedFormTemplates } from '../services/customForms.js';
+import { seedDefaultTemplates as seedWarrantyTemplates } from '../services/warranties.js';
 
 const router = Router();
 
@@ -145,6 +149,15 @@ router.post('/signup', async (req, res, next) => {
     } catch (emailErr) {
       logger.logError(emailErr, null, { action: 'sendWelcomeEmail', email: data.email });
     }
+
+    // Seed default data so new accounts aren't empty
+    const companyId = result.company.id;
+    await Promise.allSettled([
+      seedDefaultAssemblies(companyId),
+      seedDefaultCategories(companyId),
+      seedFormTemplates(companyId),
+      seedWarrantyTemplates(companyId),
+    ]);
 
     logger.info('New signup', {
       companyId: result.company.id,

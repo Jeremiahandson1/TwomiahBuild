@@ -12,7 +12,7 @@
 ### Backend
 
 ```env
-# Required
+# ── Required ──────────────────────────────────────────────────────────────────
 DATABASE_URL=postgresql://user:password@host:5432/buildpro
 JWT_SECRET=<64-character-random-string>
 JWT_REFRESH_SECRET=<64-character-random-string>
@@ -20,17 +20,70 @@ PORT=3001
 NODE_ENV=production
 FRONTEND_URL=https://your-domain.com
 
-# Optional
+# ── Storage (CRITICAL — defaults to local disk which is EPHEMERAL on Render) ──
+# Set to "s3" and configure R2/S3 variables below before go-live.
+STORAGE_BACKEND=s3
+
+# Cloudflare R2 (recommended)
+R2_ACCOUNT_ID=<cloudflare-account-id>
+R2_ACCESS_KEY_ID=<r2-access-key>
+R2_SECRET_ACCESS_KEY=<r2-secret-key>
+R2_BUCKET_NAME=buildpro-uploads
+R2_PUBLIC_URL=https://<your-r2-subdomain>.r2.dev
+
+# AWS S3 (alternative to R2)
+# S3_BUCKET=buildpro-uploads
+# S3_REGION=us-east-1
+# S3_ACCESS_KEY_ID=<aws-access-key>
+# S3_SECRET_ACCESS_KEY=<aws-secret>
+
+# ── Security ──────────────────────────────────────────────────────────────────
+# 64-char hex string used to encrypt sensitive fields (Twilio creds, etc.)
+# Generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+FIELD_ENCRYPTION_KEY=<64-char-hex>
+
+# ── Error Monitoring (Sentry) ─────────────────────────────────────────────────
+# Strongly recommended before first paying customer.
+# Get DSN from https://sentry.io → New Project → Node.js
+# Install: npm install @sentry/node  (already in package.json reminder)
+SENTRY_DSN=https://<key>@sentry.io/<project-id>
+
+# ── Push Notifications (VAPID) ────────────────────────────────────────────────
+# Generate: npx web-push generate-vapid-keys
+VAPID_PUBLIC_KEY=<vapid-public>
+VAPID_PRIVATE_KEY=<vapid-private>
+VAPID_SUBJECT=mailto:support@your-domain.com
+
+# ── Email ─────────────────────────────────────────────────────────────────────
 SENDGRID_API_KEY=<your-sendgrid-key>
 FROM_EMAIL=noreply@your-domain.com
-UPLOAD_DIR=/app/uploads
+
+# ── Twilio SMS ────────────────────────────────────────────────────────────────
+TWILIO_ACCOUNT_SID=<twilio-sid>
+TWILIO_AUTH_TOKEN=<twilio-token>
+TWILIO_PHONE_NUMBER=+1xxxxxxxxxx
+
+# ── Stripe ────────────────────────────────────────────────────────────────────
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# ── Operations ────────────────────────────────────────────────────────────────
+# Confirms you have verified that automated DB backups are enabled on Render.
+DB_BACKUPS_CONFIRMED=true
 LOG_LEVEL=info
+UPLOAD_DIR=/app/uploads
 ```
 
 ### Frontend
 
 ```env
 VITE_API_URL=https://api.your-domain.com
+
+# Error monitoring (Sentry) — matches your Sentry React project DSN
+VITE_SENTRY_DSN=https://<key>@sentry.io/<project-id>
+
+# Expo push notifications project ID (for mobile — also set in app.json)
+EXPO_PUBLIC_PROJECT_ID=<your-expo-project-id>
 ```
 
 ## Deployment Options
@@ -174,16 +227,19 @@ npx prisma migrate reset
 
 ### Logging
 
-Logs are written to:
-- Console (always)
-- `./logs/combined.log` (all logs)
-- `./logs/error.log` (errors only)
+Logs are written to stdout (console), which Render captures automatically.
+File-based logs are disabled in production to prevent ephemeral disk loss.
 
-### Recommended Monitoring Tools
+To add persistent log draining, connect one of these from the Render dashboard:
+- **Logtail** (Better Stack) — free tier, excellent search
+- **Papertrail** — simple, free tier available
+- **Datadog Logs** — if you're already using Datadog APM
 
-- **Uptime:** UptimeRobot, Pingdom
-- **APM:** New Relic, DataDog, Sentry
-- **Logs:** LogDNA, Papertrail
+### Error Monitoring (Sentry)
+
+Set `SENTRY_DSN` (backend) and `VITE_SENTRY_DSN` (frontend) in your Render
+environment variables. You'll know about errors in production before your
+customers have to tell you.
 
 ## Backup Strategy
 

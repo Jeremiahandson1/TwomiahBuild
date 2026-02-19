@@ -77,6 +77,7 @@ import timeTrackingRoutes from './routes/timeTracking.js';
 import warrantiesRoutes from './routes/warranties.js';
 import weatherRoutes from './routes/weather.js';
 import wisetackRoutes from './routes/wisetack.js';
+import { bookingRoutes as gapBookingRoutes, jobCostingRoutes, customFormsRoutes, lienWaiverRoutes, drawScheduleRoutes } from './routes/gapFeatures.js';
 
 dotenv.config();
 
@@ -130,13 +131,15 @@ app.use(cookieParser());
 // Apply security middleware
 applySecurity(app);
 
-// Rate limiting
+// Rate limiting — keyed per authenticated user (falls back to IP for unauthenticated)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: process.env.NODE_ENV === 'production' ? 100 : 1000,
   message: { error: 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
+  // Per-user limiting: one aggressive account can't degrade everyone else
+  keyGenerator: (req) => req.user?.userId ?? req.ip,
 });
 app.use('/api/v1/', limiter);
 
@@ -239,6 +242,13 @@ app.use('/api/v1/time-tracking', timeTrackingRoutes);
 app.use('/api/v1/warranties', warrantiesRoutes);
 app.use('/api/v1/weather', weatherRoutes);
 app.use('/api/v1/wisetack', wisetackRoutes);
+
+// Gap features — construction-specific routes now live
+app.use('/api/v1/booking-gap', gapBookingRoutes);
+app.use('/api/v1/job-costing', jobCostingRoutes);
+app.use('/api/v1/custom-forms', customFormsRoutes);
+app.use('/api/v1/lien-waivers', lienWaiverRoutes);
+app.use('/api/v1/draw-schedules', drawScheduleRoutes);
 
 // 404 handler
 app.use(notFoundHandler);

@@ -24,6 +24,8 @@ const SignupSuccessPage      = lazy(() => import('./pages/public/SignupSuccessPa
 const SelfHostedPurchasePage    = lazy(() => import('./pages/public/SelfHostedPurchasePage'));
 const BuildertrendMigrationPage = lazy(() => import('./pages/public/BuildertrendMigrationPage'));
 const AgencyProgramPage         = lazy(() => import('./pages/public/AgencyProgramPage'));
+const TermsPage                 = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage               = lazy(() => import('./pages/PrivacyPage'));
 
 // Operator
 const OperatorLayout        = lazy(() => import('./components/layout/OperatorLayout'));
@@ -108,6 +110,8 @@ function App() {
                     <Route path="/migrate-from-buildertrend" element={<BuildertrendMigrationPage />} />
                     <Route path="/agency"         element={<AgencyProgramPage />} />
                     <Route path="/home"           element={<HomePage />} />
+                    <Route path="/terms"          element={<TermsPage />} />
+                    <Route path="/privacy"        element={<PrivacyPage />} />
 
                     {/* Auth */}
                     <Route path="/login"          element={<PublicRoute><LoginPage /></PublicRoute>} />

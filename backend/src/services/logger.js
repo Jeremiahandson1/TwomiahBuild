@@ -2,12 +2,6 @@ import winston from 'winston';
 import path from 'path';
 import fs from 'fs';
 
-// Ensure logs directory exists
-const logsDir = path.join(process.cwd(), 'logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
-}
-
 const { combine, timestamp, printf, colorize, errors, json } = winston.format;
 
 const consoleFormat = printf(({ level, message, timestamp, stack, ...meta }) => {
@@ -25,16 +19,25 @@ const consoleFormat = printf(({ level, message, timestamp, stack, ...meta }) => 
   return log;
 });
 
-const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  format: combine(
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    errors({ stack: true })
-  ),
-  transports: [
-    new winston.transports.Console({
-      format: combine(colorize(), consoleFormat),
-    }),
+// Build transport list.
+// In production on Render, DO NOT write to disk — the /logs directory is
+// ephemeral and gets wiped on every deploy, making it useless for debugging.
+// Render captures all stdout/stderr automatically; use an external log drain
+// (Logtail, Papertrail, Betterstack) via the Render dashboard if you need
+// persistence. In development, file transports are still written locally.
+const transports = [
+  new winston.transports.Console({
+    format: combine(colorize(), consoleFormat),
+  }),
+];
+
+if (process.env.NODE_ENV !== 'production') {
+  // Development-only file transports
+  const logsDir = path.join(process.cwd(), 'logs');
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+  transports.push(
     new winston.transports.File({
       filename: path.join(logsDir, 'error.log'),
       level: 'error',
@@ -47,8 +50,17 @@ const logger = winston.createLogger({
       format: combine(json()),
       maxsize: 5242880,
       maxFiles: 5,
-    }),
-  ],
+    })
+  );
+}
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: combine(
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    errors({ stack: true })
+  ),
+  transports,
 });
 
 // Request logging helper
