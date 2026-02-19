@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { saveSession, getSession, clearSession } from '../utils/database';
 import * as SecureStore from 'expo-secure-store';
 import api, { ApiError } from '../api/client';
+import { unregisterFromPushNotifications } from '../utils/pushNotifications';
 
 const TOKEN_KEY = 'buildpro_auth_token';
 
@@ -53,6 +54,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    await unregisterFromPushNotifications();
     await SecureStore.deleteItemAsync(TOKEN_KEY);
     await clearSession();
     set({ user: null, token: null, isAuthenticated: false });

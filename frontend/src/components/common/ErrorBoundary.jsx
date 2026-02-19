@@ -18,7 +18,10 @@ class ErrorBoundary extends React.Component {
     console.error('ErrorBoundary caught:', error?.message || error);
       console.error('Component stack:', errorInfo?.componentStack);
     
-    // TODO: Send to error tracking service (Sentry, etc.)
+    // Send to Sentry (configure VITE_SENTRY_DSN in your environment)
+    if (typeof window !== 'undefined' && window.__Sentry__?.captureException) {
+      window.__Sentry__.captureException(error, { contexts: { react: { componentStack: errorInfo?.componentStack } } });
+    }
   }
 
   handleReset = () => {

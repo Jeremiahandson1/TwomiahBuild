@@ -1,15 +1,16 @@
+import * as Sentry from '@sentry/node';
 import logger from '../services/logger.js';
 
 // ── Sentry error monitoring ──────────────────────────────────────────────────
 // Set SENTRY_DSN in your Render backend environment variables.
-// Install: npm install @sentry/node  (run in /backend)
-let sentryCaptureException = null;
+// Get your DSN: https://sentry.io → Project → Settings → Client Keys
 if (process.env.SENTRY_DSN) {
-  import('@sentry/node').then(({ init, getDefaultIntegrations, captureException }) => {
-    init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV, tracesSampleRate: 0.1 });
-    sentryCaptureException = captureException;
-    logger.info('Sentry initialized');
-  }).catch(() => logger.warn('Sentry failed to initialize — check SENTRY_DSN'));
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'production',
+    tracesSampleRate: 0.1,
+  });
+  logger.info('Sentry initialized');
 }
 
 // Custom error classes
@@ -65,9 +66,11 @@ export function errorHandler(err, req, res, next) {
   // Log error
   logger.logError(err, req);
 
-  // Send to Sentry for unexpected errors (5xx)
-  if (sentryCaptureException && (!err.isOperational || err.statusCode >= 500)) {
-    sentryCaptureException(err, { user: req.user ? { id: req.user.userId } : undefined });
+  // Send unexpected errors (5xx) to Sentry
+  if (process.env.SENTRY_DSN && (!err.isOperational || err.statusCode >= 500)) {
+    Sentry.captureException(err, {
+      user: req.user ? { id: req.user.userId } : undefined,
+    });
   }
 
   // Handle Prisma errors
@@ -75,7 +78,6 @@ export function errorHandler(err, req, res, next) {
     return res.status(409).json({
       error: 'A record with this value already exists',
       code: 'DUPLICATE_ENTRY',
-      field: err.meta?.target?.[0],
     });
   }
 
@@ -86,22 +88,12 @@ export function errorHandler(err, req, res, next) {
     });
   }
 
-  if (err.code === 'P2003') {
-    return res.status(400).json({
-      error: 'Invalid reference - related record not found',
-      code: 'INVALID_REFERENCE',
-    });
-  }
-
   // Handle Zod validation errors
   if (err.name === 'ZodError') {
     return res.status(400).json({
       error: 'Validation failed',
       code: 'VALIDATION_ERROR',
-      details: err.errors.map(e => ({
-        field: e.path.join('.'),
-        message: e.message,
-      })),
+      details: err.errors,
     });
   }
 
@@ -120,30 +112,19 @@ export function errorHandler(err, req, res, next) {
     });
   }
 
-  // Handle our custom errors
-  if (err instanceof AppError) {
-    const response = {
+  // Handle operational errors (expected, user-facing)
+  if (err.isOperational) {
+    return res.status(err.statusCode).json({
       error: err.message,
       code: err.code,
-    };
-    if (err.details) {
-      response.details = err.details;
-    }
-    return res.status(err.statusCode).json(response);
-  }
-
-  // Handle multer errors
-  if (err.name === 'MulterError') {
-    return res.status(400).json({
-      error: err.message,
-      code: 'FILE_UPLOAD_ERROR',
+      ...(err.details && { details: err.details }),
     });
   }
 
-  // Default error response
+  // Unexpected errors — don't leak details in production
   const statusCode = err.statusCode || 500;
-  const message = process.env.NODE_ENV === 'production' && statusCode === 500
-    ? 'Internal server error'
+  const message = process.env.NODE_ENV === 'production'
+    ? 'An unexpected error occurred'
     : err.message;
 
   res.status(statusCode).json({
@@ -153,43 +134,24 @@ export function errorHandler(err, req, res, next) {
   });
 }
 
-// Async handler wrapper
-export function asyncHandler(fn) {
-  return (req, res, next) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-}
-
 // 404 handler
 export function notFoundHandler(req, res) {
   res.status(404).json({
     error: `Route ${req.method} ${req.path} not found`,
-    code: 'ROUTE_NOT_FOUND',
+    code: 'NOT_FOUND',
   });
 }
 
-// Uncaught exception handler
+// Handle uncaught exceptions and unhandled rejections
 export function handleUncaughtExceptions() {
   process.on('uncaughtException', (err) => {
     logger.error('Uncaught Exception', { error: err.message, stack: err.stack });
+    if (process.env.SENTRY_DSN) Sentry.captureException(err);
     process.exit(1);
   });
 
-  process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled Rejection', { reason, promise });
+  process.on('unhandledRejection', (reason) => {
+    logger.error('Unhandled Rejection', { reason });
+    if (process.env.SENTRY_DSN) Sentry.captureException(reason);
   });
 }
-
-export default {
-  AppError,
-  ValidationError,
-  AuthenticationError,
-  AuthorizationError,
-  NotFoundError,
-  ConflictError,
-  RateLimitError,
-  errorHandler,
-  asyncHandler,
-  notFoundHandler,
-  handleUncaughtExceptions,
-};

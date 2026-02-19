@@ -1,25 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import * as Sentry from '@sentry/react';
 import App from './App.jsx';
 import './index.css';
 
 // ── Sentry error monitoring ──────────────────────────────────────────────────
-// Set VITE_SENTRY_DSN in your Render environment variables.
-// Get your DSN from https://sentry.io → Project Settings → Client Keys.
-// Install: npm install @sentry/react  (run in /frontend)
+// Set VITE_SENTRY_DSN in your Render frontend environment variables.
+// Get your DSN: https://sentry.io → Project → Settings → Client Keys
 if (import.meta.env.VITE_SENTRY_DSN) {
-  import('@sentry/react').then(({ init, browserTracingIntegration }) => {
-    init({
-      dsn: import.meta.env.VITE_SENTRY_DSN,
-      environment: import.meta.env.MODE,
-      integrations: [browserTracingIntegration()],
-      tracesSampleRate: 0.1,
-      // Expose on window so ErrorBoundary can use it without a hard dep
-      beforeSend(event) {
-        window.__Sentry__ = { captureException: (e, ctx) => import('@sentry/react').then(s => s.captureException(e, ctx)) };
-        return event;
-      },
-    });
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    integrations: [Sentry.browserTracingIntegration()],
+    tracesSampleRate: 0.1,
   });
 }
 
@@ -36,6 +29,11 @@ class GlobalErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('Application error:', error, errorInfo);
+    if (import.meta.env.VITE_SENTRY_DSN) {
+      Sentry.captureException(error, {
+        contexts: { react: { componentStack: errorInfo?.componentStack } },
+      });
+    }
   }
 
   render() {
