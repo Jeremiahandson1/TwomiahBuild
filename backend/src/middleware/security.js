@@ -82,8 +82,18 @@ export function generateCsrfToken() {
 
 // CSRF middleware
 export function csrfProtection(req, res, next) {
-  // Skip for GET, HEAD, OPTIONS
+  // Skip for safe methods
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return next();
+  }
+
+  // Skip for API clients using Bearer token auth.
+  // CSRF attacks exploit cookie-based auth — an attacker can trick a browser
+  // into sending cookies automatically, but CANNOT set the Authorization header.
+  // All BuildPro API routes use Bearer tokens, so they are not CSRF-vulnerable.
+  // CSRF enforcement only applies to any future session-cookie-based flows.
+  const authHeader = req.get('Authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
     return next();
   }
   
@@ -168,8 +178,8 @@ export function ipFilter(req, res, next) {
 
 // SQL injection pattern detection (for logging/alerting)
 const sqlPatterns = [
-  /(\%27)|(\')|(\-\-)|(\%23)|(#)/i,
-  /(\%22)|(\")/i,
+  /(\%27)|(\')|(--)|(\%23)|(#)/i,
+  /(\%22)|(")/i,
   /(\%3B)|(;)/i,
   /(union|select|insert|update|delete|drop|truncate|alter|exec|execute)/i,
 ];
