@@ -11,15 +11,11 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { prisma } from '../config/prisma.js';
-import Stripe from 'stripe';
 import * as quickbooksService from '../services/quickbooks.js';
 
 const router = Router();
 
 // Platform Stripe (for Stripe Connect)
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY)
-  : null;
 
 // QuickBooks OAuth config
 const QB_CLIENT_ID = process.env.QUICKBOOKS_CLIENT_ID;
