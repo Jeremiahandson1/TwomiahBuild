@@ -13,8 +13,11 @@
 import NetInfo from '@react-native-community/netinfo';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
+import * as SecureStore from 'expo-secure-store';
 import { getSession, getPendingSync, markSyncComplete, markSyncFailed, resetFailedSync, getSyncQueueCount } from '../utils/database';
 import { useSyncStore } from '../store/syncStore';
+
+const TOKEN_KEY = 'buildpro_auth_token';
 
 const SYNC_TASK = 'buildpro-background-sync';
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://api.buildpro.io';
@@ -89,7 +92,8 @@ export async function drainSyncQueue() {
     setSyncCount(pending.length);
 
     const session = await getSession();
-    if (!session?.token) {
+    const token = await SecureStore.getItemAsync(TOKEN_KEY);
+    if (!token) {
       syncInProgress = false;
       setSyncing(false);
       return;
@@ -97,7 +101,7 @@ export async function drainSyncQueue() {
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.token}`,
+      'Authorization': `Bearer ${token}`,
       'X-Client': 'buildpro-mobile',
     };
 
@@ -121,7 +125,7 @@ export async function drainSyncQueue() {
 
           response = await fetch(`${API_BASE}${item.endpoint}`, {
             method: 'POST',
-            headers: { Authorization: `Bearer ${session.token}`, 'X-Client': 'buildpro-mobile' },
+            headers: { Authorization: `Bearer ${token}`, 'X-Client': 'buildpro-mobile' },
             body: formData,
           });
         } else {

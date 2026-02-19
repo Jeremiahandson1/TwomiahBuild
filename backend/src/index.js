@@ -120,7 +120,7 @@ app.use(express.json({
   limit: '10mb',
   // Preserve raw body for Stripe webhook signature verification
   verify: (req, res, buf) => {
-    if (req.originalUrl === '/api/stripe/webhook') {
+    if (req.originalUrl.includes('/stripe/webhook') || req.originalUrl.includes('/billing/webhook')) {
       req.rawBody = buf;
     }
   },
@@ -162,6 +162,7 @@ const authLimiter = rateLimit({
 app.use('/api/v1/auth/login', authLimiter);
 app.use('/api/v1/auth/register', authLimiter);
 app.use('/api/v1/auth/forgot-password', authLimiter);
+app.use('/api/v1/auth/signup', authLimiter);
 
 // Static files (uploads)
 const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');

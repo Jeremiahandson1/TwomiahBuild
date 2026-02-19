@@ -202,9 +202,7 @@ router.post('/buildertrend/:type', upload.single('file'), async (req, res, next)
     const csvContent = req.file.buffer.toString('utf-8');
     const results = await importFromBuildertrend(csvContent, type, req.user.companyId);
 
-    await audit.log(req.user.companyId, req.user.userId, 'import', 'buildertrend', null, {
-      type, imported: results.imported, skipped: results.skipped, errors: results.errors.length,
-    });
+    await audit.log({ action: 'IMPORT', entity: 'buildertrend', metadata: { type, imported: results.imported, skipped: results.skipped, errors: results.errors.length }, req });
 
     res.json(results);
   } catch (err) { next(err); }
