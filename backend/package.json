@@ -11,17 +11,23 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.js",
-    "db:reset": "prisma db push --force-reset && npm run db:seed"
+    "db:reset": "prisma db push --force-reset && npm run db:seed",
+    "test:integration": "NODE_ENV=test jest --testPathPattern=integration --runInBand",
+    "test:unit": "jest --testPathIgnorePatterns=integration"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.993.0",
+    "@aws-sdk/s3-request-presigner": "^3.993.0",
     "@prisma/client": "^5.10.0",
     "@sendgrid/mail": "^8.1.0",
+    "archiver": "^7.0.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "csv-parse": "^5.5.0",
     "dotenv": "^16.4.5",
     "express": "^4.18.3",
     "express-rate-limit": "^7.2.0",
@@ -33,13 +39,11 @@
     "sharp": "^0.33.2",
     "socket.io": "^4.7.4",
     "stripe": "^20.3.0",
-    "uuid": "^9.0.1",
-    "winston": "^3.11.0",
-    "zod": "^3.22.4",
-    "archiver": "^7.0.0",
-    "csv-parse": "^5.5.0",
     "twilio": "^5.0.0",
-    "web-push": "^3.6.0"
+    "uuid": "^9.0.1",
+    "web-push": "^3.6.0",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "jest": "^29.7.0",

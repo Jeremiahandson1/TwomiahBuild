@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
+import { withCompany } from '../middleware/ownership.js';
+
 import { emitToCompany, EVENTS } from '../services/socket.js';
 
 const router = Router();
@@ -115,7 +117,7 @@ router.put('/:id', async (req, res, next) => {
     const existing = await prisma.job.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Job not found' });
     const job = await prisma.job.update({
-      where: { id: req.params.id },
+      where: withCompany(req.params.id, req.user.companyId),
       data: {
         ...data,
         scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : undefined,
@@ -135,7 +137,7 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const existing = await prisma.job.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Job not found' });
-    await prisma.job.delete({ where: { id: req.params.id } });
+    await prisma.job.delete({ where: withCompany(req.params.id, req.user.companyId) });
     emitToCompany(req.user.companyId, EVENTS.JOB_DELETED, { id: req.params.id });
     res.status(204).send();
   } catch (error) { next(error); }
@@ -146,7 +148,7 @@ router.post('/:id/start', async (req, res, next) => {
     const existing = await prisma.job.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Job not found' });
     const job = await prisma.job.update({
-      where: { id: req.params.id },
+      where: withCompany(req.params.id, req.user.companyId),
       data: { status: 'in_progress', startedAt: new Date() },
     });
     emitToCompany(req.user.companyId, EVENTS.JOB_STATUS_CHANGED, { id: job.id, status: 'in_progress' });
@@ -159,7 +161,7 @@ router.post('/:id/complete', async (req, res, next) => {
     const existing = await prisma.job.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Job not found' });
     const job = await prisma.job.update({
-      where: { id: req.params.id },
+      where: withCompany(req.params.id, req.user.companyId),
       data: { status: 'completed', completedAt: new Date() },
     });
     emitToCompany(req.user.companyId, EVENTS.JOB_STATUS_CHANGED, { id: job.id, status: 'completed' });
@@ -172,7 +174,7 @@ router.post('/:id/dispatch', async (req, res, next) => {
     const existing = await prisma.job.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Job not found' });
     const job = await prisma.job.update({
-      where: { id: req.params.id },
+      where: withCompany(req.params.id, req.user.companyId),
       data: { status: 'dispatched' },
     });
     emitToCompany(req.user.companyId, EVENTS.JOB_STATUS_CHANGED, { id: job.id, status: 'dispatched' });

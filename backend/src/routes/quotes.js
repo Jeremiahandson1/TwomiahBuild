@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
+import { withCompany } from '../middleware/ownership.js';
+
 import { emitToCompany, EVENTS } from '../services/socket.js';
 
 const router = Router();
@@ -83,7 +85,7 @@ router.put('/:id', async (req, res, next) => {
       await prisma.quoteLineItem.deleteMany({ where: { quoteId: req.params.id } });
       totals = calcTotals(lineItems, data.taxRate ?? Number(existing.taxRate), data.discount ?? Number(existing.discount));
     }
-    const quote = await prisma.quote.update({ where: { id: req.params.id }, data: { ...quoteData, ...totals, expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined, lineItems: lineItems ? { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } : undefined }, include: { lineItems: true } });
+    const quote = await prisma.quote.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...quoteData, ...totals, expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined, lineItems: lineItems ? { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } : undefined }, include: { lineItems: true } });
     emitToCompany(req.user.companyId, EVENTS.QUOTE_UPDATED, quote);
     res.json(quote);
   } catch (error) { next(error); }
@@ -93,14 +95,14 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const existing = await prisma.quote.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Quote not found' });
-    await prisma.quote.delete({ where: { id: req.params.id } });
+    await prisma.quote.delete({ where: withCompany(req.params.id, req.user.companyId) });
     res.status(204).send();
   } catch (error) { next(error); }
 });
 
 router.post('/:id/send', async (req, res, next) => {
   try {
-    const quote = await prisma.quote.update({ where: { id: req.params.id }, data: { status: 'sent', sentAt: new Date() } });
+    const quote = await prisma.quote.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'sent', sentAt: new Date() } });
     emitToCompany(req.user.companyId, EVENTS.QUOTE_SENT, { id: quote.id, number: quote.number });
     res.json(quote);
   } catch (error) { next(error); }
@@ -108,14 +110,14 @@ router.post('/:id/send', async (req, res, next) => {
 
 router.post('/:id/approve', async (req, res, next) => {
   try {
-    const quote = await prisma.quote.update({ where: { id: req.params.id }, data: { status: 'approved', approvedAt: new Date() } });
+    const quote = await prisma.quote.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'approved', approvedAt: new Date() } });
     emitToCompany(req.user.companyId, EVENTS.QUOTE_APPROVED, { id: quote.id, number: quote.number, total: quote.total });
     res.json(quote);
   } catch (error) { next(error); }
 });
 
 router.post('/:id/reject', async (req, res, next) => {
-  try { const quote = await prisma.quote.update({ where: { id: req.params.id }, data: { status: 'rejected' } }); res.json(quote); } catch (error) { next(error); }
+  try { const quote = await prisma.quote.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'rejected' } }); res.json(quote); } catch (error) { next(error); }
 });
 
 router.post('/:id/convert-to-invoice', async (req, res, next) => {

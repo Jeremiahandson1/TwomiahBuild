@@ -138,7 +138,17 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use('/api/', limiter);
+app.use('/api/v1/', limiter);
+
+// API version routing — /api/v1/ is canonical, /api/ redirects for backward compat
+app.use('/api/', (req, res, next) => {
+  // If already hitting /api/v1/, pass through (shouldn't happen but safe)
+  if (req.path.startsWith('/v1/')) return next();
+  // Rewrite /api/foo → /api/v1/foo for legacy clients
+  req.url = '/v1' + req.url;
+  next('router');
+});
+
 
 // Stricter rate limit for auth endpoints
 const authLimiter = rateLimit({
@@ -146,9 +156,9 @@ const authLimiter = rateLimit({
   max: 20,
   message: { error: 'Too many authentication attempts, please try again later' },
 });
-app.use('/api/auth/login', authLimiter);
-app.use('/api/auth/register', authLimiter);
-app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/v1/auth/login', authLimiter);
+app.use('/api/v1/auth/register', authLimiter);
+app.use('/api/v1/auth/forgot-password', authLimiter);
 
 // Static files (uploads)
 const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
@@ -170,65 +180,65 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/contacts', contactsRoutes);
-app.use('/api/projects', projectsRoutes);
-app.use('/api/jobs', jobsRoutes);
-app.use('/api/quotes', quotesRoutes);
-app.use('/api/invoices', invoicesRoutes);
-app.use('/api/time', timeRoutes);
-app.use('/api/expenses', expensesRoutes);
-app.use('/api/rfis', rfisRoutes);
-app.use('/api/change-orders', changeOrdersRoutes);
-app.use('/api/punch-lists', punchListsRoutes);
-app.use('/api/daily-logs', dailyLogsRoutes);
-app.use('/api/inspections', inspectionsRoutes);
-app.use('/api/bids', bidsRoutes);
-app.use('/api/team', teamRoutes);
-app.use('/api/company', companyRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/documents', documentsRoutes);
-app.use('/api/billing', billingRoutes);
-app.use('/api/integrations', integrationsRoutes);
-app.use('/api/factory', factoryRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/contacts', contactsRoutes);
+app.use('/api/v1/projects', projectsRoutes);
+app.use('/api/v1/jobs', jobsRoutes);
+app.use('/api/v1/quotes', quotesRoutes);
+app.use('/api/v1/invoices', invoicesRoutes);
+app.use('/api/v1/time', timeRoutes);
+app.use('/api/v1/expenses', expensesRoutes);
+app.use('/api/v1/rfis', rfisRoutes);
+app.use('/api/v1/change-orders', changeOrdersRoutes);
+app.use('/api/v1/punch-lists', punchListsRoutes);
+app.use('/api/v1/daily-logs', dailyLogsRoutes);
+app.use('/api/v1/inspections', inspectionsRoutes);
+app.use('/api/v1/bids', bidsRoutes);
+app.use('/api/v1/team', teamRoutes);
+app.use('/api/v1/company', companyRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/documents', documentsRoutes);
+app.use('/api/v1/billing', billingRoutes);
+app.use('/api/v1/integrations', integrationsRoutes);
+app.use('/api/v1/factory', factoryRoutes);
 
 // Feature routes
-app.use('/api/agency', agencyAdminRoutes);
-app.use('/api/agreements', agreementsRoutes);
-app.use('/api/audit', auditRoutes);
-app.use('/api/booking', bookingRoutes);
-app.use('/api/bulk', bulkRoutes);
-app.use('/api/call-tracking', calltrackingRoutes);
-app.use('/api/comments', commentsRoutes);
-app.use('/api/equipment', equipmentRoutes);
-app.use('/api/export', exportRoutes);
-app.use('/api/fleet', fleetRoutes);
-app.use('/api/geofencing', geofencingRoutes);
-app.use('/api/import', importRoutes);
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/maps', mapsRoutes);
-app.use('/api/marketing', marketingRoutes);
-app.use('/api/photos', photosRoutes);
-app.use('/api/portal', portalRoutes);
-app.use('/api/portal/selections', portalSelectionsRoutes);
-app.use('/api/pricebook', pricebookRoutes);
-app.use('/api/push', pushRoutes);
-app.use('/api/quickbooks', quickbooksRoutes);
-app.use('/api/recurring', recurringRoutes);
-app.use('/api/reports', reportingRoutes);
-app.use('/api/reviews', reviewsRoutes);
-app.use('/api/routing', routingRoutes);
-app.use('/api/scheduling', schedulingRoutes);
-app.use('/api/search', searchRoutes);
-app.use('/api/selections', selectionsRoutes);
-app.use('/api/sms', smsRoutes);
-app.use('/api/stripe', stripeRoutes);
-app.use('/api/takeoffs', takeoffsRoutes);
-app.use('/api/tasks', tasksRoutes);
-app.use('/api/time-tracking', timeTrackingRoutes);
-app.use('/api/warranties', warrantiesRoutes);
-app.use('/api/weather', weatherRoutes);
-app.use('/api/wisetack', wisetackRoutes);
+app.use('/api/v1/agency', agencyAdminRoutes);
+app.use('/api/v1/agreements', agreementsRoutes);
+app.use('/api/v1/audit', auditRoutes);
+app.use('/api/v1/booking', bookingRoutes);
+app.use('/api/v1/bulk', bulkRoutes);
+app.use('/api/v1/call-tracking', calltrackingRoutes);
+app.use('/api/v1/comments', commentsRoutes);
+app.use('/api/v1/equipment', equipmentRoutes);
+app.use('/api/v1/export', exportRoutes);
+app.use('/api/v1/fleet', fleetRoutes);
+app.use('/api/v1/geofencing', geofencingRoutes);
+app.use('/api/v1/import', importRoutes);
+app.use('/api/v1/inventory', inventoryRoutes);
+app.use('/api/v1/maps', mapsRoutes);
+app.use('/api/v1/marketing', marketingRoutes);
+app.use('/api/v1/photos', photosRoutes);
+app.use('/api/v1/portal', portalRoutes);
+app.use('/api/v1/portal/selections', portalSelectionsRoutes);
+app.use('/api/v1/pricebook', pricebookRoutes);
+app.use('/api/v1/push', pushRoutes);
+app.use('/api/v1/quickbooks', quickbooksRoutes);
+app.use('/api/v1/recurring', recurringRoutes);
+app.use('/api/v1/reports', reportingRoutes);
+app.use('/api/v1/reviews', reviewsRoutes);
+app.use('/api/v1/routing', routingRoutes);
+app.use('/api/v1/scheduling', schedulingRoutes);
+app.use('/api/v1/search', searchRoutes);
+app.use('/api/v1/selections', selectionsRoutes);
+app.use('/api/v1/sms', smsRoutes);
+app.use('/api/v1/stripe', stripeRoutes);
+app.use('/api/v1/takeoffs', takeoffsRoutes);
+app.use('/api/v1/tasks', tasksRoutes);
+app.use('/api/v1/time-tracking', timeTrackingRoutes);
+app.use('/api/v1/warranties', warrantiesRoutes);
+app.use('/api/v1/weather', weatherRoutes);
+app.use('/api/v1/wisetack', wisetackRoutes);
 
 // 404 handler
 app.use(notFoundHandler);
@@ -246,14 +256,36 @@ const shutdown = async (signal) => {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
+// ── Startup validation ─────────────────────────────────────────────────────
+function runStartupChecks() {
+  // #1 — File storage
+  const { validateStorageConfig, USE_S3 } = await import('./services/fileUpload.js').catch(() => ({ validateStorageConfig: () => true, USE_S3: false }));
+  if (!USE_S3 && process.env.NODE_ENV === 'production') {
+    logger.error('CRITICAL: STORAGE_BACKEND is not set to "s3". All uploaded files will be lost on the next Render deploy. Set STORAGE_BACKEND=s3 and configure R2_* or S3_* env vars immediately.');
+  }
+
+  // #3 — Database backup check
+  if (process.env.NODE_ENV === 'production') {
+    const dbUrl = process.env.DATABASE_URL || '';
+    // Render free-tier postgres URLs contain "oregon-postgres.render.com" or similar
+    // There's no API to verify backup status, so we warn unless explicitly acknowledged
+    if (!process.env.DB_BACKUPS_CONFIRMED) {
+      logger.warn(
+        'DB_BACKUPS_CONFIRMED is not set. Confirm that your Render PostgreSQL instance is on a paid plan with automated backups enabled, then set DB_BACKUPS_CONFIRMED=true in your environment. Free-tier Render Postgres has NO automated backups — a bad migration is unrecoverable.'
+      );
+    }
+  }
+}
+
 // Start server
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   logger.info(`Server running on port ${PORT}`, {
     env: process.env.NODE_ENV || 'development',
     port: PORT,
     websocket: 'enabled',
   });
+  try { runStartupChecks(); } catch (e) { /* non-fatal */ }
 });
 
 export default app;

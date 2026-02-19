@@ -290,6 +290,67 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* Data Ownership Callout — competitive differentiator vs Buildertrend */}
+      <section style={{ padding: '48px 16px', background: '#1e293b', color: '#fff' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>🔓</div>
+          <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 12 }}>Your data is yours. Always.</h2>
+          <p style={{ fontSize: 15, color: '#94a3b8', marginBottom: 28, lineHeight: 1.7 }}>
+            Buildertrend has no bulk export. Customers who want to leave are stuck.{' '}
+            <strong style={{ color: '#fff' }}>BuildPro is the opposite.</strong>{' '}
+            Every plan includes a one-click full export — contacts, jobs, projects, invoices, quotes, expenses — as a ZIP you download any time, no support ticket required.
+            Switching away is always an option. That's why most people don't.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ background: '#334155', borderRadius: 8, padding: '12px 20px', fontSize: 13 }}>
+              ✅ One-click full ZIP export
+            </div>
+            <div style={{ background: '#334155', borderRadius: 8, padding: '12px 20px', fontSize: 13 }}>
+              ✅ Buildertrend migration wizard
+            </div>
+            <div style={{ background: '#334155', borderRadius: 8, padding: '12px 20px', fontSize: 13 }}>
+              ✅ Data deleted within 30 days of cancel
+            </div>
+            <div style={{ background: '#334155', borderRadius: 8, padding: '12px 20px', fontSize: 13 }}>
+              ✅ No "contact sales to export"
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* White-Label Agency Program */}
+      <section style={{ padding: '64px 16px', background: '#f8fafc' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 36 }}>
+            <span style={{ background: '#dbeafe', color: '#1d4ed8', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Agency Program</span>
+            <h2 style={{ fontSize: 28, fontWeight: 700, margin: '12px 0 8px' }}>Resell BuildPro Under Your Brand</h2>
+            <p style={{ color: '#64748b', fontSize: 15, lineHeight: 1.7 }}>
+              None of our competitors offer this. The BuildPro Factory is available as a white-label agency program —
+              deploy fully branded instances for your clients under your own domain and logo.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
+            {[
+              { icon: '🏭', title: 'Factory Access', desc: 'Generate complete client sites in minutes. CMS, CRM, analytics — all pre-built.' },
+              { icon: '🎨', title: 'Your Branding', desc: 'Your logo, your domain, your colors. Clients never see BuildPro.' },
+              { icon: '💰', title: 'Your Pricing', desc: 'Charge what the market will bear. We charge you wholesale.' },
+              { icon: '🔧', title: 'Full Source Code', desc: 'Self-hosted license includes everything. Customize as needed for clients.' },
+            ].map(item => (
+              <div key={item.title} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '20px' }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{item.icon}</div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{item.title}</h3>
+                <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <a href="/contact?agency=true" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', padding: '12px 28px', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
+              Talk to Us About the Agency Program
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="py-16 bg-white">
         <div className="max-w-3xl mx-auto px-4">
@@ -624,6 +685,18 @@ function FAQ() {
     {
       q: 'How does user pricing work?',
       a: 'Each plan includes a set number of users. If you need more, you can add them for $29/user/month. Enterprise plans are priced per-user from the start.',
+    },
+    {
+      q: 'Do I own my data? Can I export everything?',
+      a: 'Yes — completely. Every plan includes a one-click full data export: all contacts, jobs, projects, invoices, quotes, and expenses in a ZIP file you can download any time. No gating, no "contact support to export," no data hostage. You own it.',
+    },
+    {
+      q: 'Can I migrate from Buildertrend?',
+      a: 'Yes. BuildPro includes a Buildertrend migration wizard that maps your exported contacts and jobs directly into BuildPro. Export your data from Buildertrend, upload the CSV, and we handle the field mapping automatically. White-glove migration service is also available — we\'ll move everything for you.',
+    },
+    {
+      q: 'What happens to my data if I cancel?',
+      a: 'Download your full export before you cancel and you have everything. We hold your data for 30 days after cancellation in case you change your mind, then it\'s permanently deleted from our servers.',
     },
   ];
 

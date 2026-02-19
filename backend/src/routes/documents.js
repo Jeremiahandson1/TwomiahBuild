@@ -1,6 +1,8 @@
 import express from 'express';
 import path from 'path';
 import { authenticate } from '../middleware/auth.js';
+import { withCompany } from '../middleware/ownership.js';
+
 import { asyncHandler, NotFoundError, ValidationError } from '../utils/errors.js';
 import fileService, { upload, setUploadSubdir, handleUploadError } from '../services/fileUpload.js';
 import logger from '../services/logger.js';
@@ -191,7 +193,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
   if (!existing) throw new NotFoundError('Document');
 
   const document = await req.prisma.document.update({
-    where: { id: req.params.id },
+    where: withCompany(req.params.id, req.user.companyId),
     data: {
       name,
       description,
@@ -225,7 +227,7 @@ router.delete('/:id', asyncHandler(async (req, res) => {
     logger.logError(err, req, { action: 'deleteFile', documentId: document.id });
   }
 
-  await req.prisma.document.delete({ where: { id: req.params.id } });
+  await req.prisma.document.delete({ where: withCompany(req.params.id, req.user.companyId) });
 
   logger.audit('document_delete', req.user.userId, req.user.companyId, {
     documentId: document.id,

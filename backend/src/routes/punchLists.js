@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
+import { withCompany } from '../middleware/ownership.js';
+
 
 const router = Router();
 router.use(authenticate);
@@ -28,9 +30,9 @@ router.post('/', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.put('/:id', async (req, res, next) => { try { const data = schema.partial().parse(req.body); const item = await prisma.punchListItem.update({ where: { id: req.params.id }, data: { ...data, dueDate: data.dueDate ? new Date(data.dueDate) : undefined } }); res.json(item); } catch (error) { next(error); } });
-router.delete('/:id', async (req, res, next) => { try { await prisma.punchListItem.delete({ where: { id: req.params.id } }); res.status(204).send(); } catch (error) { next(error); } });
-router.post('/:id/complete', async (req, res, next) => { try { const item = await prisma.punchListItem.update({ where: { id: req.params.id }, data: { status: 'completed', completedAt: new Date() } }); res.json(item); } catch (error) { next(error); } });
-router.post('/:id/verify', async (req, res, next) => { try { const { verifiedBy } = req.body; const item = await prisma.punchListItem.update({ where: { id: req.params.id }, data: { status: 'verified', verifiedAt: new Date(), verifiedBy } }); res.json(item); } catch (error) { next(error); } });
+router.put('/:id', async (req, res, next) => { try { const data = schema.partial().parse(req.body); const item = await prisma.punchListItem.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...data, dueDate: data.dueDate ? new Date(data.dueDate) : undefined } }); res.json(item); } catch (error) { next(error); } });
+router.delete('/:id', async (req, res, next) => { try { await prisma.punchListItem.delete({ where: withCompany(req.params.id, req.user.companyId) }); res.status(204).send(); } catch (error) { next(error); } });
+router.post('/:id/complete', async (req, res, next) => { try { const item = await prisma.punchListItem.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'completed', completedAt: new Date() } }); res.json(item); } catch (error) { next(error); } });
+router.post('/:id/verify', async (req, res, next) => { try { const { verifiedBy } = req.body; const item = await prisma.punchListItem.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'verified', verifiedAt: new Date(), verifiedBy } }); res.json(item); } catch (error) { next(error); } });
 
 export default router;

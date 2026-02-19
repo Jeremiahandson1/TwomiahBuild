@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
+import { withCompany } from '../middleware/ownership.js';
+
 
 const router = Router();
 router.use(authenticate);
@@ -21,9 +23,9 @@ router.post('/', async (req, res, next) => {
   try { const data = schema.parse(req.body); const count = await prisma.inspection.count({ where: { companyId: req.user.companyId } }); const item = await prisma.inspection.create({ data: { ...data, number: `INS-${String(count + 1).padStart(4, '0')}`, scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null, companyId: req.user.companyId } }); res.status(201).json(item); } catch (error) { next(error); }
 });
 
-router.put('/:id', async (req, res, next) => { try { const data = schema.partial().parse(req.body); const item = await prisma.inspection.update({ where: { id: req.params.id }, data: { ...data, scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : undefined } }); res.json(item); } catch (error) { next(error); } });
-router.delete('/:id', async (req, res, next) => { try { await prisma.inspection.delete({ where: { id: req.params.id } }); res.status(204).send(); } catch (error) { next(error); } });
-router.post('/:id/pass', async (req, res, next) => { try { const item = await prisma.inspection.update({ where: { id: req.params.id }, data: { status: 'passed', result: 'pass' } }); res.json(item); } catch (error) { next(error); } });
-router.post('/:id/fail', async (req, res, next) => { try { const { deficiencies } = req.body; const item = await prisma.inspection.update({ where: { id: req.params.id }, data: { status: 'failed', result: 'fail', deficiencies } }); res.json(item); } catch (error) { next(error); } });
+router.put('/:id', async (req, res, next) => { try { const data = schema.partial().parse(req.body); const item = await prisma.inspection.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...data, scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : undefined } }); res.json(item); } catch (error) { next(error); } });
+router.delete('/:id', async (req, res, next) => { try { await prisma.inspection.delete({ where: withCompany(req.params.id, req.user.companyId) }); res.status(204).send(); } catch (error) { next(error); } });
+router.post('/:id/pass', async (req, res, next) => { try { const item = await prisma.inspection.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'passed', result: 'pass' } }); res.json(item); } catch (error) { next(error); } });
+router.post('/:id/fail', async (req, res, next) => { try { const { deficiencies } = req.body; const item = await prisma.inspection.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'failed', result: 'fail', deficiencies } }); res.json(item); } catch (error) { next(error); } });
 
 export default router;

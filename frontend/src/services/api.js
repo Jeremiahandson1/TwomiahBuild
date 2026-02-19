@@ -87,32 +87,32 @@ class ApiClient {
 
   // Auth
   async register(data) {
-    const result = await this.request('/api/auth/register', { method: 'POST', body: JSON.stringify(data) });
+    const result = await this.request('/api/v1/auth/register', { method: 'POST', body: JSON.stringify(data) });
     this.setTokens(result.accessToken, result.refreshToken);
     return result;
   }
 
   async login(email, password) {
-    const result = await this.request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    const result = await this.request('/api/v1/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     this.setTokens(result.accessToken, result.refreshToken);
     return result;
   }
 
   async logout() {
-    await this.request('/api/auth/logout', { method: 'POST' }).catch(() => {});
+    await this.request('/api/v1/auth/logout', { method: 'POST' }).catch(() => {});
     this.clearTokens();
   }
 
   async getMe() {
-    return this.request('/api/auth/me');
+    return this.request('/api/v1/auth/me');
   }
 
   async forgotPassword(email) {
-    return this.request('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+    return this.request('/api/v1/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
   }
 
   async resetPassword(token, password) {
-    return this.request('/api/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) });
+    return this.request('/api/v1/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) });
   }
 
   // Generic CRUD
@@ -143,201 +143,201 @@ class ApiClient {
 
   // Contacts
   contacts = {
-    list: (params) => this.get('/api/contacts', params),
-    stats: () => this.get('/api/contacts/stats'),
-    get: (id) => this.getOne('/api/contacts', id),
-    create: (data) => this.create('/api/contacts', data),
-    update: (id, data) => this.update('/api/contacts', id, data),
-    delete: (id) => this.delete('/api/contacts', id),
-    convert: (id) => this.action('/api/contacts', id, 'convert'),
+    list: (params) => this.get('/api/v1/contacts', params),
+    stats: () => this.get('/api/v1/contacts/stats'),
+    get: (id) => this.getOne('/api/v1/contacts', id),
+    create: (data) => this.create('/api/v1/contacts', data),
+    update: (id, data) => this.update('/api/v1/contacts', id, data),
+    delete: (id) => this.delete('/api/v1/contacts', id),
+    convert: (id) => this.action('/api/v1/contacts', id, 'convert'),
   };
 
   // Projects
   projects = {
-    list: (params) => this.get('/api/projects', params),
-    stats: () => this.get('/api/projects/stats'),
-    get: (id) => this.getOne('/api/projects', id),
-    create: (data) => this.create('/api/projects', data),
-    update: (id, data) => this.update('/api/projects', id, data),
-    delete: (id) => this.delete('/api/projects', id),
+    list: (params) => this.get('/api/v1/projects', params),
+    stats: () => this.get('/api/v1/projects/stats'),
+    get: (id) => this.getOne('/api/v1/projects', id),
+    create: (data) => this.create('/api/v1/projects', data),
+    update: (id, data) => this.update('/api/v1/projects', id, data),
+    delete: (id) => this.delete('/api/v1/projects', id),
   };
 
   // Jobs
   jobs = {
-    list: (params) => this.get('/api/jobs', params),
-    today: () => this.get('/api/jobs/today'),
-    get: (id) => this.getOne('/api/jobs', id),
-    create: (data) => this.create('/api/jobs', data),
-    update: (id, data) => this.update('/api/jobs', id, data),
-    delete: (id) => this.delete('/api/jobs', id),
-    dispatch: (id) => this.action('/api/jobs', id, 'dispatch'),
-    start: (id) => this.action('/api/jobs', id, 'start'),
-    complete: (id) => this.action('/api/jobs', id, 'complete'),
+    list: (params) => this.get('/api/v1/jobs', params),
+    today: () => this.get('/api/v1/jobs/today'),
+    get: (id) => this.getOne('/api/v1/jobs', id),
+    create: (data) => this.create('/api/v1/jobs', data),
+    update: (id, data) => this.update('/api/v1/jobs', id, data),
+    delete: (id) => this.delete('/api/v1/jobs', id),
+    dispatch: (id) => this.action('/api/v1/jobs', id, 'dispatch'),
+    start: (id) => this.action('/api/v1/jobs', id, 'start'),
+    complete: (id) => this.action('/api/v1/jobs', id, 'complete'),
   };
 
   // Quotes
   quotes = {
-    list: (params) => this.get('/api/quotes', params),
-    stats: () => this.get('/api/quotes/stats'),
-    get: (id) => this.getOne('/api/quotes', id),
-    create: (data) => this.create('/api/quotes', data),
-    update: (id, data) => this.update('/api/quotes', id, data),
-    delete: (id) => this.delete('/api/quotes', id),
-    send: (id) => this.action('/api/quotes', id, 'send'),
-    approve: (id) => this.action('/api/quotes', id, 'approve'),
-    reject: (id) => this.action('/api/quotes', id, 'reject'),
-    convertToInvoice: (id) => this.action('/api/quotes', id, 'convert-to-invoice'),
+    list: (params) => this.get('/api/v1/quotes', params),
+    stats: () => this.get('/api/v1/quotes/stats'),
+    get: (id) => this.getOne('/api/v1/quotes', id),
+    create: (data) => this.create('/api/v1/quotes', data),
+    update: (id, data) => this.update('/api/v1/quotes', id, data),
+    delete: (id) => this.delete('/api/v1/quotes', id),
+    send: (id) => this.action('/api/v1/quotes', id, 'send'),
+    approve: (id) => this.action('/api/v1/quotes', id, 'approve'),
+    reject: (id) => this.action('/api/v1/quotes', id, 'reject'),
+    convertToInvoice: (id) => this.action('/api/v1/quotes', id, 'convert-to-invoice'),
     downloadPdf: (id) => `${this.baseUrl}/api/quotes/${id}/pdf`,
   };
 
   // Invoices
   invoices = {
-    list: (params) => this.get('/api/invoices', params),
-    stats: () => this.get('/api/invoices/stats'),
-    get: (id) => this.getOne('/api/invoices', id),
-    create: (data) => this.create('/api/invoices', data),
-    update: (id, data) => this.update('/api/invoices', id, data),
-    delete: (id) => this.delete('/api/invoices', id),
-    send: (id) => this.action('/api/invoices', id, 'send'),
+    list: (params) => this.get('/api/v1/invoices', params),
+    stats: () => this.get('/api/v1/invoices/stats'),
+    get: (id) => this.getOne('/api/v1/invoices', id),
+    create: (data) => this.create('/api/v1/invoices', data),
+    update: (id, data) => this.update('/api/v1/invoices', id, data),
+    delete: (id) => this.delete('/api/v1/invoices', id),
+    send: (id) => this.action('/api/v1/invoices', id, 'send'),
     recordPayment: (id, data) => this.request(`/api/invoices/${id}/payments`, { method: 'POST', body: JSON.stringify(data) }),
     downloadPdf: (id) => `${this.baseUrl}/api/invoices/${id}/pdf`,
   };
 
   // Documents
   documents = {
-    list: (params) => this.get('/api/documents', params),
-    get: (id) => this.getOne('/api/documents', id),
-    upload: (formData) => this.request('/api/documents', { method: 'POST', body: formData }),
-    uploadMultiple: (formData) => this.request('/api/documents/bulk', { method: 'POST', body: formData }),
-    update: (id, data) => this.update('/api/documents', id, data),
-    delete: (id) => this.delete('/api/documents', id),
+    list: (params) => this.get('/api/v1/documents', params),
+    get: (id) => this.getOne('/api/v1/documents', id),
+    upload: (formData) => this.request('/api/v1/documents', { method: 'POST', body: formData }),
+    uploadMultiple: (formData) => this.request('/api/v1/documents/bulk', { method: 'POST', body: formData }),
+    update: (id, data) => this.update('/api/v1/documents', id, data),
+    delete: (id) => this.delete('/api/v1/documents', id),
   };
 
   // Time
   time = {
-    list: (params) => this.get('/api/time', params),
-    summary: (params) => this.get('/api/time/summary', params),
-    create: (data) => this.create('/api/time', data),
-    update: (id, data) => this.update('/api/time', id, data),
-    delete: (id) => this.delete('/api/time', id),
-    approve: (id) => this.action('/api/time', id, 'approve'),
+    list: (params) => this.get('/api/v1/time', params),
+    summary: (params) => this.get('/api/v1/time/summary', params),
+    create: (data) => this.create('/api/v1/time', data),
+    update: (id, data) => this.update('/api/v1/time', id, data),
+    delete: (id) => this.delete('/api/v1/time', id),
+    approve: (id) => this.action('/api/v1/time', id, 'approve'),
   };
 
   // Expenses
   expenses = {
-    list: (params) => this.get('/api/expenses', params),
-    summary: (params) => this.get('/api/expenses/summary', params),
-    create: (data) => this.create('/api/expenses', data),
-    update: (id, data) => this.update('/api/expenses', id, data),
-    delete: (id) => this.delete('/api/expenses', id),
-    reimburse: (id) => this.action('/api/expenses', id, 'reimburse'),
+    list: (params) => this.get('/api/v1/expenses', params),
+    summary: (params) => this.get('/api/v1/expenses/summary', params),
+    create: (data) => this.create('/api/v1/expenses', data),
+    update: (id, data) => this.update('/api/v1/expenses', id, data),
+    delete: (id) => this.delete('/api/v1/expenses', id),
+    reimburse: (id) => this.action('/api/v1/expenses', id, 'reimburse'),
   };
 
   // RFIs
   rfis = {
-    list: (params) => this.get('/api/rfis', params),
-    get: (id) => this.getOne('/api/rfis', id),
-    create: (data) => this.create('/api/rfis', data),
-    update: (id, data) => this.update('/api/rfis', id, data),
-    delete: (id) => this.delete('/api/rfis', id),
-    respond: (id, data) => this.action('/api/rfis', id, 'respond', data),
-    close: (id) => this.action('/api/rfis', id, 'close'),
+    list: (params) => this.get('/api/v1/rfis', params),
+    get: (id) => this.getOne('/api/v1/rfis', id),
+    create: (data) => this.create('/api/v1/rfis', data),
+    update: (id, data) => this.update('/api/v1/rfis', id, data),
+    delete: (id) => this.delete('/api/v1/rfis', id),
+    respond: (id, data) => this.action('/api/v1/rfis', id, 'respond', data),
+    close: (id) => this.action('/api/v1/rfis', id, 'close'),
   };
 
   // Change Orders
   changeOrders = {
-    list: (params) => this.get('/api/change-orders', params),
-    get: (id) => this.getOne('/api/change-orders', id),
-    create: (data) => this.create('/api/change-orders', data),
-    update: (id, data) => this.update('/api/change-orders', id, data),
-    delete: (id) => this.delete('/api/change-orders', id),
-    submit: (id) => this.action('/api/change-orders', id, 'submit'),
-    approve: (id, data) => this.action('/api/change-orders', id, 'approve', data),
-    reject: (id) => this.action('/api/change-orders', id, 'reject'),
+    list: (params) => this.get('/api/v1/change-orders', params),
+    get: (id) => this.getOne('/api/v1/change-orders', id),
+    create: (data) => this.create('/api/v1/change-orders', data),
+    update: (id, data) => this.update('/api/v1/change-orders', id, data),
+    delete: (id) => this.delete('/api/v1/change-orders', id),
+    submit: (id) => this.action('/api/v1/change-orders', id, 'submit'),
+    approve: (id, data) => this.action('/api/v1/change-orders', id, 'approve', data),
+    reject: (id) => this.action('/api/v1/change-orders', id, 'reject'),
   };
 
   // Punch Lists
   punchLists = {
-    list: (params) => this.get('/api/punch-lists', params),
-    get: (id) => this.getOne('/api/punch-lists', id),
-    create: (data) => this.create('/api/punch-lists', data),
-    update: (id, data) => this.update('/api/punch-lists', id, data),
-    delete: (id) => this.delete('/api/punch-lists', id),
-    complete: (id) => this.action('/api/punch-lists', id, 'complete'),
-    verify: (id, data) => this.action('/api/punch-lists', id, 'verify', data),
+    list: (params) => this.get('/api/v1/punch-lists', params),
+    get: (id) => this.getOne('/api/v1/punch-lists', id),
+    create: (data) => this.create('/api/v1/punch-lists', data),
+    update: (id, data) => this.update('/api/v1/punch-lists', id, data),
+    delete: (id) => this.delete('/api/v1/punch-lists', id),
+    complete: (id) => this.action('/api/v1/punch-lists', id, 'complete'),
+    verify: (id, data) => this.action('/api/v1/punch-lists', id, 'verify', data),
   };
 
   // Daily Logs
   dailyLogs = {
-    list: (params) => this.get('/api/daily-logs', params),
-    get: (id) => this.getOne('/api/daily-logs', id),
-    create: (data) => this.create('/api/daily-logs', data),
-    update: (id, data) => this.update('/api/daily-logs', id, data),
-    delete: (id) => this.delete('/api/daily-logs', id),
+    list: (params) => this.get('/api/v1/daily-logs', params),
+    get: (id) => this.getOne('/api/v1/daily-logs', id),
+    create: (data) => this.create('/api/v1/daily-logs', data),
+    update: (id, data) => this.update('/api/v1/daily-logs', id, data),
+    delete: (id) => this.delete('/api/v1/daily-logs', id),
   };
 
   // Inspections
   inspections = {
-    list: (params) => this.get('/api/inspections', params),
-    create: (data) => this.create('/api/inspections', data),
-    update: (id, data) => this.update('/api/inspections', id, data),
-    delete: (id) => this.delete('/api/inspections', id),
-    pass: (id) => this.action('/api/inspections', id, 'pass'),
-    fail: (id, data) => this.action('/api/inspections', id, 'fail', data),
+    list: (params) => this.get('/api/v1/inspections', params),
+    create: (data) => this.create('/api/v1/inspections', data),
+    update: (id, data) => this.update('/api/v1/inspections', id, data),
+    delete: (id) => this.delete('/api/v1/inspections', id),
+    pass: (id) => this.action('/api/v1/inspections', id, 'pass'),
+    fail: (id, data) => this.action('/api/v1/inspections', id, 'fail', data),
   };
 
   // Bids
   bids = {
-    list: (params) => this.get('/api/bids', params),
-    stats: () => this.get('/api/bids/stats'),
-    get: (id) => this.getOne('/api/bids', id),
-    create: (data) => this.create('/api/bids', data),
-    update: (id, data) => this.update('/api/bids', id, data),
-    delete: (id) => this.delete('/api/bids', id),
-    submit: (id) => this.action('/api/bids', id, 'submit'),
-    won: (id) => this.action('/api/bids', id, 'won'),
-    lost: (id) => this.action('/api/bids', id, 'lost'),
+    list: (params) => this.get('/api/v1/bids', params),
+    stats: () => this.get('/api/v1/bids/stats'),
+    get: (id) => this.getOne('/api/v1/bids', id),
+    create: (data) => this.create('/api/v1/bids', data),
+    update: (id, data) => this.update('/api/v1/bids', id, data),
+    delete: (id) => this.delete('/api/v1/bids', id),
+    submit: (id) => this.action('/api/v1/bids', id, 'submit'),
+    won: (id) => this.action('/api/v1/bids', id, 'won'),
+    lost: (id) => this.action('/api/v1/bids', id, 'lost'),
   };
 
   // Team
   team = {
-    list: (params) => this.get('/api/team', params),
-    get: (id) => this.getOne('/api/team', id),
-    create: (data) => this.create('/api/team', data),
-    update: (id, data) => this.update('/api/team', id, data),
-    delete: (id) => this.delete('/api/team', id),
+    list: (params) => this.get('/api/v1/team', params),
+    get: (id) => this.getOne('/api/v1/team', id),
+    create: (data) => this.create('/api/v1/team', data),
+    update: (id, data) => this.update('/api/v1/team', id, data),
+    delete: (id) => this.delete('/api/v1/team', id),
   };
 
   // Company
   company = {
-    get: () => this.get('/api/company'),
-    update: (data) => this.request('/api/company', { method: 'PUT', body: JSON.stringify(data) }),
-    updateFeatures: (features) => this.request('/api/company/features', { method: 'PUT', body: JSON.stringify({ features }) }),
-    users: () => this.get('/api/company/users'),
-    createUser: (data) => this.request('/api/company/users', { method: 'POST', body: JSON.stringify(data) }),
+    get: () => this.get('/api/v1/company'),
+    update: (data) => this.request('/api/v1/company', { method: 'PUT', body: JSON.stringify(data) }),
+    updateFeatures: (features) => this.request('/api/v1/company/features', { method: 'PUT', body: JSON.stringify({ features }) }),
+    users: () => this.get('/api/v1/company/users'),
+    createUser: (data) => this.request('/api/v1/company/users', { method: 'POST', body: JSON.stringify(data) }),
     updateUser: (id, data) => this.request(`/api/company/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     deleteUser: (id) => this.request(`/api/company/users/${id}`, { method: 'DELETE' }),
   };
 
   // Dashboard
   dashboard = {
-    stats: () => this.get('/api/dashboard/stats'),
-    recentActivity: () => this.get('/api/dashboard/recent-activity'),
+    stats: () => this.get('/api/v1/dashboard/stats'),
+    recentActivity: () => this.get('/api/v1/dashboard/recent-activity'),
   };
 
   // Job Costing
   jobCosting = {
     forJob: (jobId) => this.get(`/api/job-costing/job/${jobId}`),
-    report: (params) => this.get('/api/job-costing/report', params),
-    trends: (params) => this.get('/api/job-costing/trends', params),
+    report: (params) => this.get('/api/v1/job-costing/report', params),
+    trends: (params) => this.get('/api/v1/job-costing/trends', params),
   };
 
   // Reports
   reports = {
-    summary: (params) => this.get('/api/reports/summary', params),
-    revenue: (params) => this.get('/api/reports/revenue', params),
-    expenses: (params) => this.get('/api/reports/expenses', params),
-    profitability: (params) => this.get('/api/reports/profitability', params),
+    summary: (params) => this.get('/api/v1/reports/summary', params),
+    revenue: (params) => this.get('/api/v1/reports/revenue', params),
+    expenses: (params) => this.get('/api/v1/reports/expenses', params),
+    profitability: (params) => this.get('/api/v1/reports/profitability', params),
   };
 }
 

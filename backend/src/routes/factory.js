@@ -68,13 +68,13 @@ router.post('/generate', async (req, res) => {
       return res.status(400).json({ error: 'Company name is required' });
     }
 
-    console.log(`[Factory] Generating build for "${config.company.name}" — products: ${config.products.join(', ')}`);
+    logger.info('[Factory] Generating build for "${config.company.name}" — products: ${config.products.join(', ')}');
     const startTime = Date.now();
 
     const result = await generate(config);
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(`[Factory] Build complete in ${elapsed}s — ${result.zipName}`);
+    logger.info('[Factory] Build complete in ${elapsed}s — ${result.zipName}');
 
     // Track customer and build in database
     let customer = null;
@@ -139,7 +139,7 @@ router.post('/generate', async (req, res) => {
       });
     } catch (dbErr) {
       // Don't fail the build if tracking fails
-      console.error('[Factory] Failed to track build in DB:', dbErr.message);
+      logger.error('[Factory] Failed to track build in DB:', dbErr.message);
     }
 
     res.json({
@@ -153,7 +153,7 @@ router.post('/generate', async (req, res) => {
     });
 
   } catch (err) {
-    console.error('[Factory] Generation failed:', err);
+    logger.error('[Factory] Generation failed:', err);
     res.status(500).json({ error: 'Build generation failed', details: err.message });
   }
 });
@@ -434,7 +434,7 @@ router.get('/stats', async (req, res) => {
       })),
     });
   } catch (err) {
-    console.error('Stats error:', err);
+    logger.error('Stats error:', err);
     res.json({
       totalCustomers: 0,
       totalBuilds: 0,
@@ -469,7 +469,7 @@ router.delete('/builds/:id', async (req, res) => {
     await prisma.factoryBuild.delete({ where: { id: build.id } });
     res.json({ success: true });
   } catch (err) {
-    console.error('Delete build error:', err);
+    logger.error('Delete build error:', err);
     res.status(500).json({ error: 'Failed to delete build' });
   }
 });
@@ -528,7 +528,7 @@ router.get('/customers', async (req, res) => {
 
     res.json(customers);
   } catch (err) {
-    console.error('Customers error:', err);
+    logger.error('Customers error:', err);
     res.json([]);
   }
 });
@@ -554,7 +554,7 @@ router.get('/customers/:id', async (req, res) => {
 
     res.json(customer);
   } catch (err) {
-    console.error('Customer detail error:', err);
+    logger.error('Customer detail error:', err);
     res.status(500).json({ error: 'Failed to fetch customer' });
   }
 });
@@ -597,7 +597,7 @@ router.patch('/customers/:id', async (req, res) => {
 
     res.json(customer);
   } catch (err) {
-    console.error('Customer update error:', err);
+    logger.error('Customer update error:', err);
     res.status(500).json({ error: 'Failed to update customer' });
   }
 });
@@ -615,7 +615,7 @@ router.delete('/customers/:id', async (req, res) => {
     });
     res.json({ success: true });
   } catch (err) {
-    console.error('Customer delete error:', err);
+    logger.error('Customer delete error:', err);
     res.status(500).json({ error: 'Failed to delete customer' });
   }
 });
@@ -664,7 +664,7 @@ router.get('/billing/summary', async (req, res) => {
       oneTimeCustomers: oneTime,
     });
   } catch (err) {
-    console.error('Billing summary error:', err);
+    logger.error('Billing summary error:', err);
     res.json({ mrr: 0, arr: 0, totalOneTimeRevenue: 0, activeSubscriptions: 0, pastDueCount: 0 });
   }
 });
@@ -718,7 +718,7 @@ router.post('/customers/:id/deploy', async (req, res) => {
     const { existsSync } = await import('fs');
     let zipPath = latestBuild.zipPath;
     if (!existsSync(zipPath)) {
-      console.log(`[Deploy] Zip not on disk, regenerating for ${customer.slug}...`);
+      logger.info('[Deploy] Zip not on disk, regenerating for ${customer.slug}...');
       try {
         const { generatePackage } = await import('../services/factory/generator.js');
         const regen = await generatePackage(customer.wizardConfig || {
@@ -796,16 +796,16 @@ router.post('/customers/:id/deploy', async (req, res) => {
         data: updateData,
       });
 
-      console.log(`Deploy ${customer.slug}:`, result.success ? 'SUCCESS' : 'PARTIAL', result.errors);
+      logger.info(`Deploy ${customer.slug}:`, result.success ? 'SUCCESS' : 'PARTIAL', result.errors);
     } catch (deployErr) {
-      console.error(`Deploy ${customer.slug} FAILED:`, deployErr);
+      logger.error(`Deploy ${customer.slug} FAILED:`, deployErr);
       await prisma.factoryCustomer.update({
         where: { id: customer.id },
         data: { status: 'generated' },
       });
     }
   } catch (err) {
-    console.error('Deploy endpoint error:', err);
+    logger.error('Deploy endpoint error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -843,7 +843,7 @@ router.get('/customers/:id/deploy/status', async (req, res) => {
     const result = await deployService.checkDeployStatus({ renderServiceIds });
     res.json(result);
   } catch (err) {
-    console.error('Deploy status error:', err);
+    logger.error('Deploy status error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -878,7 +878,7 @@ router.post('/customers/:id/redeploy', async (req, res) => {
     const result = await deployService.redeployCustomer({ renderServiceIds });
     res.json(result);
   } catch (err) {
-    console.error('Redeploy error:', err);
+    logger.error('Redeploy error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -932,7 +932,7 @@ router.post('/customers/:id/checkout/subscription', async (req, res) => {
 
     res.json(result);
   } catch (err) {
-    console.error('Subscription checkout error:', err);
+    logger.error('Subscription checkout error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -968,7 +968,7 @@ router.post('/customers/:id/checkout/license', async (req, res) => {
 
     res.json(result);
   } catch (err) {
-    console.error('License checkout error:', err);
+    logger.error('License checkout error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -992,7 +992,7 @@ router.post('/customers/:id/portal', async (req, res) => {
     const result = await factoryStripe.createPortalSession(customer);
     res.json(result);
   } catch (err) {
-    console.error('Portal session error:', err);
+    logger.error('Portal session error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -1026,7 +1026,7 @@ router.post('/customers/:id/cancel', async (req, res) => {
 
     res.json(result);
   } catch (err) {
-    console.error('Cancel error:', err);
+    logger.error('Cancel error:', err);
     res.status(500).json({ error: err.message });
   }
 });

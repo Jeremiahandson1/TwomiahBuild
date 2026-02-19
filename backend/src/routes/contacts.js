@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
+import { withCompany } from '../middleware/ownership.js';
+
 import { emitToCompany, EVENTS } from '../services/socket.js';
 import audit from '../services/audit.js';
 
@@ -86,7 +88,7 @@ router.put('/:id', requirePermission('contacts:update'), async (req, res, next) 
     const data = schema.partial().parse(req.body);
     const existing = await prisma.contact.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Contact not found' });
-    const contact = await prisma.contact.update({ where: { id: req.params.id }, data });
+    const contact = await prisma.contact.update({ where: withCompany(req.params.id, req.user.companyId), data });
     emitToCompany(req.user.companyId, EVENTS.CONTACT_UPDATED, contact);
     const changes = audit.diff(existing, contact);
     if (changes) audit.log({ action: audit.ACTIONS.UPDATE, entity: 'contact', entityId: contact.id, entityName: contact.name, changes, req });
@@ -98,7 +100,7 @@ router.delete('/:id', requirePermission('contacts:delete'), async (req, res, nex
   try {
     const existing = await prisma.contact.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Contact not found' });
-    await prisma.contact.delete({ where: { id: req.params.id } });
+    await prisma.contact.delete({ where: withCompany(req.params.id, req.user.companyId) });
     emitToCompany(req.user.companyId, EVENTS.CONTACT_DELETED, { id: req.params.id });
     audit.log({ action: audit.ACTIONS.DELETE, entity: 'contact', entityId: existing.id, entityName: existing.name, req });
     res.status(204).send();
@@ -110,7 +112,7 @@ router.post('/:id/convert', requirePermission('contacts:update'), async (req, re
     const existing = await prisma.contact.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Contact not found' });
     if (existing.type !== 'lead') return res.status(400).json({ error: 'Only leads can be converted' });
-    const contact = await prisma.contact.update({ where: { id: req.params.id }, data: { type: 'client' } });
+    const contact = await prisma.contact.update({ where: withCompany(req.params.id, req.user.companyId), data: { type: 'client' } });
     emitToCompany(req.user.companyId, EVENTS.CONTACT_UPDATED, contact);
     audit.log({ action: audit.ACTIONS.STATUS_CHANGE, entity: 'contact', entityId: contact.id, entityName: contact.name, changes: { type: { old: 'lead', new: 'client' } }, req });
     res.json(contact);

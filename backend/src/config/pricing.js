@@ -8,6 +8,8 @@
  * - Individual sub-features
  */
 
+import { PLAN_FEATURES } from './plans.js';
+
 // ============================================
 // SAAS SUBSCRIPTION TIERS
 // ============================================
@@ -321,7 +323,7 @@ export const SELF_HOSTED_PACKAGES = {
     name: 'Starter License',
     description: 'Core CRM functionality for self-hosting',
     price: 99700, // $997
-    features: SAAS_TIERS.starter.features,
+    features: PLAN_FEATURES.starter,
     includes: [
       'Full source code',
       'Database schema',
@@ -336,7 +338,7 @@ export const SELF_HOSTED_PACKAGES = {
     name: 'Pro License',
     description: 'Field service features for self-hosting',
     price: 249700, // $2,497
-    features: SAAS_TIERS.pro.features,
+    features: PLAN_FEATURES.pro,
     includes: [
       'Full source code',
       'Database schema',
@@ -352,7 +354,7 @@ export const SELF_HOSTED_PACKAGES = {
     name: 'Business License',
     description: 'Complete operations platform for self-hosting',
     price: 499700, // $4,997
-    features: SAAS_TIERS.business.features,
+    features: PLAN_FEATURES.business,
     includes: [
       'Full source code',
       'Database schema',
@@ -369,7 +371,7 @@ export const SELF_HOSTED_PACKAGES = {
     name: 'Construction License',
     description: 'Full construction management for self-hosting',
     price: 999700, // $9,997
-    features: SAAS_TIERS.construction.features,
+    features: PLAN_FEATURES.construction,
     includes: [
       'Full source code',
       'Database schema',

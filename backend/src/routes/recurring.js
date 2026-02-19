@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
+import { withCompany } from '../middleware/ownership.js';
+
 import recurringService from '../services/recurring.js';
 import audit from '../services/audit.js';
 import { prisma } from '../index.js';
@@ -183,7 +185,7 @@ router.post('/:id/pause', requirePermission('invoices:update'), async (req, res,
     }
 
     const updated = await prisma.recurringInvoice.update({
-      where: { id: req.params.id },
+      where: withCompany(req.params.id, req.user.companyId),
       data: { status: 'paused' },
     });
 
@@ -216,7 +218,7 @@ router.post('/:id/resume', requirePermission('invoices:update'), async (req, res
     const nextRunDate = new Date();
     
     const updated = await prisma.recurringInvoice.update({
-      where: { id: req.params.id },
+      where: withCompany(req.params.id, req.user.companyId),
       data: { 
         status: 'active',
         nextRunDate,
@@ -249,7 +251,7 @@ router.post('/:id/cancel', requirePermission('invoices:update'), async (req, res
     }
 
     const updated = await prisma.recurringInvoice.update({
-      where: { id: req.params.id },
+      where: withCompany(req.params.id, req.user.companyId),
       data: { status: 'cancelled' },
     });
 
@@ -312,7 +314,7 @@ router.delete('/:id', requirePermission('invoices:delete'), async (req, res, nex
     });
 
     await prisma.recurringInvoice.delete({
-      where: { id: req.params.id },
+      where: withCompany(req.params.id, req.user.companyId),
     });
 
     audit.log({

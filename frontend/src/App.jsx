@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Suspense, lazy } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { SocketProvider } from './contexts/SocketContext';
@@ -6,72 +6,86 @@ import { PermissionsProvider } from './contexts/PermissionsContext';
 import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
-// Auth Pages
+// ── Eager (tiny, needed immediately) ─────────────────────────────────────────
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
 
-// Public Pages
-import HomePage from './pages/public/HomePage';
-import PricingPage from './pages/public/PricingPage';
-import SignupPage from './pages/public/SignupPage';
-import SignupSuccessPage from './pages/public/SignupSuccessPage';
-import SelfHostedPurchasePage from './pages/public/SelfHostedPurchasePage';
+// ── Lazy-loaded pages ─────────────────────────────────────────────────────────
+// Auth
+const ForgotPasswordPage    = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage     = lazy(() => import('./pages/ResetPasswordPage'));
 
-// Operator Pages
-import OperatorLayout from './components/layout/OperatorLayout';
-import OperatorDashboard from './pages/OperatorDashboard';
-import CustomersPage from './pages/CustomersPage';
-import CustomerDetailPage from './pages/CustomerDetailPage';
-import SettingsPage from './pages/SettingsPage';
-import BillingSettingsPage from './pages/settings/BillingSettingsPage';
-import IntegrationsPage from './pages/settings/IntegrationsPage';
-import FactoryWizard from './components/builder/FactoryWizard';
-import BuildsPage from './pages/BuildsPage';
+// Public marketing
+const HomePage              = lazy(() => import('./pages/public/HomePage'));
+const PricingPage           = lazy(() => import('./pages/public/PricingPage'));
+const SignupPage             = lazy(() => import('./pages/public/SignupPage'));
+const SignupSuccessPage      = lazy(() => import('./pages/public/SignupSuccessPage'));
+const SelfHostedPurchasePage = lazy(() => import('./pages/public/SelfHostedPurchasePage'));
 
-// CRM Demo Pages (nested under /demo)
-import AppLayout from './components/layout/AppLayout';
-import DashboardPage from './pages/DashboardPage';
-import ContactsPage from './pages/ContactsPage';
-import ProjectsPage from './pages/ProjectsPage';
-import JobsPage from './pages/JobsPage';
-import QuotesPage from './pages/QuotesPage';
-import InvoicesPage from './pages/InvoicesPage';
-import SchedulePage from './pages/SchedulePage';
-import TimePage from './pages/TimePage';
-import ExpensesPage from './pages/ExpensesPage';
-import TeamPage from './pages/TeamPage';
-import RFIsPage from './pages/RFIsPage';
-import ChangeOrdersPage from './pages/ChangeOrdersPage';
-import PunchListsPage from './pages/PunchListsPage';
-import DailyLogsPage from './pages/DailyLogsPage';
-import InspectionsPage from './pages/InspectionsPage';
-import BidsPage from './pages/BidsPage';
-import DocumentsPage from './pages/DocumentsPage';
+// Operator
+const OperatorLayout        = lazy(() => import('./components/layout/OperatorLayout'));
+const OperatorDashboard     = lazy(() => import('./pages/OperatorDashboard'));
+const CustomersPage         = lazy(() => import('./pages/CustomersPage'));
+const CustomerDetailPage    = lazy(() => import('./pages/CustomerDetailPage'));
+const SettingsPage          = lazy(() => import('./pages/SettingsPage'));
+const BillingSettingsPage   = lazy(() => import('./pages/settings/BillingSettingsPage'));
+const IntegrationsPage      = lazy(() => import('./pages/settings/IntegrationsPage'));
+const FactoryWizard         = lazy(() => import('./components/builder/FactoryWizard'));
+const BuildsPage            = lazy(() => import('./pages/BuildsPage'));
 
-// CRM Feature Pages
-import FleetPage from './pages/fleet/FleetPage';
-import InventoryPage from './pages/inventory/InventoryPage';
-import EquipmentPage from './pages/equipment/EquipmentPage';
-import MarketingPage from './pages/marketing/MarketingPage';
-import PricebookPage from './pages/pricebook/PricebookPage';
-import AgreementsPage from './pages/agreements/AgreementsPage';
-import WarrantiesPage from './pages/warranties/WarrantiesPage';
-import CallTrackingPage from './pages/calltracking/CallTrackingPage';
-import { RecurringList as RecurringListPage } from './pages/recurring';
-import TakeoffsPage from './pages/takeoffs/TakeoffsPage';
-import TasksPage from './pages/tasks/TasksPage';
-import MessagesPage from './pages/messages/MessagesPage';
-import ReportsDashboard from './pages/reports/ReportsDashboard';
-import SelectionsPage from './pages/selections/SelectionsPage';
+// CRM demo — core
+const AppLayout             = lazy(() => import('./components/layout/AppLayout'));
+const DashboardPage         = lazy(() => import('./pages/DashboardPage'));
+const ContactsPage          = lazy(() => import('./pages/ContactsPage'));
+const ContactDetailPage     = lazy(() => import('./components/detail/ContactDetailPage'));
+const ProjectsPage          = lazy(() => import('./pages/ProjectsPage'));
+const ProjectDetailPage     = lazy(() => import('./components/detail/ProjectDetailPage'));
+const JobsPage              = lazy(() => import('./pages/JobsPage'));
+const JobDetailPage         = lazy(() => import('./components/detail/JobDetailPage'));
+const QuotesPage            = lazy(() => import('./pages/QuotesPage'));
+const QuoteDetailPage       = lazy(() => import('./components/detail/QuoteDetailPage'));
+const InvoicesPage          = lazy(() => import('./pages/InvoicesPage'));
+const InvoiceDetailPage     = lazy(() => import('./components/detail/InvoiceDetailPage'));
+const SchedulePage          = lazy(() => import('./pages/SchedulePage'));
+const TimePage              = lazy(() => import('./pages/TimePage'));
+const ExpensesPage          = lazy(() => import('./pages/ExpensesPage'));
+const DocumentsPage         = lazy(() => import('./pages/DocumentsPage'));
+const TeamPage              = lazy(() => import('./pages/TeamPage'));
 
-// Detail Pages
-import ContactDetailPage from './components/detail/ContactDetailPage';
-import ProjectDetailPage from './components/detail/ProjectDetailPage';
-import JobDetailPage from './components/detail/JobDetailPage';
-import QuoteDetailPage from './components/detail/QuoteDetailPage';
-import InvoiceDetailPage from './components/detail/InvoiceDetailPage';
+// CRM demo — construction
+const RFIsPage              = lazy(() => import('./pages/RFIsPage'));
+const ChangeOrdersPage      = lazy(() => import('./pages/ChangeOrdersPage'));
+const PunchListsPage        = lazy(() => import('./pages/PunchListsPage'));
+const DailyLogsPage         = lazy(() => import('./pages/DailyLogsPage'));
+const InspectionsPage       = lazy(() => import('./pages/InspectionsPage'));
+const BidsPage              = lazy(() => import('./pages/BidsPage'));
+
+// CRM demo — premium features (biggest chunks, loaded only when navigated to)
+const FleetPage             = lazy(() => import('./pages/fleet/FleetPage'));
+const InventoryPage         = lazy(() => import('./pages/inventory/InventoryPage'));
+const EquipmentPage         = lazy(() => import('./pages/equipment/EquipmentPage'));
+const MarketingPage         = lazy(() => import('./pages/marketing/MarketingPage'));
+const PricebookPage         = lazy(() => import('./pages/pricebook/PricebookPage'));
+const AgreementsPage        = lazy(() => import('./pages/agreements/AgreementsPage'));
+const WarrantiesPage        = lazy(() => import('./pages/warranties/WarrantiesPage'));
+const CallTrackingPage      = lazy(() => import('./pages/calltracking/CallTrackingPage'));
+const RecurringListPage     = lazy(() => import('./pages/recurring').then(m => ({ default: m.RecurringList })));
+const TakeoffsPage          = lazy(() => import('./pages/takeoffs/TakeoffsPage'));
+const TasksPage             = lazy(() => import('./pages/tasks/TasksPage'));
+const MessagesPage          = lazy(() => import('./pages/messages/MessagesPage'));
+const ReportsDashboard      = lazy(() => import('./pages/reports/ReportsDashboard'));
+const SelectionsPage        = lazy(() => import('./pages/selections/SelectionsPage'));
+const AuditPage             = lazy(() => import('./pages/AuditPage'));
+
+// ── Loading fallback ──────────────────────────────────────────────────────────
+function PageLoader() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg, #f8fafc)' }}>
+      <div style={{ width: 32, height: 32, border: '3px solid #e2e8f0', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -81,75 +95,77 @@ function App() {
           <PermissionsProvider>
             <ToastProvider>
               <SocketProvider>
-                <Routes>
-                  {/* Public marketing pages */}
-                  <Route path="/pricing" element={<PricingPage />} />
-                  <Route path="/signup" element={<SignupPage />} />
-                  <Route path="/signup/success" element={<SignupSuccessPage />} />
-                  <Route path="/self-hosted" element={<SelfHostedPurchasePage />} />
-                  <Route path="/home" element={<HomePage />} />
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* Public marketing */}
+                    <Route path="/pricing"        element={<PricingPage />} />
+                    <Route path="/signup"         element={<SignupPage />} />
+                    <Route path="/signup/success" element={<SignupSuccessPage />} />
+                    <Route path="/self-hosted"    element={<SelfHostedPurchasePage />} />
+                    <Route path="/home"           element={<HomePage />} />
 
-                  {/* Auth routes */}
-                  <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-                  <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-                  <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
-                  <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
+                    {/* Auth */}
+                    <Route path="/login"          element={<PublicRoute><LoginPage /></PublicRoute>} />
+                    <Route path="/register"       element={<PublicRoute><RegisterPage /></PublicRoute>} />
+                    <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+                    <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
 
-                  {/* ========== OPERATOR DASHBOARD ========== */}
-                  <Route path="/" element={<ProtectedRoute><OperatorLayout /></ProtectedRoute>}>
-                    <Route index element={<OperatorDashboard />} />
-                    <Route path="customers" element={<CustomersPage />} />
-                    <Route path="customers/:id" element={<CustomerDetailPage />} />
-                    <Route path="factory" element={<FactoryWizard />} />
-                    <Route path="builds" element={<BuildsPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="settings/billing" element={<BillingSettingsPage />} />
-                    <Route path="settings/integrations" element={<IntegrationsPage />} />
-                  </Route>
+                    {/* ── OPERATOR DASHBOARD ── */}
+                    <Route path="/" element={<ProtectedRoute><OperatorLayout /></ProtectedRoute>}>
+                      <Route index                        element={<OperatorDashboard />} />
+                      <Route path="customers"            element={<CustomersPage />} />
+                      <Route path="customers/:id"        element={<CustomerDetailPage />} />
+                      <Route path="factory"              element={<FactoryWizard />} />
+                      <Route path="builds"               element={<BuildsPage />} />
+                      <Route path="settings"             element={<SettingsPage />} />
+                      <Route path="settings/billing"     element={<BillingSettingsPage />} />
+                      <Route path="settings/integrations" element={<IntegrationsPage />} />
+                    </Route>
 
-                  {/* ========== CRM DEMO (for showing customers) ========== */}
-                  <Route path="/demo" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                    <Route index element={<DashboardPage />} />
-                    <Route path="contacts" element={<ContactsPage />} />
-                    <Route path="contacts/:id" element={<ContactDetailPage />} />
-                    <Route path="projects" element={<ProjectsPage />} />
-                    <Route path="projects/:id" element={<ProjectDetailPage />} />
-                    <Route path="jobs" element={<JobsPage />} />
-                    <Route path="jobs/:id" element={<JobDetailPage />} />
-                    <Route path="quotes" element={<QuotesPage />} />
-                    <Route path="quotes/:id" element={<QuoteDetailPage />} />
-                    <Route path="invoices" element={<InvoicesPage />} />
-                    <Route path="invoices/:id" element={<InvoiceDetailPage />} />
-                    <Route path="schedule" element={<SchedulePage />} />
-                    <Route path="time" element={<TimePage />} />
-                    <Route path="expenses" element={<ExpensesPage />} />
-                    <Route path="documents" element={<DocumentsPage />} />
-                    <Route path="team" element={<TeamPage />} />
-                    <Route path="rfis" element={<RFIsPage />} />
-                    <Route path="change-orders" element={<ChangeOrdersPage />} />
-                    <Route path="punch-lists" element={<PunchListsPage />} />
-                    <Route path="daily-logs" element={<DailyLogsPage />} />
-                    <Route path="inspections" element={<InspectionsPage />} />
-                    <Route path="bids" element={<BidsPage />} />
-                    <Route path="fleet" element={<FleetPage />} />
-                    <Route path="inventory" element={<InventoryPage />} />
-                    <Route path="equipment" element={<EquipmentPage />} />
-                    <Route path="marketing" element={<MarketingPage />} />
-                    <Route path="pricebook" element={<PricebookPage />} />
-                    <Route path="agreements" element={<AgreementsPage />} />
-                    <Route path="warranties" element={<WarrantiesPage />} />
-                    <Route path="call-tracking" element={<CallTrackingPage />} />
-                    <Route path="recurring" element={<RecurringListPage />} />
-                    <Route path="takeoffs" element={<TakeoffsPage />} />
-                    <Route path="tasks" element={<TasksPage />} />
-                    <Route path="messages" element={<MessagesPage />} />
-                    <Route path="reports" element={<ReportsDashboard />} />
-                    <Route path="selections" element={<SelectionsPage />} />
-                  </Route>
+                    {/* ── CRM DEMO ── */}
+                    <Route path="/demo" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                      <Route index                   element={<DashboardPage />} />
+                      <Route path="contacts"         element={<ContactsPage />} />
+                      <Route path="contacts/:id"     element={<ContactDetailPage />} />
+                      <Route path="projects"         element={<ProjectsPage />} />
+                      <Route path="projects/:id"     element={<ProjectDetailPage />} />
+                      <Route path="jobs"             element={<JobsPage />} />
+                      <Route path="jobs/:id"         element={<JobDetailPage />} />
+                      <Route path="quotes"           element={<QuotesPage />} />
+                      <Route path="quotes/:id"       element={<QuoteDetailPage />} />
+                      <Route path="invoices"         element={<InvoicesPage />} />
+                      <Route path="invoices/:id"     element={<InvoiceDetailPage />} />
+                      <Route path="schedule"         element={<SchedulePage />} />
+                      <Route path="time"             element={<TimePage />} />
+                      <Route path="expenses"         element={<ExpensesPage />} />
+                      <Route path="documents"        element={<DocumentsPage />} />
+                      <Route path="team"             element={<TeamPage />} />
+                      <Route path="rfis"             element={<RFIsPage />} />
+                      <Route path="change-orders"    element={<ChangeOrdersPage />} />
+                      <Route path="punch-lists"      element={<PunchListsPage />} />
+                      <Route path="daily-logs"       element={<DailyLogsPage />} />
+                      <Route path="inspections"      element={<InspectionsPage />} />
+                      <Route path="bids"             element={<BidsPage />} />
+                      <Route path="fleet"            element={<FleetPage />} />
+                      <Route path="inventory"        element={<InventoryPage />} />
+                      <Route path="equipment"        element={<EquipmentPage />} />
+                      <Route path="marketing"        element={<MarketingPage />} />
+                      <Route path="pricebook"        element={<PricebookPage />} />
+                      <Route path="agreements"       element={<AgreementsPage />} />
+                      <Route path="warranties"       element={<WarrantiesPage />} />
+                      <Route path="call-tracking"    element={<CallTrackingPage />} />
+                      <Route path="recurring"        element={<RecurringListPage />} />
+                      <Route path="takeoffs"         element={<TakeoffsPage />} />
+                      <Route path="tasks"            element={<TasksPage />} />
+                      <Route path="messages"         element={<MessagesPage />} />
+                      <Route path="reports"          element={<ReportsDashboard />} />
+                      <Route path="selections"       element={<SelectionsPage />} />
+                      <Route path="audit"            element={<AuditPage />} />
+                    </Route>
 
-                  {/* Catch all */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Suspense>
               </SocketProvider>
             </ToastProvider>
           </PermissionsProvider>

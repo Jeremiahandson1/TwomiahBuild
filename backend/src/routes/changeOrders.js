@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
+import { withCompany } from '../middleware/ownership.js';
+
 
 const router = Router();
 router.use(authenticate);
@@ -38,14 +40,14 @@ router.put('/:id', async (req, res, next) => {
     const existing = await prisma.changeOrder.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } }); if (!existing) return res.status(404).json({ error: 'Change order not found' });
     let amount = Number(existing.amount);
     if (lineItems) { await prisma.changeOrderLineItem.deleteMany({ where: { changeOrderId: req.params.id } }); amount = lineItems.reduce((s, i) => s + i.quantity * i.unitPrice, 0); }
-    const co = await prisma.changeOrder.update({ where: { id: req.params.id }, data: { ...coData, amount, lineItems: lineItems ? { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } : undefined }, include: { lineItems: true } });
+    const co = await prisma.changeOrder.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...coData, amount, lineItems: lineItems ? { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } : undefined }, include: { lineItems: true } });
     res.json(co);
   } catch (error) { next(error); }
 });
 
-router.delete('/:id', async (req, res, next) => { try { await prisma.changeOrder.delete({ where: { id: req.params.id } }); res.status(204).send(); } catch (error) { next(error); } });
-router.post('/:id/submit', async (req, res, next) => { try { const co = await prisma.changeOrder.update({ where: { id: req.params.id }, data: { status: 'submitted', submittedDate: new Date() } }); res.json(co); } catch (error) { next(error); } });
-router.post('/:id/approve', async (req, res, next) => { try { const { approvedBy } = req.body; const co = await prisma.changeOrder.update({ where: { id: req.params.id }, data: { status: 'approved', approvedDate: new Date(), approvedBy } }); res.json(co); } catch (error) { next(error); } });
-router.post('/:id/reject', async (req, res, next) => { try { const co = await prisma.changeOrder.update({ where: { id: req.params.id }, data: { status: 'rejected' } }); res.json(co); } catch (error) { next(error); } });
+router.delete('/:id', async (req, res, next) => { try { await prisma.changeOrder.delete({ where: withCompany(req.params.id, req.user.companyId) }); res.status(204).send(); } catch (error) { next(error); } });
+router.post('/:id/submit', async (req, res, next) => { try { const co = await prisma.changeOrder.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'submitted', submittedDate: new Date() } }); res.json(co); } catch (error) { next(error); } });
+router.post('/:id/approve', async (req, res, next) => { try { const { approvedBy } = req.body; const co = await prisma.changeOrder.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'approved', approvedDate: new Date(), approvedBy } }); res.json(co); } catch (error) { next(error); } });
+router.post('/:id/reject', async (req, res, next) => { try { const co = await prisma.changeOrder.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'rejected' } }); res.json(co); } catch (error) { next(error); } });
 
 export default router;

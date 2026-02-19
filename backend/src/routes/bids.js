@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
+import { withCompany } from '../middleware/ownership.js';
+
 
 const router = Router();
 router.use(authenticate);
@@ -34,10 +36,10 @@ router.post('/', async (req, res, next) => {
   try { const data = schema.parse(req.body); const count = await prisma.bid.count({ where: { companyId: req.user.companyId } }); const bid = await prisma.bid.create({ data: { ...data, number: `BID-${String(count + 1).padStart(4, '0')}`, dueDate: data.dueDate ? new Date(data.dueDate) : null, prebidDate: data.prebidDate ? new Date(data.prebidDate) : null, companyId: req.user.companyId } }); res.status(201).json(bid); } catch (error) { next(error); }
 });
 
-router.put('/:id', async (req, res, next) => { try { const data = schema.partial().parse(req.body); const bid = await prisma.bid.update({ where: { id: req.params.id }, data: { ...data, dueDate: data.dueDate ? new Date(data.dueDate) : undefined, prebidDate: data.prebidDate ? new Date(data.prebidDate) : undefined } }); res.json(bid); } catch (error) { next(error); } });
-router.delete('/:id', async (req, res, next) => { try { await prisma.bid.delete({ where: { id: req.params.id } }); res.status(204).send(); } catch (error) { next(error); } });
-router.post('/:id/submit', async (req, res, next) => { try { const bid = await prisma.bid.update({ where: { id: req.params.id }, data: { status: 'submitted', submittedAt: new Date() } }); res.json(bid); } catch (error) { next(error); } });
-router.post('/:id/won', async (req, res, next) => { try { const bid = await prisma.bid.update({ where: { id: req.params.id }, data: { status: 'won', resultDate: new Date() } }); res.json(bid); } catch (error) { next(error); } });
-router.post('/:id/lost', async (req, res, next) => { try { const bid = await prisma.bid.update({ where: { id: req.params.id }, data: { status: 'lost', resultDate: new Date() } }); res.json(bid); } catch (error) { next(error); } });
+router.put('/:id', async (req, res, next) => { try { const data = schema.partial().parse(req.body); const bid = await prisma.bid.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...data, dueDate: data.dueDate ? new Date(data.dueDate) : undefined, prebidDate: data.prebidDate ? new Date(data.prebidDate) : undefined } }); res.json(bid); } catch (error) { next(error); } });
+router.delete('/:id', async (req, res, next) => { try { await prisma.bid.delete({ where: withCompany(req.params.id, req.user.companyId) }); res.status(204).send(); } catch (error) { next(error); } });
+router.post('/:id/submit', async (req, res, next) => { try { const bid = await prisma.bid.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'submitted', submittedAt: new Date() } }); res.json(bid); } catch (error) { next(error); } });
+router.post('/:id/won', async (req, res, next) => { try { const bid = await prisma.bid.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'won', resultDate: new Date() } }); res.json(bid); } catch (error) { next(error); } });
+router.post('/:id/lost', async (req, res, next) => { try { const bid = await prisma.bid.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'lost', resultDate: new Date() } }); res.json(bid); } catch (error) { next(error); } });
 
 export default router;

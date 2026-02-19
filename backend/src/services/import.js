@@ -580,3 +580,197 @@ export default {
   validateCSV,
   getTemplate,
 };
+
+// ============================================
+// BUILDERTREND MIGRATION
+// ============================================
+
+/**
+ * Buildertrend uses specific column names in its CSV exports.
+ * These mappings translate Buildertrend fields → BuildPro fields.
+ *
+ * Buildertrend exports available:
+ *   Contacts: "Contacts.csv" from Contacts > Export
+ *   Jobs: "Jobs.csv" from Jobs > Export (or Schedules export)
+ *   Documents: exported per-job as zip, then uploaded individually
+ */
+
+const BUILDERTREND_CONTACT_MAP = {
+  // BT field → BP field
+  'Contact ID': 'externalId',
+  'First Name': 'firstName',
+  'Last Name': 'lastName',
+  'Company': 'company',
+  'Email': 'email',
+  'Phone': 'phone',
+  'Mobile': 'mobile',
+  'Address': 'address',
+  'City': 'city',
+  'State': 'state',
+  'Zip': 'zip',
+  'Type': 'type',   // 'Lead', 'Client', 'Subcontractor', etc.
+  'Status': 'status',
+  'Notes': 'notes',
+  'Tags': 'tags',
+  // Legacy BT column names
+  'ContactID': 'externalId',
+  'FirstName': 'firstName',
+  'LastName': 'lastName',
+  'BusinessName': 'company',
+  'EmailAddress': 'email',
+  'PhoneNumber': 'phone',
+  'CellPhone': 'mobile',
+  'StreetAddress': 'address',
+};
+
+const BUILDERTREND_JOB_MAP = {
+  'Job ID': 'externalId',
+  'Job Name': 'name',
+  'Job Number': 'number',
+  'Status': 'status',
+  'Start Date': 'startDate',
+  'End Date': 'endDate',
+  'Contact': 'contactName',
+  'Address': 'address',
+  'City': 'city',
+  'State': 'state',
+  'Zip': 'zip',
+  'Budget': 'budget',
+  'Description': 'description',
+  'Project Manager': 'assignedTo',
+  // Legacy
+  'JobID': 'externalId',
+  'JobName': 'name',
+  'JobNumber': 'number',
+  'StartDate': 'startDate',
+  'EstimatedEndDate': 'endDate',
+  'ContractAmount': 'budget',
+};
+
+function applyFieldMap(row, fieldMap) {
+  const result = {};
+  for (const [btKey, bpKey] of Object.entries(fieldMap)) {
+    const normalBtKey = btKey.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const normalRow = normalizeColumns(row);
+    if (normalRow[normalBtKey] !== undefined) {
+      result[bpKey] = normalRow[normalBtKey] || null;
+    }
+  }
+  // Also try direct normalized pass-through for any unmapped columns
+  return result;
+}
+
+function btStatusToContact(btStatus) {
+  const map = { 'Lead': 'lead', 'Client': 'client', 'Active': 'client', 'Inactive': 'client', 'Subcontractor': 'vendor' };
+  return map[btStatus] || 'lead';
+}
+
+function btStatusToJob(btStatus) {
+  const map = {
+    'Active': 'in_progress', 'In Progress': 'in_progress', 'Completed': 'completed',
+    'Bid': 'quoted', 'On Hold': 'on_hold', 'Lead': 'lead', 'Cancelled': 'cancelled',
+  };
+  return map[btStatus] || 'active';
+}
+
+export async function importFromBuildertrend(csvContent, importType, companyId) {
+  const rows = parseCSV(csvContent);
+  if (!rows.length) return { imported: 0, skipped: 0, errors: [] };
+
+  const results = { imported: 0, skipped: 0, errors: [] };
+
+  if (importType === 'bt_contacts') {
+    for (let i = 0; i < rows.length; i++) {
+      try {
+        const mapped = applyFieldMap(rows[i], BUILDERTREND_CONTACT_MAP);
+        const name = [mapped.firstName, mapped.lastName].filter(Boolean).join(' ') || mapped.company;
+        if (!name && !mapped.email) { results.skipped++; continue; }
+
+        await prisma.contact.upsert({
+          where: { companyId_externalId: { companyId, externalId: mapped.externalId || `bt-${i}` } },
+          create: {
+            companyId,
+            name: name || 'Imported Contact',
+            company: mapped.company || null,
+            email: mapped.email || null,
+            phone: mapped.phone || mapped.mobile || null,
+            type: btStatusToContact(mapped.type),
+            status: 'active',
+            address: [mapped.address, mapped.city, mapped.state, mapped.zip].filter(Boolean).join(', ') || null,
+            notes: mapped.notes || null,
+            externalId: mapped.externalId || null,
+            externalSource: 'buildertrend',
+          },
+          update: {
+            name: name || undefined,
+            email: mapped.email || undefined,
+            phone: mapped.phone || mapped.mobile || undefined,
+          },
+        }).catch(() => {
+          // upsert fallback if externalId column doesn't exist yet
+          return prisma.contact.create({
+            data: {
+              companyId,
+              name: name || 'Imported Contact',
+              company: mapped.company || null,
+              email: mapped.email || null,
+              phone: mapped.phone || mapped.mobile || null,
+              type: btStatusToContact(mapped.type),
+              status: 'active',
+              notes: mapped.notes ? `[Imported from Buildertrend]\n${mapped.notes}` : '[Imported from Buildertrend]',
+            },
+          });
+        });
+        results.imported++;
+      } catch (err) {
+        results.errors.push({ row: i + 1, error: err.message });
+      }
+    }
+  } else if (importType === 'bt_jobs') {
+    for (let i = 0; i < rows.length; i++) {
+      try {
+        const mapped = applyFieldMap(rows[i], BUILDERTREND_JOB_MAP);
+        if (!mapped.name) { results.skipped++; continue; }
+
+        // Try to match to existing contact by name
+        let contactId = null;
+        if (mapped.contactName) {
+          const contact = await prisma.contact.findFirst({
+            where: { companyId, name: { contains: mapped.contactName, mode: 'insensitive' } },
+            select: { id: true },
+          });
+          contactId = contact?.id || null;
+        }
+
+        await prisma.job.create({
+          data: {
+            companyId,
+            contactId,
+            name: mapped.name,
+            number: mapped.number || null,
+            status: btStatusToJob(mapped.status),
+            startDate: mapped.startDate ? new Date(mapped.startDate) : null,
+            endDate: mapped.endDate ? new Date(mapped.endDate) : null,
+            address: [mapped.address, mapped.city, mapped.state, mapped.zip].filter(Boolean).join(', ') || null,
+            budget: mapped.budget ? parseFloat(mapped.budget.replace(/[$,]/g, '')) : null,
+            description: mapped.description || null,
+            notes: '[Imported from Buildertrend]',
+          },
+        });
+        results.imported++;
+      } catch (err) {
+        results.errors.push({ row: i + 1, error: err.message });
+      }
+    }
+  }
+
+  return results;
+}
+
+export function getBuilderTrendTemplate(type) {
+  const templates = {
+    bt_contacts: 'Contact ID,First Name,Last Name,Company,Email,Phone,Mobile,Address,City,State,Zip,Type,Status,Notes\n,,,,,,,,,,,,Lead,\n',
+    bt_jobs: 'Job ID,Job Name,Job Number,Status,Start Date,End Date,Contact,Address,City,State,Zip,Budget,Description\n,,,,,,,,,,,,\n',
+  };
+  return templates[type] || null;
+}

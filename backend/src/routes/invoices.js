@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../index.js';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
+import { withCompany } from '../middleware/ownership.js';
 import { emitToCompany, EVENTS } from '../services/socket.js';
 
 const router = Router();
@@ -85,7 +86,7 @@ router.put('/:id', requirePermission('invoices:update'), async (req, res, next) 
       totals = calcTotals(lineItems, data.taxRate ?? Number(existing.taxRate), data.discount ?? Number(existing.discount));
       totals.balance = totals.total - Number(existing.amountPaid);
     }
-    const invoice = await prisma.invoice.update({ where: { id: req.params.id }, data: { ...invoiceData, ...totals, dueDate: data.dueDate ? new Date(data.dueDate) : undefined, lineItems: lineItems ? { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } : undefined }, include: { lineItems: true } });
+    const invoice = await prisma.invoice.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...invoiceData, ...totals, dueDate: data.dueDate ? new Date(data.dueDate) : undefined, lineItems: lineItems ? { create: lineItems.map((item, i) => ({ ...item, total: item.quantity * item.unitPrice, sortOrder: i })) } : undefined }, include: { lineItems: true } });
     emitToCompany(req.user.companyId, EVENTS.INVOICE_UPDATED, invoice);
     res.json(invoice);
   } catch (error) { next(error); }
@@ -95,14 +96,14 @@ router.delete('/:id', requirePermission('invoices:delete'), async (req, res, nex
   try {
     const existing = await prisma.invoice.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Invoice not found' });
-    await prisma.invoice.delete({ where: { id: req.params.id } });
+    await prisma.invoice.delete({ where: withCompany(req.params.id, req.user.companyId) });
     res.status(204).send();
   } catch (error) { next(error); }
 });
 
 router.post('/:id/send', requirePermission('invoices:update'), async (req, res, next) => {
   try {
-    const invoice = await prisma.invoice.update({ where: { id: req.params.id }, data: { status: 'sent', sentAt: new Date() } });
+    const invoice = await prisma.invoice.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'sent', sentAt: new Date() } });
     emitToCompany(req.user.companyId, EVENTS.INVOICE_SENT, { id: invoice.id, number: invoice.number });
     res.json(invoice);
   } catch (error) { next(error); }
@@ -118,7 +119,7 @@ router.post('/:id/payments', requirePermission('invoices:update'), async (req, r
     const newAmountPaid = Number(invoice.amountPaid) + data.amount;
     const newBalance = Number(invoice.total) - newAmountPaid;
     const newStatus = newBalance <= 0 ? 'paid' : newAmountPaid > 0 ? 'partial' : invoice.status;
-    const updatedInvoice = await prisma.invoice.update({ where: { id: req.params.id }, data: { amountPaid: newAmountPaid, balance: Math.max(0, newBalance), status: newStatus, paidAt: newBalance <= 0 ? new Date() : null } });
+    const updatedInvoice = await prisma.invoice.update({ where: withCompany(req.params.id, req.user.companyId), data: { amountPaid: newAmountPaid, balance: Math.max(0, newBalance), status: newStatus, paidAt: newBalance <= 0 ? new Date() : null } });
     emitToCompany(req.user.companyId, EVENTS.PAYMENT_RECEIVED, { invoiceId: invoice.id, invoiceNumber: invoice.number, amount: data.amount, newBalance, status: newStatus });
     if (newStatus === 'paid') {
       emitToCompany(req.user.companyId, EVENTS.INVOICE_PAID, { id: invoice.id, number: invoice.number, total: invoice.total });
