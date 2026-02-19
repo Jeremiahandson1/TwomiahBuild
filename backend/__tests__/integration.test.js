@@ -72,7 +72,7 @@ async function seedTestData() {
   userA = await prisma.user.create({
     data: {
       email: `userA-${Date.now()}@test.buildpro.io`,
-      password: hash,
+      passwordHash: hash,
       role: 'admin',
       companyId: companyA.id,
       isActive: true,
@@ -90,7 +90,7 @@ async function seedTestData() {
   userB = await prisma.user.create({
     data: {
       email: `userB-${Date.now()}@test.buildpro.io`,
-      password: hash,
+      passwordHash: hash,
       role: 'admin',
       companyId: companyB.id,
       isActive: true,
@@ -311,7 +311,7 @@ describe('Role-Based Access Control', () => {
     const viewer = await prisma.user.create({
       data: {
         email: `viewer-${Date.now()}@test.buildpro.io`,
-        password: hash,
+        passwordHash: hash,
         role: 'viewer',
         companyId: companyA.id,
         isActive: true,
