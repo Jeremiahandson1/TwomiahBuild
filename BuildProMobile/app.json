@@ -1,0 +1,79 @@
+{
+  "expo": {
+    "name": "BuildPro",
+    "slug": "buildpro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1e3a5f"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "io.buildpro.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "BuildPro uses your camera to capture site photos and document progress.",
+        "NSPhotoLibraryUsageDescription": "BuildPro accesses your photo library to attach images to jobs and daily logs.",
+        "NSLocationWhenInUseUsageDescription": "BuildPro uses your location for GPS clock-in and job site tracking.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "BuildPro uses your location in the background for automatic clock-in when you arrive at a job site."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1e3a5f"
+      },
+      "package": "io.buildpro.mobile",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#2563eb"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "BuildPro uses your location for automatic job site clock-in."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "BuildPro uses your camera for site photos."
+        }
+      ]
+    ],
+    "scheme": "buildpro",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    }
+  }
+}
