@@ -110,7 +110,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
           HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
           echo "Staging backend deploy status: $HTTP_STATUS"
-          if [ "$HTTP_STATUS" != "201" ]; then echo "❌ Staging backend deploy failed"; exit 1; fi
+          if [ "$HTTP_STATUS" != "201" ] && [ "$HTTP_STATUS" != "202" ]; then echo "❌ Staging backend deploy failed"; exit 1; fi
 
       - name: Deploy frontend to Render (staging)
         run: |
@@ -119,7 +119,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
           HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
           echo "Staging frontend deploy status: $HTTP_STATUS"
-          if [ "$HTTP_STATUS" != "201" ]; then echo "❌ Staging frontend deploy failed"; exit 1; fi
+          if [ "$HTTP_STATUS" != "201" ] && [ "$HTTP_STATUS" != "202" ]; then echo "❌ Staging frontend deploy failed"; exit 1; fi
 
       - name: Staging deploy complete
         run: echo "✅ Deployed to staging. Validate before merging to main."
@@ -139,7 +139,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
           HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
           echo "Backend deploy status: $HTTP_STATUS"
-          if [ "$HTTP_STATUS" != "201" ]; then echo "❌ Backend deploy failed"; exit 1; fi
+          if [ "$HTTP_STATUS" != "201" ] && [ "$HTTP_STATUS" != "202" ]; then echo "❌ Backend deploy failed"; exit 1; fi
 
       - name: Deploy frontend to Render
         run: |
@@ -148,7 +148,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
           HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
           echo "Frontend deploy status: $HTTP_STATUS"
-          if [ "$HTTP_STATUS" != "201" ]; then echo "❌ Frontend deploy failed"; exit 1; fi
+          if [ "$HTTP_STATUS" != "201" ] && [ "$HTTP_STATUS" != "202" ]; then echo "❌ Frontend deploy failed"; exit 1; fi
 
       - name: Success
         run: echo "✅ All tests passed. Deployed to Render."
