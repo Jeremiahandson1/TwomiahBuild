@@ -11,7 +11,7 @@
  */
 
 import NetInfo from '@react-native-community/netinfo';
-import * as BackgroundFetch from 'expo-background-fetch';
+import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import * as SecureStore from 'expo-secure-store';
 import { getSession, getPendingSync, markSyncComplete, markSyncFailed, resetFailedSync, getSyncQueueCount } from '../utils/database';
@@ -30,15 +30,15 @@ let syncInProgress = false;
 TaskManager.defineTask(SYNC_TASK, async () => {
   try {
     await drainSyncQueue();
-    return BackgroundFetch.BackgroundFetchResult.NewData;
+    return BackgroundTask.BackgroundTaskResult.Success;
   } catch {
-    return BackgroundFetch.BackgroundFetchResult.Failed;
+    return BackgroundTask.BackgroundTaskResult.Failed;
   }
 });
 
 export async function registerBackgroundSync() {
   try {
-    await BackgroundFetch.registerTaskAsync(SYNC_TASK, {
+    await BackgroundTask.registerTaskAsync(SYNC_TASK, {
       minimumInterval: 15 * 60, // 15 minutes
       stopOnTerminate: false,
       startOnBoot: true,
