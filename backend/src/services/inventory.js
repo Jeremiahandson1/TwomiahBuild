@@ -334,33 +334,25 @@ export async function transferStock(companyId, {
   // Use a transaction to prevent race conditions on concurrent transfers
   return await prisma.$transaction(async (tx) => {
     // Re-check stock inside transaction with a fresh read
-    const sourceStock = await tx.inventoryStock.findFirst({
-      where: { itemId, locationId: fromLocationId },
+    const sourceStock = await tx.stockLevel.findUnique({
+      where: { itemId_locationId: { itemId, locationId: fromLocationId } },
     });
     if (!sourceStock || sourceStock.quantity < quantity) {
       throw new Error('Insufficient stock at source location');
     }
 
     // Remove from source
-    await tx.inventoryStock.update({
+    await tx.stockLevel.update({
       where: { id: sourceStock.id },
       data: { quantity: { decrement: quantity } },
     });
 
-    // Add to destination
-    const destStock = await tx.inventoryStock.findFirst({
-      where: { itemId, locationId: toLocationId },
+    // Add to destination (upsert — create if not exists)
+    await tx.stockLevel.upsert({
+      where: { itemId_locationId: { itemId, locationId: toLocationId } },
+      create: { itemId, locationId: toLocationId, quantity },
+      update: { quantity: { increment: quantity } },
     });
-    if (destStock) {
-      await tx.inventoryStock.update({
-        where: { id: destStock.id },
-        data: { quantity: { increment: quantity } },
-      });
-    } else {
-      await tx.inventoryStock.create({
-        data: { companyId, itemId, locationId: toLocationId, quantity },
-      });
-    }
 
     // Record transfer
     const transfer = await tx.inventoryTransfer.create({
