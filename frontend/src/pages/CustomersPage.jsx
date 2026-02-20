@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-import api from '../services/api';
   Users, Plus, Search, ExternalLink, Package, 
   Globe, Database, Palette, Factory, DollarSign,
   ChevronRight, AlertCircle, CheckCircle2, Clock, XCircle
 } from 'lucide-react';
+import api from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
-import api from '../../services/api';
   CreditCard, Check, ArrowRight, Loader2, AlertTriangle, 
   Plus, Package, Calendar, Receipt, X, ChevronRight
 } from 'lucide-react';
+import api from '../../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-import api from '../services/api';
   ArrowLeft, Globe, Database, Palette, Package, ExternalLink,
   DollarSign, CreditCard, Calendar, Save, Trash2, Download,
   CheckCircle2, Clock, AlertCircle, XCircle, Edit3, Copy,
   Rocket, RefreshCw
 } from 'lucide-react';
+import api from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 

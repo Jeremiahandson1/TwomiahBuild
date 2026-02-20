@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-import api from '../../services/api';
   Globe, Layout, Briefcase, ChevronRight, ChevronLeft, Check,
   Building2, Palette, Settings2, Download, Loader2, Package,
   Search, CheckSquare, Square, ChevronDown, ChevronUp, Zap, AlertCircle
 } from 'lucide-react';
+import api from '../../services/api';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
