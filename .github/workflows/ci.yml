@@ -93,7 +93,8 @@ jobs:
                 s = s.replace(/from '[.][.]\/[.][.]\/index\.js'/g, \"from '../../config/prisma.js'\");
                 // Fix duplicate stripe in services/stripe.js and factory/stripe.js
                 s = s.replace(/\nconst stripe = process\.env\.STRIPE_SECRET_KEY[\s\S]*?null;\n/m, '\n');
-                s = s.replace(/^import Stripe from 'stripe';\n/m, '');
+                // Don't strip the Stripe import from config/stripe.js — it legitimately needs it
+                if (!full.includes('config/stripe')) s = s.replace(/^import Stripe from 'stripe';\n/m, '');
                 // Fix billing.js
                 if (full.includes('routes/billing')) {
                   s = s.replace(/^import Stripe from 'stripe';\n/m, \"import { stripe } from '../config/stripe.js';\n\");
