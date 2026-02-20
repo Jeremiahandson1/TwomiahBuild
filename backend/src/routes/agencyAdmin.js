@@ -160,11 +160,11 @@ router.post('/customers', async (req, res, next) => {
         data: {
           companyId: company.id,
           email: data.adminEmail,
-          password: hashedPassword,
+          passwordHash: hashedPassword,
           firstName: data.adminFirstName,
           lastName: data.adminLastName,
           role: 'admin',
-          active: true,
+          isActive: true,
         },
       });
       
@@ -226,7 +226,7 @@ router.get('/customers', async (req, res, next) => {
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
-        take: +limit,
+        take: Math.min(+limit, 100),
       }),
       prisma.company.count({ where }),
     ]);
@@ -274,7 +274,7 @@ router.get('/customers/:id', async (req, res, next) => {
             firstName: true,
             lastName: true,
             role: true,
-            active: true,
+            isActive: true,
             lastLogin: true,
           },
         },

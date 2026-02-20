@@ -248,6 +248,13 @@ model Contact {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Portal access
+  portalEnabled    Boolean   @default(false)
+  portalToken      String?   @unique
+  portalTokenExp   DateTime?
+  lastPortalVisit  DateTime?
+  stripeCustomerId String?
+
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
@@ -403,8 +410,14 @@ model Quote {
   sentAt     DateTime?
   viewedAt   DateTime?
   approvedAt DateTime?
-  signature  String?
+  approvedBy String?
+  signedBy   String?
   signedAt   DateTime?
+  signature  String?
+  approvalNotes   String?
+  approvalIp      String?
+  rejectionReason String?
+  validUntil DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
@@ -458,6 +471,12 @@ model Invoice {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
+  // Stripe integration
+  stripePaymentIntentId String? @unique
+  stripePaymentLink     String?
+  refundAmount          Decimal? @db.Decimal(12, 2)
+  refundedAt            DateTime?
+
   companyId String
   company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   contactId String?
@@ -498,6 +517,12 @@ model Payment {
   notes     String?
   paidAt    DateTime @default(now())
   createdAt DateTime @default(now())
+
+  // Stripe integration
+  stripePaymentIntentId String?
+  stripeRefundId        String?
+  refundAmount          Decimal? @db.Decimal(12, 2)
+  refundedAt            DateTime?
 
   invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
@@ -657,6 +682,13 @@ model ChangeOrder {
   submittedDate DateTime?
   approvedDate  DateTime?
   approvedBy    String?
+  signature     String?
+  signedBy      String?
+  signedAt      DateTime?
+  approvalNotes   String?
+  approvalIp      String?
+  rejectionReason String?
+  rejectedAt      DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -1766,7 +1798,7 @@ model Subscription {
   companyId String  @unique
   company   Company @relation(fields: [companyId], references: [id])
 
-  stripeSubscriptionId String @unique
+  stripeSubscriptionId String? @unique
 
   packageId    String
   billingCycle String
