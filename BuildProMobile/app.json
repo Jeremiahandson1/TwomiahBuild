@@ -74,6 +74,7 @@
       "eas": {
         "projectId": "your-eas-project-id"
       }
-    }
+    },
+    "newArchEnabled": true
   }
 }
