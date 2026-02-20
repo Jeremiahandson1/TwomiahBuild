@@ -53,7 +53,7 @@ class ErrorBoundary extends React.Component {
               {this.props.message || "We're sorry, but something unexpected happened. Please try again."}
             </p>
             
-            {this.state.error && (
+            {this.state.error && import.meta.env.DEV && (
               <div className="mb-6 p-4 bg-red-50 rounded-lg text-left">
                 <p className="font-mono text-sm text-red-800 break-all">
                   {this.state.error.toString()}

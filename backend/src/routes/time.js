@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/prisma.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, requireRole } from '../middleware/auth.js';
 import { withCompany } from '../middleware/ownership.js';
 
 
@@ -75,7 +75,7 @@ router.delete('/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/:id/approve', async (req, res, next) => {
+router.post('/:id/approve', requireRole('manager', 'admin', 'owner'), async (req, res, next) => {
   try { const entry = await prisma.timeEntry.update({ where: withCompany(req.params.id, req.user.companyId), data: { approved: true } }); res.json(entry); } catch (error) { next(error); }
 });
 

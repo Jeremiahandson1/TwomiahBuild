@@ -9,6 +9,7 @@
  * - Stripe webhooks
  */
 
+import crypto from 'crypto';
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { requireRole } from '../middleware/permissions.js';
@@ -370,7 +371,7 @@ router.post('/subscription', authenticate, async (req, res, next) => {
 /**
  * Cancel subscription
  */
-router.post('/subscription/cancel', authenticate, async (req, res, next) => {
+router.post('/subscription/cancel', authenticate, requireRole('admin', 'owner'), async (req, res, next) => {
   try {
     const { immediate } = req.body;
     
@@ -897,17 +898,18 @@ router.post('/self-hosted/download/:licenseId', authenticate, async (req, res, n
   }
 });
 
-// Helper function to generate license key
+// Helper function to generate license key (cryptographically secure)
 function generateLicenseKey() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const segments = 4;
   const segmentLength = 5;
   const parts = [];
-  
+
   for (let i = 0; i < segments; i++) {
     let segment = '';
+    const bytes = crypto.randomBytes(segmentLength);
     for (let j = 0; j < segmentLength; j++) {
-      segment += chars.charAt(Math.floor(Math.random() * chars.length));
+      segment += chars[bytes[j] % chars.length];
     }
     parts.push(segment);
   }

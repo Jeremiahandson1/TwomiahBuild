@@ -153,7 +153,7 @@ router.post('/:id/convert-to-invoice', requirePermission('quotes:update'), async
   try {
     const quote = await prisma.quote.findFirst({ where: { id: req.params.id, companyId: req.user.companyId }, include: { lineItems: true } });
     if (!quote) return res.status(404).json({ error: 'Quote not found' });
-    const count = await prisma.invoice.count({ where: { companyId: req.user.companyId } });
+    const docNumber = await nextDocumentNumber('INV', req.user.companyId);
     const invoice = await prisma.invoice.create({
       data: {
         number: docNumber,

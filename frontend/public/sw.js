@@ -14,12 +14,12 @@ const STATIC_ASSETS = [
 
 // API routes to cache for offline access
 const CACHEABLE_API_ROUTES = [
-  '/api/jobs',
-  '/api/projects',
-  '/api/contacts',
-  '/api/quotes',
-  '/api/invoices',
-  '/api/dashboard',
+  '/api/v1/jobs',
+  '/api/v1/projects',
+  '/api/v1/contacts',
+  '/api/v1/quotes',
+  '/api/v1/invoices',
+  '/api/v1/dashboard',
 ];
 
 // Install event - cache static assets

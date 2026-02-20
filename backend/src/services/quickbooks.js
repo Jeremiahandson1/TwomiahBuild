@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 /**
  * QuickBooks Online Integration Service
  * 
@@ -27,7 +28,9 @@ const USE_SANDBOX = process.env.QBO_SANDBOX === 'true';
  * Generate OAuth2 authorization URL
  */
 export function getAuthUrl(companyId) {
-  const state = Buffer.from(JSON.stringify({ companyId })).toString('base64');
+  const payload = Buffer.from(JSON.stringify({ companyId })).toString('base64');
+  const sig = crypto.createHmac('sha256', process.env.JWT_SECRET || 'fallback').update(payload).digest('hex');
+  const state = `${sig}.${payload}`;
   
   const params = new URLSearchParams({
     client_id: CLIENT_ID,

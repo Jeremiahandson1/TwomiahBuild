@@ -414,11 +414,19 @@ router.post('/promote-agency-admin', authenticate, async (req, res, next) => {
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ error: 'userId required' });
 
+    // Verify target user belongs to the same agency before promoting
+    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+    const requestorAgencyId = req.user.agencyId || req.user.companyId;
+    if (targetUser.agencyId !== requestorAgencyId && targetUser.companyId !== requestorAgencyId) {
+      return res.status(403).json({ error: 'Cannot promote users outside your agency' });
+    }
+
     const user = await prisma.user.update({
       where: { id: userId },
       data: {
         role: 'agency_admin',
-        agencyId: req.user.agencyId || req.user.companyId,
+        agencyId: requestorAgencyId,
       },
     });
 

@@ -128,7 +128,7 @@ router.post('/customers', async (req, res, next) => {
     
     // Generate admin password if not provided
     const adminPassword = data.adminPassword || crypto.randomBytes(12).toString('base64').slice(0, 12);
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    const hashedPassword = await bcrypt.hash(adminPassword, 12);
     
     // Create company with admin user in transaction
     const result = await prisma.$transaction(async (tx) => {

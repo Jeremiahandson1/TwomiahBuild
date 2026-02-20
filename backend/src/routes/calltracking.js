@@ -44,9 +44,19 @@ router.post('/webhook/twilio/:companyId', validateTwilioWebhook, async (req, res
   }
 });
 
-// Generic webhook (CTM, etc.)
+// Generic webhook (CTM, etc.) — requires shared secret in X-Webhook-Secret header or ?secret= query
 router.post('/webhook/:provider/:companyId', async (req, res) => {
   try {
+    const secret = process.env.GENERIC_WEBHOOK_SECRET;
+    if (!secret) {
+      console.error('GENERIC_WEBHOOK_SECRET not configured — rejecting webhook');
+      return res.sendStatus(403);
+    }
+    const provided = req.headers['x-webhook-secret'] || req.query.secret;
+    if (provided !== secret) {
+      console.warn('Generic webhook rejected — invalid secret', { provider: req.params.provider, companyId: req.params.companyId });
+      return res.sendStatus(403);
+    }
     // Map provider-specific payload to common format
     const data = mapProviderPayload(req.params.provider, req.body);
     await calltracking.logCall(req.params.companyId, data);

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import crypto from 'crypto';
 import { authenticate } from '../middleware/auth.js';
 import { requireRole } from '../middleware/permissions.js';
 import quickbooks from '../services/quickbooks.js';
@@ -16,8 +17,18 @@ router.get('/callback', async (req, res, next) => {
       return res.redirect(`${process.env.FRONTEND_URL}/settings/integrations?error=${error}`);
     }
 
-    // Decode state to get companyId
-    const { companyId } = JSON.parse(Buffer.from(state, 'base64').toString());
+    // Verify and decode state (HMAC-signed to prevent forgery)
+    let companyId;
+    try {
+      const [sig, payload] = state.split('.');
+      const expectedSig = crypto.createHmac('sha256', process.env.JWT_SECRET || 'fallback').update(payload).digest('hex');
+      if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))) {
+        return res.redirect(`${process.env.FRONTEND_URL}/settings/integrations?error=invalid_state`);
+      }
+      ({ companyId } = JSON.parse(Buffer.from(payload, 'base64').toString()));
+    } catch {
+      return res.redirect(`${process.env.FRONTEND_URL}/settings/integrations?error=invalid_state`);
+    }
 
     // Exchange code for tokens
     const tokens = await quickbooks.exchangeCodeForTokens(code);

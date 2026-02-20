@@ -45,7 +45,7 @@ router.put('/users/:id', requireAdmin, async (req, res, next) => {
     const data = schema.parse(req.body);
     // If email is changing, check it's not already taken
     if (data.email) {
-    const existing = await prisma.user.findFirst({ where: { email: data.email, NOT: { id: req.params.id } } });
+    const existing = await prisma.user.findFirst({ where: { email: data.email, companyId: req.user.companyId, NOT: { id: req.params.id } } });
       if (existing) return res.status(400).json({ error: 'Email already in use' });
     }
     const user = await prisma.user.update({ where: { id: req.params.id, companyId: req.user.companyId }, data, select: { id: true, email: true, firstName: true, lastName: true, role: true, isActive: true } });

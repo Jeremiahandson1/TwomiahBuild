@@ -331,46 +331,54 @@ export async function transferStock(companyId, {
   userId,
   notes,
 }) {
-  // Check source has enough
-  const sourceStock = await getStockLevel(itemId, fromLocationId);
-  if (!sourceStock || sourceStock.quantity < quantity) {
-    throw new Error('Insufficient stock at source location');
-  }
+  // Use a transaction to prevent race conditions on concurrent transfers
+  return await prisma.$transaction(async (tx) => {
+    // Re-check stock inside transaction with a fresh read
+    const sourceStock = await tx.inventoryStock.findFirst({
+      where: { itemId, locationId: fromLocationId },
+    });
+    if (!sourceStock || sourceStock.quantity < quantity) {
+      throw new Error('Insufficient stock at source location');
+    }
 
-  // Remove from source
-  await adjustStock(companyId, {
-    itemId,
-    locationId: fromLocationId,
-    quantity: -quantity,
-    reason: `Transfer to ${toLocationId}`,
-    userId,
+    // Remove from source
+    await tx.inventoryStock.update({
+      where: { id: sourceStock.id },
+      data: { quantity: { decrement: quantity } },
+    });
+
+    // Add to destination
+    const destStock = await tx.inventoryStock.findFirst({
+      where: { itemId, locationId: toLocationId },
+    });
+    if (destStock) {
+      await tx.inventoryStock.update({
+        where: { id: destStock.id },
+        data: { quantity: { increment: quantity } },
+      });
+    } else {
+      await tx.inventoryStock.create({
+        data: { companyId, itemId, locationId: toLocationId, quantity },
+      });
+    }
+
+    // Record transfer
+    const transfer = await tx.inventoryTransfer.create({
+      data: {
+        companyId,
+        itemId,
+        fromLocationId,
+        toLocationId,
+        quantity,
+        status: 'completed',
+        notes,
+        userId,
+        completedAt: new Date(),
+      },
+    });
+
+    return transfer;
   });
-
-  // Add to destination
-  await adjustStock(companyId, {
-    itemId,
-    locationId: toLocationId,
-    quantity,
-    reason: `Transfer from ${fromLocationId}`,
-    userId,
-  });
-
-  // Record transfer
-  const transfer = await prisma.inventoryTransfer.create({
-    data: {
-      companyId,
-      itemId,
-      fromLocationId,
-      toLocationId,
-      quantity,
-      status: 'completed',
-      notes,
-      userId,
-      completedAt: new Date(),
-    },
-  });
-
-  return transfer;
 }
 
 // ============================================

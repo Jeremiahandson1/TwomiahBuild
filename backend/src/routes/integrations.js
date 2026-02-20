@@ -9,6 +9,7 @@
  */
 
 import { Router } from 'express';
+import crypto from 'crypto';
 import { authenticate } from '../middleware/auth.js';
 import { prisma } from '../config/prisma.js';
 import * as quickbooksService from '../services/quickbooks.js';
@@ -107,10 +108,12 @@ router.get('/quickbooks/auth-url', authenticate, async (req, res, next) => {
       return res.status(500).json({ error: 'QuickBooks not configured' });
     }
 
-    const state = Buffer.from(JSON.stringify({
+    const payload = Buffer.from(JSON.stringify({
       companyId: req.user.companyId,
       userId: req.user.id,
     })).toString('base64');
+    const sig = crypto.createHmac('sha256', process.env.JWT_SECRET || 'fallback').update(payload).digest('hex');
+    const state = `${sig}.${payload}`;
 
     const baseUrl = QB_ENVIRONMENT === 'production'
       ? 'https://appcenter.intuit.com/connect/oauth2'
@@ -141,8 +144,18 @@ router.get('/quickbooks/callback', async (req, res, next) => {
       return res.redirect(`${process.env.FRONTEND_URL}/settings/integrations?error=quickbooks_denied`);
     }
 
-    // Decode state
-    const { companyId, userId } = JSON.parse(Buffer.from(state, 'base64').toString());
+    // Verify and decode HMAC-signed state
+    let companyId, userId;
+    try {
+      const [sig, payload] = state.split('.');
+      const expectedSig = crypto.createHmac('sha256', process.env.JWT_SECRET || 'fallback').update(payload).digest('hex');
+      if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))) {
+        return res.redirect(`${process.env.FRONTEND_URL}/settings/integrations?error=invalid_state`);
+      }
+      ({ companyId, userId } = JSON.parse(Buffer.from(payload, 'base64').toString()));
+    } catch {
+      return res.redirect(`${process.env.FRONTEND_URL}/settings/integrations?error=invalid_state`);
+    }
 
     // Exchange code for tokens
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {

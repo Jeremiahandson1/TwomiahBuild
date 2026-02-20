@@ -41,6 +41,10 @@ router.post('/optimize', async (req, res, next) => {
       return res.status(400).json({ error: 'At least 2 stops are required' });
     }
 
+    if (stops.length > 50) {
+      return res.status(400).json({ error: 'Maximum 50 stops per optimization request' });
+    }
+
     // Validate stops have coordinates
     const validStops = stops.filter(s => s.lat && s.lng);
     if (validStops.length < 2) {

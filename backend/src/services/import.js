@@ -12,6 +12,19 @@
 import { parse } from 'csv-parse/sync';
 import { prisma } from '../config/prisma.js';
 
+/**
+ * Sanitize a string value to prevent CSV formula injection.
+ * Fields starting with =, +, -, @ can trigger Excel/Sheets formulas if exported.
+ */
+function sanitizeCsvValue(value) {
+  if (typeof value !== 'string') return value;
+  if (/^[=+\-@|%]/.test(value)) {
+    return `'${value}`;
+  }
+  return value;
+}
+
+
 
 /**
  * Parse CSV content
@@ -110,7 +123,8 @@ export async function importContacts(csvContent, companyId, options = {}) {
 
     try {
       // Extract fields
-      const name = getValue(row, ...CONTACT_COLUMN_MAP.name);
+      const rawName = getValue(row, ...CONTACT_COLUMN_MAP.name);
+      const name = sanitizeCsvValue(rawName);
       const email = getValue(row, ...CONTACT_COLUMN_MAP.email);
 
       if (!name) {

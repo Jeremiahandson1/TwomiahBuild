@@ -15,6 +15,7 @@
  *   GITHUB_ORG         - GitHub org or username to create repos under
  */
 
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
@@ -339,12 +340,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
   const results = { steps: [], services: {}, errors: [] };
 
   const generateJwtSecret = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 64; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
+    return crypto.randomBytes(48).toString('base64');
   };
 
   try {

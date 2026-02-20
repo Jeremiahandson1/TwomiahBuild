@@ -485,7 +485,7 @@ router.delete('/builds/:id', async (req, res) => {
   }
 });
 
-router.get('/builds', async (req, res) => {
+router.get('/builds', async (req, res, next) => {
   try {
     
     const companyId = req.user.companyId;
@@ -577,7 +577,12 @@ router.get('/customers/:id', async (req, res) => {
  */
 router.patch('/customers/:id', async (req, res) => {
   try {
-    
+    // Verify ownership before update
+    const owned = await prisma.factoryCustomer.findFirst({
+      where: { id: req.params.id, companyId: req.user.companyId }
+    });
+    if (!owned) return res.status(404).json({ error: 'Customer not found' });
+
     const { 
       status, billingType, billingStatus, planId, 
       monthlyAmount, oneTimeAmount, paidAt, nextBillingDate,
@@ -620,7 +625,10 @@ router.patch('/customers/:id', async (req, res) => {
  */
 router.delete('/customers/:id', async (req, res) => {
   try {
-    
+    const existing = await prisma.factoryCustomer.findFirst({
+      where: { id: req.params.id, companyId: req.user.companyId }
+    });
+    if (!existing) return res.status(404).json({ error: 'Customer not found' });
     await prisma.factoryCustomer.delete({
       where: { id: req.params.id }
     });
@@ -728,7 +736,7 @@ router.post('/customers/:id/deploy', async (req, res) => {
     const { existsSync } = await import('fs');
     let zipPath = latestBuild.zipPath;
     if (!existsSync(zipPath)) {
-      logger.info('[Deploy] Zip not on disk, regenerating for ${customer.slug}...');
+      logger.info(`[Deploy] Zip not on disk, regenerating for ${customer.slug}...`);
       try {
         const { generatePackage } = await import('../services/factory/generator.js');
         const regen = await generatePackage(customer.wizardConfig || {
