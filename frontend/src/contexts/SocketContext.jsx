@@ -14,9 +14,9 @@ export function SocketProvider({ children }) {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const listenersRef = useRef(new Map());
+  const token = api.accessToken;
 
   useEffect(() => {
-    const token = api.accessToken;
     if (!isAuthenticated || !token) {
       if (socket) {
         socket.disconnect();
