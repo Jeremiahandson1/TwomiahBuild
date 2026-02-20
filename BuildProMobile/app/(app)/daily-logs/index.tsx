@@ -4,8 +4,8 @@ import {
   StyleSheet, SafeAreaView, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { getDatabase, enqueueSync } from '../../src/utils/database';
-import { useJobsStore } from '../../src/store/jobsStore';
+import { getDatabase, enqueueSync } from '../../../src/utils/database';
+import { useJobsStore } from '../../../src/store/jobsStore';
 import { v4 as uuid } from 'uuid';
 import { format } from 'date-fns';
 
@@ -42,7 +42,7 @@ export default function DailyLogsScreen() {
       const db = await getDatabase();
       const id = uuid();
       const today = format(new Date(), 'yyyy-MM-dd');
-      const session = await import('../../src/utils/database').then(m => m.getSession());
+      const session = await import('../../../src/utils/database').then(m => m.getSession());
 
       await db.runAsync(
         `INSERT INTO daily_logs (id, job_id, user_id, log_date, weather, temperature, workers_on_site, work_performed, delays, notes, synced)

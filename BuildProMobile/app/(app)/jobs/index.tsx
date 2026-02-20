@@ -4,8 +4,8 @@ import {
   StyleSheet, SafeAreaView, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useJobsStore } from '../../src/store/jobsStore';
-import { useNetworkStatus } from '../../src/hooks/useNetworkStatus';
+import { useJobsStore } from '../../../src/store/jobsStore';
+import { useNetworkStatus } from '../../../src/hooks/useNetworkStatus';
 
 const STATUS_COLORS: Record<string, string> = {
   active: '#10b981',

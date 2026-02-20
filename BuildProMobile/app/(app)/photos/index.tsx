@@ -5,8 +5,8 @@ import {
   ActivityIndicator, Dimensions,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { usePhotosStore } from '../../src/store/photosStore';
-import { useJobsStore } from '../../src/store/jobsStore';
+import { usePhotosStore } from '../../../src/store/photosStore';
+import { useJobsStore } from '../../../src/store/jobsStore';
 
 const COLS = 3;
 const SIZE = (Dimensions.get('window').width - 40 - (COLS - 1) * 4) / COLS;

@@ -3,8 +3,8 @@ import {
   View, Text, FlatList, TouchableOpacity,
   StyleSheet, SafeAreaView, Alert, Modal, TextInput,
 } from 'react-native';
-import { useTimeStore } from '../../src/store/timeStore';
-import { useJobsStore } from '../../src/store/jobsStore';
+import { useTimeStore } from '../../../src/store/timeStore';
+import { useJobsStore } from '../../../src/store/jobsStore';
 import { format, formatDuration, intervalToDuration } from 'date-fns';
 
 function formatSeconds(seconds: number) {
