@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
+import api from '../services/api';
   ArrowLeft, Globe, Database, Palette, Package, ExternalLink,
   DollarSign, CreditCard, Calendar, Save, Trash2, Download,
   CheckCircle2, Clock, AlertCircle, XCircle, Edit3, Copy,
@@ -28,7 +29,7 @@ export default function CustomerDetailPage() {
 
   async function fetchCustomer() {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_URL}/v1/factory/customers/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -59,7 +60,7 @@ export default function CustomerDetailPage() {
 
   async function fetchStripeConfig() {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_URL}/v1/factory/stripe/config`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -71,7 +72,7 @@ export default function CustomerDetailPage() {
 
   async function fetchDeployConfig() {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_URL}/v1/factory/deploy/config`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -85,7 +86,7 @@ export default function CustomerDetailPage() {
     if (!confirm('Deploy this customer to Render? This will create a GitHub repo, database, and web services.')) return;
     setDeploying(true);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_URL}/v1/factory/customers/${id}/deploy`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -111,7 +112,7 @@ export default function CustomerDetailPage() {
   async function handleRedeploy() {
     if (!confirm('Redeploy all services for this customer?')) return;
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_URL}/v1/factory/customers/${id}/redeploy`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
@@ -129,7 +130,7 @@ export default function CustomerDetailPage() {
 
   async function fetchDeployStatus() {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_URL}/v1/factory/customers/${id}/deploy/status`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -140,7 +141,7 @@ export default function CustomerDetailPage() {
   async function handleCheckout(type) {
     setCheckoutLoading(type);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const endpoint = type === 'subscription'
         ? `${API_URL}/v1/factory/customers/${id}/checkout/subscription`
         : `${API_URL}/v1/factory/customers/${id}/checkout/license`;
@@ -177,7 +178,7 @@ export default function CustomerDetailPage() {
 
   async function handleOpenPortal() {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_URL}/v1/factory/customers/${id}/portal`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
@@ -197,7 +198,7 @@ export default function CustomerDetailPage() {
   async function handleCancelSubscription() {
     if (!confirm('Cancel this customer\'s subscription? They will retain access until the end of the billing period.')) return;
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_URL}/v1/factory/customers/${id}/cancel`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -215,7 +216,7 @@ export default function CustomerDetailPage() {
   async function handleSave() {
     setSaving(true);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_URL}/v1/factory/customers/${id}`, {
         method: 'PATCH',
         headers: {
@@ -246,7 +247,7 @@ export default function CustomerDetailPage() {
   async function handleDelete() {
     if (!confirm('Delete this customer record? This cannot be undone.')) return;
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       await fetch(`${API_URL}/v1/factory/customers/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },

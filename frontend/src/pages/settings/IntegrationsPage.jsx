@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
+import api from '../../services/api';
   Loader2, Check, ExternalLink, ToggleLeft, ToggleRight,
   MessageSquare, Mail, CreditCard, BookOpen, AlertCircle, RefreshCw
 } from 'lucide-react';
@@ -24,7 +25,7 @@ export default function IntegrationsPage() {
 
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+    Authorization: `Bearer ${api.accessToken}`,
   });
 
   const loadIntegrations = async () => {

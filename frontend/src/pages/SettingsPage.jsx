@@ -43,7 +43,7 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_BASE}/api/company/users/${user.userId || user.id}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -71,7 +71,7 @@ export default function SettingsPage() {
     if (!confirm(`Delete ${u.firstName} ${u.lastName} (${u.email})? This cannot be undone.`)) return;
     setDeletingUser(u.id);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_BASE}/api/company/users/${u.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },

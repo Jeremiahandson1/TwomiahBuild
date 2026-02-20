@@ -65,7 +65,7 @@ export default function PhotoGallery({ projectId, jobId, title = 'Photos', showU
     if (jobId) formData.append('jobId', jobId);
     
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const response = await fetch(`${API_URL}/photos/bulk`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
@@ -352,7 +352,7 @@ export function PhotoDropzone({ projectId, jobId, onUpload, category }) {
     if (category) formData.append('category', category);
     
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const response = await fetch(`${API_URL}/photos/bulk`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },

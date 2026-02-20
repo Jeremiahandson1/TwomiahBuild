@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef } f
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
+import api from '../services/api';
 
 const SocketContext = createContext(null);
 
@@ -9,13 +10,13 @@ const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export function SocketProvider({ children }) {
   const { isAuthenticated } = useAuth();
-      const token = localStorage.getItem('accessToken');
   const toast = useToast();
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const listenersRef = useRef(new Map());
 
   useEffect(() => {
+    const token = api.accessToken;
     if (!isAuthenticated || !token) {
       if (socket) {
         socket.disconnect();

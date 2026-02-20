@@ -13,15 +13,12 @@ export default function SignupSuccessPage() {
   useEffect(() => {
     const verifyCheckout = async () => {
       const sessionId = searchParams.get('session_id');
-      const token = sessionStorage.getItem('signup_token');
+      const signupToken = sessionStorage.getItem('signup_token');
 
       if (!sessionId) {
         // No session ID means they came from free trial flow
-        if (token) {
-          localStorage.setItem('token', token);
-          sessionStorage.removeItem('signup_token');
+        sessionStorage.removeItem('signup_token');
           sessionStorage.removeItem('signup_company_id');
-        }
         setLoading(false);
         return;
       }
@@ -30,7 +27,7 @@ export default function SignupSuccessPage() {
         // Verify the checkout session
         const response = await fetch(`${API_URL}/api/billing/checkout/success?session_id=${sessionId}`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${signupToken}`,
           },
         });
 
@@ -39,11 +36,8 @@ export default function SignupSuccessPage() {
         }
 
         // Store the token and clean up
-        if (token) {
-          localStorage.setItem('token', token);
-          sessionStorage.removeItem('signup_token');
+        sessionStorage.removeItem('signup_token');
           sessionStorage.removeItem('signup_company_id');
-        }
       } catch (err) {
         setError(err.message);
       } finally {

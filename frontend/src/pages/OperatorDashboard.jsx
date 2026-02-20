@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
+import api from '../services/api';
   Users, Package, DollarSign, ArrowRight, Factory, 
   TrendingUp, Clock, CheckCircle2, AlertCircle
 } from 'lucide-react';
@@ -23,7 +24,7 @@ export default function OperatorDashboard() {
 
   async function fetchStats() {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_URL}/api/v1/factory/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });

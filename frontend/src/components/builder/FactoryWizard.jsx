@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
+import api from '../../services/api';
   Globe, Layout, Briefcase, ChevronRight, ChevronLeft, Check,
   Building2, Palette, Settings2, Download, Loader2, Package,
   Search, CheckSquare, Square, ChevronDown, ChevronUp, Zap, AlertCircle
@@ -224,7 +225,7 @@ export default function FactoryWizard() {
     setGenerating(true);
     setError(null);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_BASE}/api/v1/factory/generate`, {
         method: 'POST',
         headers: { 
@@ -969,7 +970,7 @@ function ReviewStep({ config, registry, generating, result, error, onGenerate })
     setDeploying(true);
     setDeployError(null);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_BASE}/api/v1/factory/customers/${result.customerId}/deploy`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },

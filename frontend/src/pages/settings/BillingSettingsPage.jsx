@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
+import api from '../../services/api';
   CreditCard, Check, ArrowRight, Loader2, AlertTriangle, 
   Plus, Package, Calendar, Receipt, X, ChevronRight
 } from 'lucide-react';
@@ -38,7 +39,7 @@ export default function BillingSettingsPage() {
 
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+    Authorization: `Bearer ${api.accessToken}`,
   });
 
   const loadBillingData = async () => {

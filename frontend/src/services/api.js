@@ -3,22 +3,17 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 class ApiClient {
   constructor() {
     this.baseUrl = API_URL;
-    this.accessToken = localStorage.getItem('accessToken');
-    this.refreshToken = localStorage.getItem('refreshToken');
+    // accessToken is kept in memory only — never stored in localStorage.
+    // refreshToken is stored in an httpOnly cookie (invisible to JS).
+    this.accessToken = null;
   }
 
-  setTokens(accessToken, refreshToken) {
+  setTokens(accessToken) {
     this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
   }
 
   clearTokens() {
     this.accessToken = null;
-    this.refreshToken = null;
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
   }
 
   async request(endpoint, options = {}) {
@@ -30,14 +25,18 @@ class ApiClient {
     };
 
     try {
-      const response = await fetch(url, { ...options, headers });
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: 'include', // Send httpOnly cookies (refreshToken) automatically
+      });
 
-      // Handle 401 - try to refresh token
-      if (response.status === 401 && this.refreshToken && !endpoint.includes('/auth/refresh')) {
+      // Handle 401 - try to refresh using httpOnly cookie
+      if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
         const refreshed = await this.refreshAccessToken();
         if (refreshed) {
           headers.Authorization = `Bearer ${this.accessToken}`;
-          return fetch(url, { ...options, headers }).then(r => this.handleResponse(r));
+          return fetch(url, { ...options, headers, credentials: 'include' }).then(r => this.handleResponse(r));
         } else {
           this.clearTokens();
           window.location.href = '/login';
@@ -69,16 +68,17 @@ class ApiClient {
 
   async refreshAccessToken() {
     try {
+      // No body needed — refreshToken is sent automatically as httpOnly cookie
       const response = await fetch(`${this.baseUrl}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: this.refreshToken }),
+        credentials: 'include',
       });
       
       if (!response.ok) return false;
       
       const data = await response.json();
-      this.setTokens(data.accessToken, data.refreshToken);
+      this.setTokens(data.accessToken);
       return true;
     } catch {
       return false;
@@ -88,13 +88,13 @@ class ApiClient {
   // Auth
   async register(data) {
     const result = await this.request('/api/v1/auth/register', { method: 'POST', body: JSON.stringify(data) });
-    this.setTokens(result.accessToken, result.refreshToken);
+    this.setTokens(result.accessToken);
     return result;
   }
 
   async login(email, password) {
     const result = await this.request('/api/v1/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-    this.setTokens(result.accessToken, result.refreshToken);
+    this.setTokens(result.accessToken);
     return result;
   }
 
@@ -141,7 +141,6 @@ class ApiClient {
     return this.request(`${endpoint}/${id}/${action}`, { method: 'POST', body: JSON.stringify(data) });
   }
 
-  // Convenience aliases so pages can call api.post/put/patch directly (Bug #16)
   async post(endpoint, data) {
     return this.request(endpoint, { method: 'POST', body: JSON.stringify(data) });
   }
@@ -353,7 +352,7 @@ class ApiClient {
     profitability: (params) => this.get('/api/v1/reports/profitability', params),
   };
 
-  // Online Booking (Bug #11 — gap feature methods were missing)
+  // Online Booking
   booking = {
     getSettings: (companySlug) => this.get(`/api/v1/booking/${companySlug}`),
     create: (companySlug, data) => this.request(`/api/v1/booking/${companySlug}`, { method: 'POST', body: JSON.stringify(data) }),
@@ -369,7 +368,7 @@ class ApiClient {
     report: (params) => this.get('/api/v1/gap/job-costing/report', params),
   };
 
-  // Custom Forms (Bug #11)
+  // Custom Forms
   customForms = {
     list: (params) => this.get('/api/v1/gap/forms', params),
     get: (id) => this.getOne('/api/v1/gap/forms', id),
@@ -379,7 +378,7 @@ class ApiClient {
     submit: (id, data) => this.request(`/api/v1/gap/forms/${id}/submit`, { method: 'POST', body: JSON.stringify(data) }),
   };
 
-  // Lien Waivers (Bug #11)
+  // Lien Waivers
   lienWaivers = {
     list: (params) => this.get('/api/v1/gap/lien-waivers', params),
     get: (id) => this.getOne('/api/v1/gap/lien-waivers', id),
@@ -388,7 +387,7 @@ class ApiClient {
     sign: (id, data) => this.action('/api/v1/gap/lien-waivers', id, 'sign', data),
   };
 
-  // Draw Schedules (Bug #11)
+  // Draw Schedules
   drawSchedules = {
     list: (params) => this.get('/api/v1/gap/draw-schedules', params),
     get: (id) => this.getOne('/api/v1/gap/draw-schedules', id),

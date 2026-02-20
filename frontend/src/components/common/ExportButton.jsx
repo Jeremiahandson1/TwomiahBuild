@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Download, FileSpreadsheet, FileText, ChevronDown, Loader2 } from 'lucide-react';
+import api from '../../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -35,7 +36,7 @@ export default function ExportButton({
       const url = `${API_URL}/export/${type}/${format}${queryString ? `?${queryString}` : ''}`;
       
       // Get auth token
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       
       // Fetch file
       const response = await fetch(url, {
@@ -159,7 +160,7 @@ export function ExportLink({
       
       const queryString = params.toString();
       const url = `${API_URL}/export/${type}/${format}${queryString ? `?${queryString}` : ''}`;
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       
       const response = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` },

@@ -10,13 +10,10 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
 
   const checkAuth = useCallback(async () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
+    // Try refreshing first (httpOnly cookie sent automatically),
+    // then call getMe with the new accessToken in memory.
     try {
+      await api.refreshAccessToken();
       const data = await api.getMe();
       setUser(data.user);
       setCompany(data.company);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
+import api from '../services/api';
   Users, Plus, Search, ExternalLink, Package, 
   Globe, Database, Palette, Factory, DollarSign,
   ChevronRight, AlertCircle, CheckCircle2, Clock, XCircle
@@ -22,7 +23,7 @@ export default function CustomersPage() {
 
   async function fetchCustomers() {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const params = new URLSearchParams();
       if (statusFilter) params.set('status', statusFilter);
       if (billingFilter) params.set('billing', billingFilter);

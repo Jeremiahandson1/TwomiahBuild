@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Download, Package, Plus, Trash2, Rocket } from 'lucide-react';
+import api from '../services/api';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -14,7 +15,7 @@ export default function BuildsPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = api.accessToken;
     fetch(`${API_BASE}/api/v1/factory/builds`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -26,7 +27,7 @@ export default function BuildsPage() {
   const handleDownload = async (build) => {
     setDownloading(build.id);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(
         `${API_BASE}/api/v1/factory/download/${build.buildId}/${build.zipName}`,
         { headers: { 'Authorization': `Bearer ${token}` } }
@@ -49,7 +50,7 @@ export default function BuildsPage() {
     if (!build.customer?.name) return;
     setDeploying(build.id);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       // Need customerId — get it from the build's customer
       const res = await fetch(`${API_BASE}/api/v1/factory/customers?search=${encodeURIComponent(build.companyName)}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -76,7 +77,7 @@ export default function BuildsPage() {
     if (!confirm(`Delete "${build.companyName}" build? This cannot be undone.`)) return;
     setDeleting(build.id);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = api.accessToken;
       const res = await fetch(`${API_BASE}/api/v1/factory/builds/${build.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }

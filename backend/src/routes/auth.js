@@ -23,6 +23,24 @@ const generateTokens = (userId, companyId, email, role, agencyId = null) => {
   return { accessToken, refreshToken };
 };
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
+};
+
+function setAuthCookies(res, tokens) {
+  res.cookie('refreshToken', tokens.refreshToken, {
+    ...COOKIE_OPTIONS,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+function clearAuthCookies(res) {
+  res.clearCookie('refreshToken', COOKIE_OPTIONS);
+}
+
 import { PLAN_FEATURES, PLAN_LIMITS } from '../config/plans.js';
 
 // Self-serve signup (multi-step flow)
@@ -160,9 +178,9 @@ router.post('/signup', async (req, res, next) => {
       industry: data.industry,
     });
 
+    setAuthCookies(res, tokens);
     res.status(201).json({
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
       user: {
         id: result.user.id,
         email: result.user.email,
@@ -230,10 +248,11 @@ router.post('/register', async (req, res, next) => {
     const tokens = generateTokens(result.user.id, result.company.id, result.user.email, result.user.role, result.user.agencyId);
     await prisma.user.update({ where: { id: result.user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
+    setAuthCookies(res, tokens);
     res.status(201).json({
+      accessToken: tokens.accessToken,
       user: { id: result.user.id, email: result.user.email, firstName: result.user.firstName, lastName: result.user.lastName, role: result.user.role },
       company: { id: result.company.id, name: result.company.name, slug: result.company.slug, enabledFeatures: result.company.enabledFeatures },
-      ...tokens,
     });
   } catch (error) { next(error); }
 });
@@ -254,18 +273,19 @@ router.post('/login', async (req, res, next) => {
     const tokens = generateTokens(user.id, user.companyId, user.email, user.role, user.agencyId);
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken), lastLogin: new Date() } });
 
+    setAuthCookies(res, tokens);
     res.json({
+      accessToken: tokens.accessToken,
       user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, avatar: user.avatar },
       company: { id: user.company.id, name: user.company.name, slug: user.company.slug, logo: user.company.logo, primaryColor: user.company.primaryColor, enabledFeatures: user.company.enabledFeatures },
-      ...tokens,
     });
   } catch (error) { next(error); }
 });
 
-// Refresh token
+// Refresh token — reads refreshToken from httpOnly cookie
 router.post('/refresh', async (req, res, next) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) return res.status(401).json({ error: 'Refresh token required' });
 
     let decoded;
@@ -280,14 +300,16 @@ router.post('/refresh', async (req, res, next) => {
     const tokens = generateTokens(user.id, user.companyId, user.email, user.role, user.agencyId);
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
-    res.json(tokens);
+    setAuthCookies(res, tokens);
+    res.json({ accessToken: tokens.accessToken });
   } catch (error) { next(error); }
 });
 
-// Logout
+// Logout — clear httpOnly cookie
 router.post('/logout', authenticate, async (req, res, next) => {
   try {
     await prisma.user.update({ where: { id: req.user.userId }, data: { refreshToken: null } });
+    clearAuthCookies(res);
     res.json({ message: 'Logged out' });
   } catch (error) { next(error); }
 });
