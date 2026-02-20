@@ -208,7 +208,6 @@ export async function saveSession(session: {
   name: string;
   email: string;
   role: string;
-  token: string;
   expiresAt?: string;
 }) {
   const database = await getDatabase();
@@ -227,7 +226,6 @@ export async function getSession() {
     name: string;
     email: string;
     role: string;
-    token: string;
     expires_at: string | null;
   }>(`SELECT * FROM session WHERE id = 1`);
 }

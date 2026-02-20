@@ -8,6 +8,21 @@ import audit from '../services/audit.js';
 import { prisma } from '../config/prisma.js';
 
 const router = Router();
+
+// Process due recurring invoices (cron endpoint — no JWT, secured by CRON_SECRET only)
+router.post('/process', async (req, res, next) => {
+  try {
+    const cronSecret = req.headers['x-cron-secret'];
+    if (!process.env.CRON_SECRET || cronSecret !== process.env.CRON_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const results = await recurringService.processDueRecurring();
+    res.json(results);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.use(authenticate);
 
 // Get all recurring invoices
@@ -325,22 +340,6 @@ router.delete('/:id', requirePermission('invoices:delete'), async (req, res, nex
     });
 
     res.status(204).send();
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Process all due recurring (cron endpoint - should be called by scheduler)
-router.post('/process', async (req, res, next) => {
-  try {
-    // In production, secure this with an API key or internal-only access
-    const cronSecret = req.headers['x-cron-secret'];
-    if (process.env.CRON_SECRET && cronSecret !== process.env.CRON_SECRET) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const results = await recurringService.processDueRecurring();
-    res.json(results);
   } catch (error) {
     next(error);
   }

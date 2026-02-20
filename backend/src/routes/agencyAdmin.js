@@ -29,6 +29,9 @@ const requireAgencyAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== 'agency_admin') {
     return res.status(403).json({ error: 'Agency admin access required' });
   }
+  if (!req.user.agencyId) {
+    return res.status(403).json({ error: 'Agency admin account not properly configured — agencyId missing' });
+  }
   next();
 };
 
@@ -148,7 +151,7 @@ router.post('/customers', async (req, res, next) => {
             dateFormat: 'MM/DD/YYYY',
             packageId: data.packageId || null,
           },
-          agencyId: req.user.agencyId || req.user.companyId,
+          agencyId: req.user.agencyId,
         },
       });
       
@@ -198,7 +201,7 @@ router.get('/customers', async (req, res, next) => {
     const { search, page = 1, limit = 50 } = req.query;
     
     const where = {
-      agencyId: req.user.agencyId || req.user.companyId,
+      agencyId: req.user.agencyId,
     };
     
     if (search) {
@@ -261,7 +264,7 @@ router.get('/customers/:id', async (req, res, next) => {
     const customer = await prisma.company.findFirst({
       where: {
         id: req.params.id,
-        agencyId: req.user.agencyId || req.user.companyId,
+        agencyId: req.user.agencyId,
       },
       include: {
         users: {
@@ -308,7 +311,7 @@ router.put('/customers/:id', async (req, res, next) => {
     const customer = await prisma.company.findFirst({
       where: {
         id: req.params.id,
-        agencyId: req.user.agencyId || req.user.companyId,
+        agencyId: req.user.agencyId,
       },
     });
     
@@ -348,7 +351,7 @@ router.put('/customers/:id/features', async (req, res, next) => {
     const customer = await prisma.company.findFirst({
       where: {
         id: req.params.id,
-        agencyId: req.user.agencyId || req.user.companyId,
+        agencyId: req.user.agencyId,
       },
     });
     
@@ -407,7 +410,7 @@ router.delete('/customers/:id', async (req, res, next) => {
     const customer = await prisma.company.findFirst({
       where: {
         id: req.params.id,
-        agencyId: req.user.agencyId || req.user.companyId,
+        agencyId: req.user.agencyId,
       },
     });
     
@@ -468,7 +471,7 @@ router.delete('/customers/:id', async (req, res, next) => {
  */
 router.get('/stats', async (req, res, next) => {
   try {
-    const agencyId = req.user.agencyId || req.user.companyId;
+    const agencyId = req.user.agencyId;
     
     const [
       totalCustomers,

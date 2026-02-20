@@ -16,6 +16,7 @@ import { generate, listTemplates, cleanOldBuilds } from '../services/factory/gen
 import factoryStripe from '../services/factory/stripe.js';
 import deployService from '../services/factory/deploy.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
+import { prisma } from '../config/prisma.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,7 +81,7 @@ router.post('/generate', async (req, res) => {
     let customer = null;
     let build = null;
     try {
-      const { prisma } = await import('../index.js');
+      
       const companyId = req.user.companyId;
       const c = config.company || {};
       const slug = result.slug;
@@ -171,7 +172,7 @@ router.get('/download/:buildId/:filename', async (req, res) => {
   }
 
   // Look up build scoped to requesting company — prevents cross-tenant downloads
-  const { prisma } = await import('../index.js');
+  
   const build = await prisma.factoryBuild.findFirst({
     where: { id: buildId, companyId: req.user.companyId },
   });
@@ -388,7 +389,7 @@ router.post('/cleanup', (req, res) => {
  */
 router.get('/stats', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const companyId = req.user.companyId;
 
     const [totalCustomers, totalBuilds, activeCustomers, recentBuilds] = await Promise.all([
@@ -465,7 +466,7 @@ router.get('/stats', async (req, res) => {
  */
 router.delete('/builds/:id', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const build = await prisma.factoryBuild.findFirst({
       where: { id: req.params.id, companyId: req.user.companyId },
     });
@@ -486,7 +487,7 @@ router.delete('/builds/:id', async (req, res) => {
 
 router.get('/builds', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const companyId = req.user.companyId;
     const builds = await prisma.factoryBuild.findMany({
       where: { companyId },
@@ -509,7 +510,7 @@ router.get('/builds', async (req, res) => {
 
 router.get('/customers', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const companyId = req.user.companyId;
     const { status, billing, search } = req.query;
 
@@ -550,7 +551,7 @@ router.get('/customers', async (req, res) => {
  */
 router.get('/customers/:id', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const customer = await prisma.factoryCustomer.findFirst({
       where: { id: req.params.id, companyId: req.user.companyId },
       include: {
@@ -576,7 +577,7 @@ router.get('/customers/:id', async (req, res) => {
  */
 router.patch('/customers/:id', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const { 
       status, billingType, billingStatus, planId, 
       monthlyAmount, oneTimeAmount, paidAt, nextBillingDate,
@@ -619,7 +620,7 @@ router.patch('/customers/:id', async (req, res) => {
  */
 router.delete('/customers/:id', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     await prisma.factoryCustomer.delete({
       where: { id: req.params.id }
     });
@@ -637,7 +638,7 @@ router.delete('/customers/:id', async (req, res) => {
  */
 router.get('/billing/summary', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const companyId = req.user.companyId;
 
     const [subscriptions, oneTime, pastDue] = await Promise.all([
@@ -686,12 +687,11 @@ router.get('/billing/summary', async (req, res) => {
 
 /**
  * GET /api/factory/deploy/config
- * Check if auto-deploy is configured
+ * Check if auto-deploy is configured (boolean only — no env var names exposed)
  */
 router.get('/deploy/config', (req, res) => {
   res.json({
     configured: deployService.isConfigured(),
-    missing: deployService.getMissingConfig(),
   });
 });
 
@@ -710,7 +710,7 @@ router.post('/customers/:id/deploy', async (req, res) => {
       });
     }
 
-    const { prisma } = await import('../index.js');
+    
     const customer = await prisma.factoryCustomer.findFirst({
       where: { id: req.params.id, companyId: req.user.companyId },
       include: { builds: { orderBy: { createdAt: 'desc' }, take: 1 } },
@@ -831,7 +831,7 @@ router.get('/customers/:id/deploy/status', async (req, res) => {
       return res.json({ configured: false });
     }
 
-    const { prisma } = await import('../index.js');
+    
     const customer = await prisma.factoryCustomer.findFirst({
       where: { id: req.params.id, companyId: req.user.companyId },
     });
@@ -869,7 +869,7 @@ router.post('/customers/:id/redeploy', async (req, res) => {
       return res.status(400).json({ error: 'Deploy not configured' });
     }
 
-    const { prisma } = await import('../index.js');
+    
     const customer = await prisma.factoryCustomer.findFirst({
       where: { id: req.params.id, companyId: req.user.companyId },
     });
@@ -917,7 +917,7 @@ router.get('/stripe/config', (req, res) => {
  */
 router.post('/customers/:id/checkout/subscription', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const customer = await prisma.factoryCustomer.findFirst({
       where: { id: req.params.id, companyId: req.user.companyId },
     });
@@ -955,7 +955,7 @@ router.post('/customers/:id/checkout/subscription', async (req, res) => {
  */
 router.post('/customers/:id/checkout/license', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const customer = await prisma.factoryCustomer.findFirst({
       where: { id: req.params.id, companyId: req.user.companyId },
     });
@@ -990,7 +990,7 @@ router.post('/customers/:id/checkout/license', async (req, res) => {
  */
 router.post('/customers/:id/portal', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const customer = await prisma.factoryCustomer.findFirst({
       where: { id: req.params.id, companyId: req.user.companyId },
     });
@@ -1015,7 +1015,7 @@ router.post('/customers/:id/portal', async (req, res) => {
  */
 router.post('/customers/:id/cancel', async (req, res) => {
   try {
-    const { prisma } = await import('../index.js');
+    
     const customer = await prisma.factoryCustomer.findFirst({
       where: { id: req.params.id, companyId: req.user.companyId },
     });

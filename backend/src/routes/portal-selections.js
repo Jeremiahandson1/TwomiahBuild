@@ -1,21 +1,63 @@
 import { Router } from 'express';
+import { prisma } from '../config/prisma.js';
+import crypto from 'crypto';
 import selections from '../services/selections.js';
 
 const router = Router();
 
-// Client portal routes - authenticated via portal token
-// These are called from the customer-facing portal
+// Local portal auth middleware — reads token from X-Portal-Token header or ?token query param
+async function portalAuth(req, res, next) {
+  try {
+    const token = req.headers['x-portal-token'] || req.query.token;
+
+    if (!token) {
+      return res.status(401).json({ error: 'Portal token required' });
+    }
+
+    const contact = await prisma.contact.findFirst({
+      where: { portalToken: token, portalEnabled: true },
+      include: {
+        companyRef: {
+          select: { id: true, name: true, logo: true, primaryColor: true, email: true, phone: true },
+        },
+      },
+    });
+
+    if (!contact) {
+      return res.status(401).json({ error: 'Invalid or expired portal link' });
+    }
+
+    // Timing-safe token comparison
+    const storedBuf = Buffer.from((contact.portalToken || '').padEnd(64, '0'));
+    const providedBuf = Buffer.from(token.padEnd(64, '0').slice(0, storedBuf.length));
+    if (!crypto.timingSafeEqual(storedBuf, providedBuf)) {
+      return res.status(401).json({ error: 'Invalid or expired portal link' });
+    }
+
+    if (contact.portalTokenExp && new Date() > contact.portalTokenExp) {
+      return res.status(401).json({ error: 'Portal link has expired' });
+    }
+
+    req.portal = {
+      contact,
+      company: contact.companyRef,
+      companyId: contact.companyId,
+    };
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Apply portal auth to all routes in this router
+router.use(portalAuth);
 
 /**
  * Get selections for client
  */
 router.get('/project/:projectId/selections', async (req, res, next) => {
   try {
-    // req.portal is set by portal auth middleware
-    if (!req.portal?.contact?.id) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
     const data = await selections.getClientSelections(
       req.params.projectId,
       req.portal.contact.id
@@ -34,10 +76,6 @@ router.get('/project/:projectId/selections', async (req, res, next) => {
  */
 router.post('/project/:projectId/selections/:selectionId', async (req, res, next) => {
   try {
-    if (!req.portal?.contact?.id) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
     const { optionId, notes } = req.body;
 
     if (!optionId) {

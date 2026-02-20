@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
 import emailService from '../services/email.js';
@@ -13,6 +14,8 @@ import { seedDefaultTemplates as seedFormTemplates } from '../services/customFor
 import { seedDefaultTemplates as seedWarrantyTemplates } from '../services/warranties.js';
 
 const router = Router();
+
+const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
 const generateTokens = (userId, companyId, email, role, agencyId = null) => {
   const accessToken = jwt.sign({ userId, companyId, email, role, ...(agencyId && { agencyId }) }, process.env.JWT_SECRET, { expiresIn: '15m' });
@@ -126,17 +129,9 @@ router.post('/signup', async (req, res, next) => {
       return { company, user };
     });
 
-    // Generate auth token
-    const token = jwt.sign(
-      {
-        userId: result.user.id,
-        companyId: result.company.id,
-        email: result.user.email,
-        role: result.user.role,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    // Generate auth tokens (same as /login — accessToken + refreshToken)
+    const tokens = generateTokens(result.user.id, result.company.id, result.user.email, result.user.role);
+    await prisma.user.update({ where: { id: result.user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
     // Send welcome email
     try {
@@ -166,7 +161,8 @@ router.post('/signup', async (req, res, next) => {
     });
 
     res.status(201).json({
-      token,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       user: {
         id: result.user.id,
         email: result.user.email,
@@ -232,7 +228,7 @@ router.post('/register', async (req, res, next) => {
     });
 
     const tokens = generateTokens(result.user.id, result.company.id, result.user.email, result.user.role, result.user.agencyId);
-    await prisma.user.update({ where: { id: result.user.id }, data: { refreshToken: tokens.refreshToken } });
+    await prisma.user.update({ where: { id: result.user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
     res.status(201).json({
       user: { id: result.user.id, email: result.user.email, firstName: result.user.firstName, lastName: result.user.lastName, role: result.user.role },
@@ -256,7 +252,7 @@ router.post('/login', async (req, res, next) => {
     if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
 
     const tokens = generateTokens(user.id, user.companyId, user.email, user.role, user.agencyId);
-    await prisma.user.update({ where: { id: user.id }, data: { refreshToken: tokens.refreshToken, lastLogin: new Date() } });
+    await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken), lastLogin: new Date() } });
 
     res.json({
       user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, avatar: user.avatar },
@@ -277,12 +273,12 @@ router.post('/refresh', async (req, res, next) => {
     catch { return res.status(401).json({ error: 'Invalid refresh token' }); }
 
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
-    if (!user || !user.isActive || user.refreshToken !== refreshToken) {
+    if (!user || !user.isActive || user.refreshToken !== hashToken(refreshToken)) {
       return res.status(401).json({ error: 'Invalid refresh token' });
     }
 
     const tokens = generateTokens(user.id, user.companyId, user.email, user.role, user.agencyId);
-    await prisma.user.update({ where: { id: user.id }, data: { refreshToken: tokens.refreshToken } });
+    await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
     res.json(tokens);
   } catch (error) { next(error); }
@@ -361,19 +357,17 @@ router.post('/forgot-password', async (req, res, next) => {
     
     if (user) {
       const resetToken = uuidv4();
-      const resetCode = Math.random().toString().substring(2, 8); // 6-digit code
       
       await prisma.user.update({
         where: { id: user.id },
         data: { resetToken, resetTokenExp: new Date(Date.now() + 3600000) },
       });
       
-      // Send email
+      // Send email with link containing resetToken
       try {
         await emailService.sendPasswordReset(email, {
           firstName: user.firstName,
           resetToken,
-          resetCode,
         });
         logger.info('Password reset email sent', { email });
       } catch (emailErr) {
@@ -432,5 +426,30 @@ router.post('/promote-agency-admin', authenticate, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+
+// One-time agency_admin bootstrap — protected by SETUP_SECRET env var
+// Use this to create the first agency_admin when none exists yet
+// Disable by removing SETUP_SECRET from env once bootstrap is complete
+router.post('/bootstrap-agency-admin', async (req, res, next) => {
+  try {
+    const setupSecret = process.env.SETUP_SECRET;
+    if (!setupSecret) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    if (req.headers['x-setup-secret'] !== setupSecret) {
+      return res.status(403).json({ error: 'Invalid setup secret' });
+    }
+    const { userId, agencyId } = req.body;
+    if (!userId || !agencyId) {
+      return res.status(400).json({ error: 'userId and agencyId are required' });
+    }
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { role: 'agency_admin', agencyId },
+    });
+    logger.info('Agency admin bootstrapped', { userId, agencyId });
+    res.json({ message: 'Agency admin created', userId: user.id, agencyId });
+  } catch (err) { next(err); }
+});
 
 export default router;

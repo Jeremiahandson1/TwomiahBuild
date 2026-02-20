@@ -5,6 +5,21 @@ import reviews from '../services/reviews.js';
 import audit from '../services/audit.js';
 
 const router = Router();
+
+// Process scheduled review requests (cron endpoint — no JWT, secured by CRON_SECRET only)
+router.post('/process-scheduled', async (req, res, next) => {
+  try {
+    const cronSecret = req.headers['x-cron-secret'];
+    if (!process.env.CRON_SECRET || cronSecret !== process.env.CRON_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const results = await reviews.processScheduledRequests();
+    res.json({ processed: results.length, results });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.use(authenticate);
 
 // Get review settings
@@ -126,25 +141,20 @@ router.get('/track/:requestId/click', async (req, res, next) => {
     });
     
     if (request?.reviewLink) {
-      res.redirect(request.reviewLink);
+      // Validate URL to prevent open redirect — only allow known review platforms
+      try {
+        const url = new URL(request.reviewLink);
+        const allowedHosts = ['google.com', 'www.google.com', 'yelp.com', 'www.yelp.com', 'facebook.com', 'www.facebook.com', 'houzz.com', 'www.houzz.com', 'bbb.org', 'www.bbb.org'];
+        if (!['http:', 'https:'].includes(url.protocol) || !allowedHosts.some(h => url.hostname === h || url.hostname.endsWith('.' + h))) {
+          return res.status(400).send('Invalid review link');
+        }
+        res.redirect(request.reviewLink);
+      } catch {
+        return res.status(400).send('Invalid review link');
+      }
     } else {
       res.status(404).send('Link not found');
     }
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Process scheduled requests (called by cron job)
-// Protect with CRON_SECRET env var — set in Render and pass as X-Cron-Secret header
-router.post('/process-scheduled', async (req, res, next) => {
-  try {
-    const cronSecret = req.headers['x-cron-secret'];
-    if (!process.env.CRON_SECRET || cronSecret !== process.env.CRON_SECRET) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const results = await reviews.processScheduledRequests();
-    res.json({ processed: results.length, results });
   } catch (error) {
     next(error);
   }

@@ -2,7 +2,9 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
+import { requirePermission } from '../middleware/permissions.js';
 import { withCompany } from '../middleware/ownership.js';
+import { nextDocumentNumber } from '../utils/documentNumbers.js';
 
 
 const router = Router();
@@ -10,7 +12,7 @@ router.use(authenticate);
 
 const schema = z.object({ description: z.string().min(1), projectId: z.string(), location: z.string().optional(), priority: z.enum(['low', 'normal', 'high', 'urgent']).default('normal'), assignedTo: z.string().optional(), dueDate: z.string().optional(), notes: z.string().optional() });
 
-router.get('/', async (req, res, next) => {
+router.get('/', requirePermission('punch-lists:read'), async (req, res, next) => {
   try {
     const { status, projectId, page = '1', limit = '50' } = req.query;
     const where = { companyId: req.user.companyId }; if (status) where.status = status; if (projectId) where.projectId = projectId;
@@ -19,20 +21,20 @@ router.get('/', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.get('/:id', async (req, res, next) => { try { const item = await prisma.punchListItem.findFirst({ where: { id: req.params.id, companyId: req.user.companyId }, include: { project: true } }); if (!item) return res.status(404).json({ error: 'Punch list item not found' }); res.json(item); } catch (error) { next(error); } });
+router.get('/:id', requirePermission('punch-lists:read'), async (req, res, next) => { try { const item = await prisma.punchListItem.findFirst({ where: { id: req.params.id, companyId: req.user.companyId }, include: { project: true } }); if (!item) return res.status(404).json({ error: 'Punch list item not found' }); res.json(item); } catch (error) { next(error); } });
 
-router.post('/', async (req, res, next) => {
+router.post('/', requirePermission('punch-lists:create'), async (req, res, next) => {
   try {
     const data = schema.parse(req.body);
-    const count = await prisma.punchListItem.count({ where: { companyId: req.user.companyId, projectId: data.projectId } });
-    const item = await prisma.punchListItem.create({ data: { ...data, number: `PL-${String(count + 1).padStart(3, '0')}`, dueDate: data.dueDate ? new Date(data.dueDate) : null, companyId: req.user.companyId } });
+    const number = await nextDocumentNumber('PL', req.user.companyId);
+    const item = await prisma.punchListItem.create({ data: { ...data, number, dueDate: data.dueDate ? new Date(data.dueDate) : null, companyId: req.user.companyId } });
     res.status(201).json(item);
   } catch (error) { next(error); }
 });
 
-router.put('/:id', async (req, res, next) => { try { const data = schema.partial().parse(req.body); const item = await prisma.punchListItem.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...data, dueDate: data.dueDate ? new Date(data.dueDate) : undefined } }); res.json(item); } catch (error) { next(error); } });
-router.delete('/:id', async (req, res, next) => { try { await prisma.punchListItem.delete({ where: withCompany(req.params.id, req.user.companyId) }); res.status(204).send(); } catch (error) { next(error); } });
-router.post('/:id/complete', async (req, res, next) => { try { const item = await prisma.punchListItem.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'completed', completedAt: new Date() } }); res.json(item); } catch (error) { next(error); } });
-router.post('/:id/verify', async (req, res, next) => { try { const { verifiedBy } = req.body; const item = await prisma.punchListItem.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'verified', verifiedAt: new Date(), verifiedBy } }); res.json(item); } catch (error) { next(error); } });
+router.put('/:id', requirePermission('punch-lists:update'), async (req, res, next) => { try { const data = schema.partial().parse(req.body); const item = await prisma.punchListItem.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...data, dueDate: data.dueDate ? new Date(data.dueDate) : undefined } }); res.json(item); } catch (error) { next(error); } });
+router.delete('/:id', requirePermission('punch-lists:delete'), async (req, res, next) => { try { await prisma.punchListItem.delete({ where: withCompany(req.params.id, req.user.companyId) }); res.status(204).send(); } catch (error) { next(error); } });
+router.post('/:id/complete', requirePermission('punch-lists:update'), async (req, res, next) => { try { const item = await prisma.punchListItem.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'completed', completedAt: new Date() } }); res.json(item); } catch (error) { next(error); } });
+router.post('/:id/verify', requirePermission('punch-lists:update'), async (req, res, next) => { try { const { verifiedBy } = req.body; const item = await prisma.punchListItem.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'verified', verifiedAt: new Date(), verifiedBy } }); res.json(item); } catch (error) { next(error); } });
 
 export default router;

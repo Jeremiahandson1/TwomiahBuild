@@ -11,6 +11,7 @@
 import { stripe } from '../config/stripe.js';
 import emailService from './email.js';
 import { prisma } from '../config/prisma.js';
+import logger from './logger.js';
 
 // ============================================
 // CUSTOMER MANAGEMENT
@@ -235,8 +236,20 @@ export async function handleWebhook(event) {
     case 'payment_intent.canceled':
       return handlePaymentCanceled(event.data.object);
 
+    case 'customer.subscription.trial_will_end':
+      logger.warn('Stripe: subscription trial ending soon', { subscriptionId: event.data.object.id, trialEnd: event.data.object.trial_end });
+      return { handled: true, event: event.type };
+
+    case 'invoice.upcoming':
+      logger.info('Stripe: upcoming invoice', { customerId: event.data.object.customer, amount: event.data.object.amount_due });
+      return { handled: true, event: event.type };
+
+    case 'invoice.payment_action_required':
+      logger.warn('Stripe: invoice payment action required', { invoiceId: event.data.object.id, customerId: event.data.object.customer });
+      return { handled: true, event: event.type };
+
     default:
-      console.log(`Unhandled Stripe event: ${event.type}`);
+      logger.info('Stripe: unhandled event type', { type: event.type });
       return { handled: false };
   }
 }

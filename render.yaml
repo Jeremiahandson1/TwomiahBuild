@@ -16,7 +16,8 @@ services:
   - type: web
     name: buildpro-backend
     runtime: node
-    plan: starter
+    plan: starter   # NOTE: Starter = 512MB RAM. Large PDF generation (many line items) may OOM.
+                    # Upgrade to Standard (2GB) if you see OOM crashes in production.
     rootDir: backend
     buildCommand: npm install && npx prisma migrate deploy
     startCommand: node src/index.js
@@ -37,7 +38,7 @@ services:
       - key: FIELD_ENCRYPTION_KEY
         sync: false   # Set manually — must be a 64-char hex string
       - key: STORAGE_BACKEND
-        value: s3     # CRITICAL: change to s3 before go-live
+        value: s3
       - key: FRONTEND_URL
         sync: false   # e.g. https://app.buildpro.com
       - key: STRIPE_SECRET_KEY
@@ -50,6 +51,14 @@ services:
         sync: false
       - key: SENTRY_DSN
         sync: false
+      - key: DB_BACKUPS_CONFIRMED
+        value: "true"  # Set to true once you've confirmed Render managed DB backups are enabled on your plan
+      - key: CALLRAIL_WEBHOOK_SECRET
+        sync: false   # Required if using CallRail integration — get from CallRail dashboard
+      - key: WISETACK_WEBHOOK_SECRET
+        sync: false   # Required if using Wisetack financing integration
+      - key: SETUP_SECRET
+        sync: false   # One-time use: set to bootstrap first agency_admin, remove after use
 
   # ── Cron Job: Recurring Invoices ───────────────────────────────────────────
   # Runs daily at 8am UTC. Finds all recurring invoice schedules where

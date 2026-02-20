@@ -3,6 +3,7 @@ import { nextDocumentNumber } from '../utils/documentNumbers.js';
 import { z } from 'zod';
 import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
+import { requirePermission } from '../middleware/permissions.js';
 import { withCompany } from '../middleware/ownership.js';
 
 import { emitToCompany, EVENTS } from '../services/socket.js';
@@ -29,7 +30,7 @@ const calcTotals = (items, taxRate, discount) => {
   return { subtotal, taxAmount, total: subtotal + taxAmount - discount };
 };
 
-router.get('/', async (req, res, next) => {
+router.get('/', requirePermission('quotes:read'), async (req, res, next) => {
   try {
     const { status, contactId, page = '1', limit = '50' } = req.query;
     const where = { companyId: req.user.companyId };
@@ -43,7 +44,7 @@ router.get('/', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.get('/stats', async (req, res, next) => {
+router.get('/stats', requirePermission('quotes:read'), async (req, res, next) => {
   try {
     const quotes = await prisma.quote.findMany({ where: { companyId: req.user.companyId }, select: { status: true, total: true } });
     const stats = { total: quotes.length, draft: 0, sent: 0, approved: 0, rejected: 0, totalValue: 0, approvedValue: 0 };
@@ -52,7 +53,7 @@ router.get('/stats', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', requirePermission('quotes:read'), async (req, res, next) => {
   try {
     const quote = await prisma.quote.findFirst({ where: { id: req.params.id, companyId: req.user.companyId }, include: { contact: true, project: true, lineItems: { orderBy: { sortOrder: 'asc' } } } });
     if (!quote) return res.status(404).json({ error: 'Quote not found' });
@@ -60,7 +61,7 @@ router.get('/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', requirePermission('quotes:create'), async (req, res, next) => {
   try {
     const data = schema.parse(req.body);
     const { lineItems, ...quoteData } = data;
@@ -75,7 +76,7 @@ router.post('/', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', requirePermission('quotes:update'), async (req, res, next) => {
   try {
     const data = schema.partial().parse(req.body);
     const existing = await prisma.quote.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
@@ -92,7 +93,7 @@ router.put('/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requirePermission('quotes:delete'), async (req, res, next) => {
   try {
     const existing = await prisma.quote.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Quote not found' });
@@ -101,7 +102,7 @@ router.delete('/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/:id/send', async (req, res, next) => {
+router.post('/:id/send', requirePermission('quotes:update'), async (req, res, next) => {
   try {
     const quote = await prisma.quote.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'sent', sentAt: new Date() } });
     emitToCompany(req.user.companyId, EVENTS.QUOTE_SENT, { id: quote.id, number: quote.number });
@@ -109,7 +110,7 @@ router.post('/:id/send', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/:id/approve', async (req, res, next) => {
+router.post('/:id/approve', requirePermission('quotes:update'), async (req, res, next) => {
   try {
     const quote = await prisma.quote.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'approved', approvedAt: new Date() } });
     emitToCompany(req.user.companyId, EVENTS.QUOTE_APPROVED, { id: quote.id, number: quote.number, total: quote.total });
@@ -117,11 +118,11 @@ router.post('/:id/approve', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/:id/reject', async (req, res, next) => {
+router.post('/:id/reject', requirePermission('quotes:update'), async (req, res, next) => {
   try { const quote = await prisma.quote.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'rejected' } }); res.json(quote); } catch (error) { next(error); }
 });
 
-router.post('/:id/convert-to-invoice', async (req, res, next) => {
+router.post('/:id/convert-to-invoice', requirePermission('quotes:update'), async (req, res, next) => {
   try {
     const quote = await prisma.quote.findFirst({ where: { id: req.params.id, companyId: req.user.companyId }, include: { lineItems: true } });
     if (!quote) return res.status(404).json({ error: 'Quote not found' });
@@ -150,7 +151,7 @@ router.post('/:id/convert-to-invoice', async (req, res, next) => {
 });
 
 // PDF download
-router.get('/:id/pdf', async (req, res, next) => {
+router.get('/:id/pdf', requirePermission('quotes:read'), async (req, res, next) => {
   try {
     const { generateQuotePDF } = await import('../services/pdf.js');
     const quote = await prisma.quote.findFirst({

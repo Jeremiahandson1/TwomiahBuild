@@ -217,12 +217,13 @@ export function sqlInjectionDetector(req, res, next) {
       
       if (SAFE_FIELDS.includes(key)) continue;
       if (typeof value === 'string' && detectSqlInjection(value)) {
-        logger.warn('Potential SQL injection detected', {
+        logger.warn('Potential SQL injection blocked', {
           ip: req.ip,
           path: req.path,
           field: currentPath,
           value: value.substring(0, 100),
         });
+        return res.status(400).json({ error: 'Invalid input detected' });
       } else if (typeof value === 'object' && value !== null) {
         checkObject(value, currentPath);
       }

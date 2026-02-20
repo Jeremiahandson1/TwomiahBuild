@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
+import { requirePermission } from '../middleware/permissions.js';
 import { withCompany } from '../middleware/ownership.js';
 
 
@@ -22,7 +23,7 @@ const schema = z.object({
   notes: z.string().optional(),
 });
 
-router.get('/', async (req, res, next) => {
+router.get('/', requirePermission('expenses:read'), async (req, res, next) => {
   try {
     const { category, projectId, startDate, endDate, page = '1', limit = '50' } = req.query;
     const where = { companyId: req.user.companyId };
@@ -37,7 +38,7 @@ router.get('/', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.get('/summary', async (req, res, next) => {
+router.get('/summary', requirePermission('expenses:read'), async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
     const where = { companyId: req.user.companyId };
@@ -48,7 +49,7 @@ router.get('/summary', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', requirePermission('expenses:create'), async (req, res, next) => {
   try {
     const data = schema.parse(req.body);
     const expense = await prisma.expense.create({ data: { ...data, date: data.date ? new Date(data.date) : new Date(), companyId: req.user.companyId } });
@@ -56,7 +57,7 @@ router.post('/', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', requirePermission('expenses:update'), async (req, res, next) => {
   try {
     const data = schema.partial().parse(req.body);
     const existing = await prisma.expense.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
@@ -66,7 +67,7 @@ router.put('/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requirePermission('expenses:delete'), async (req, res, next) => {
   try {
     const existing = await prisma.expense.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Expense not found' });
@@ -75,7 +76,7 @@ router.delete('/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/:id/reimburse', async (req, res, next) => {
+router.post('/:id/reimburse', requirePermission('expenses:update'), async (req, res, next) => {
   try { const expense = await prisma.expense.update({ where: withCompany(req.params.id, req.user.companyId), data: { reimbursed: true } }); res.json(expense); } catch (error) { next(error); }
 });
 

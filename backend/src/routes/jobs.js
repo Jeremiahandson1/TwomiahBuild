@@ -3,6 +3,7 @@ import { nextDocumentNumber } from '../utils/documentNumbers.js';
 import { z } from 'zod';
 import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
+import { requirePermission } from '../middleware/permissions.js';
 import { withCompany } from '../middleware/ownership.js';
 
 import { emitToCompany, EVENTS } from '../services/socket.js';
@@ -27,7 +28,7 @@ const schema = z.object({
   notes: z.string().optional(),
 });
 
-router.get('/', async (req, res, next) => {
+router.get('/', requirePermission('jobs:read'), async (req, res, next) => {
   try {
     const { status, projectId, assignedToId, page = '1', limit = '50' } = req.query;
     const where = { companyId: req.user.companyId };
@@ -52,7 +53,7 @@ router.get('/', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.get('/today', async (req, res, next) => {
+router.get('/today', requirePermission('jobs:read'), async (req, res, next) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -74,7 +75,7 @@ router.get('/today', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', requirePermission('jobs:read'), async (req, res, next) => {
   try {
     const job = await prisma.job.findFirst({
       where: { id: req.params.id, companyId: req.user.companyId },
@@ -90,7 +91,7 @@ router.get('/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', requirePermission('jobs:create'), async (req, res, next) => {
   try {
     const data = schema.parse(req.body);
     const docNumber = await nextDocumentNumber('JOB', req.user.companyId);
@@ -112,7 +113,7 @@ router.post('/', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', requirePermission('jobs:update'), async (req, res, next) => {
   try {
     const data = schema.partial().parse(req.body);
     const existing = await prisma.job.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
@@ -134,7 +135,7 @@ router.put('/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requirePermission('jobs:delete'), async (req, res, next) => {
   try {
     const existing = await prisma.job.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Job not found' });
@@ -144,7 +145,7 @@ router.delete('/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/:id/start', async (req, res, next) => {
+router.post('/:id/start', requirePermission('jobs:update'), async (req, res, next) => {
   try {
     const existing = await prisma.job.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Job not found' });
@@ -157,7 +158,7 @@ router.post('/:id/start', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/:id/complete', async (req, res, next) => {
+router.post('/:id/complete', requirePermission('jobs:update'), async (req, res, next) => {
   try {
     const existing = await prisma.job.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Job not found' });
@@ -170,7 +171,7 @@ router.post('/:id/complete', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/:id/dispatch', async (req, res, next) => {
+router.post('/:id/dispatch', requirePermission('jobs:update'), async (req, res, next) => {
   try {
     const existing = await prisma.job.findFirst({ where: { id: req.params.id, companyId: req.user.companyId } });
     if (!existing) return res.status(404).json({ error: 'Job not found' });

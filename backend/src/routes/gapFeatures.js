@@ -8,6 +8,7 @@
  */
 
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { authenticate } from '../middleware/auth.js';
 import booking from '../services/booking.js';
 import jobCosting from '../services/jobCosting.js';
@@ -15,13 +16,21 @@ import customForms from '../services/customForms.js';
 import lienWaivers from '../services/lienWaivers.js';
 import drawSchedules from '../services/drawSchedules.js';
 
+const publicBookingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30,
+  message: { error: 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // ============================================
 // 1. ONLINE BOOKING
 // ============================================
 export const bookingRoutes = Router();
 
 // PUBLIC (no auth) - for the embeddable widget
-bookingRoutes.get('/public/:slug', async (req, res, next) => {
+bookingRoutes.get('/public/:slug', publicBookingLimiter, async (req, res, next) => {
   try {
     const settings = await booking.getBookingSettingsBySlug(req.params.slug);
     const services = await booking.getBookableServicesBySlug(req.params.slug);
@@ -29,14 +38,14 @@ bookingRoutes.get('/public/:slug', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-bookingRoutes.get('/public/:slug/dates', async (req, res, next) => {
+bookingRoutes.get('/public/:slug/dates', publicBookingLimiter, async (req, res, next) => {
   try {
     const dates = await booking.getAvailableDatesBySlug(req.params.slug);
     res.json(dates);
   } catch (e) { next(e); }
 });
 
-bookingRoutes.get('/public/:slug/slots', async (req, res, next) => {
+bookingRoutes.get('/public/:slug/slots', publicBookingLimiter, async (req, res, next) => {
   try {
     const { date, serviceId } = req.query;
     const slots = await booking.getAvailableSlotsBySlug(req.params.slug, date, serviceId);
@@ -44,7 +53,7 @@ bookingRoutes.get('/public/:slug/slots', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-bookingRoutes.post('/public/:slug', async (req, res, next) => {
+bookingRoutes.post('/public/:slug', publicBookingLimiter, async (req, res, next) => {
   try {
     const result = await booking.createBooking(req.params.slug, req.body);
     res.status(201).json(result);

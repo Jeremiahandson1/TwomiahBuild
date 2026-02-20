@@ -6,7 +6,8 @@
 
 import emailService from './email.js';
 import { prisma } from '../config/prisma.js';
-
+import { nextDocumentNumber } from '../utils/documentNumbers.js';
+import audit from './audit.js';
 
 /**
  * Frequency options
@@ -63,27 +64,10 @@ function calculateDueDate(invoiceDate, terms) {
 }
 
 /**
- * Generate next invoice number
+ * Generate next invoice number (atomic — race-condition safe)
  */
 async function generateInvoiceNumber(companyId) {
-  const lastInvoice = await prisma.invoice.findFirst({
-    where: { companyId },
-    orderBy: { createdAt: 'desc' },
-    select: { number: true },
-  });
-
-  if (!lastInvoice) {
-    return 'INV-00001';
-  }
-
-  const match = lastInvoice.number.match(/(\d+)$/);
-  if (match) {
-    const num = parseInt(match[1]) + 1;
-    const prefix = lastInvoice.number.replace(/\d+$/, '');
-    return `${prefix}${String(num).padStart(5, '0')}`;
-  }
-
-  return `INV-${Date.now()}`;
+  return nextDocumentNumber('INV', companyId);
 }
 
 /**
@@ -237,6 +221,21 @@ export async function generateInvoiceFromRecurring(recurringId) {
       lastRunDate: invoiceDate,
       invoiceCount: { increment: 1 },
       status: newStatus,
+    },
+  });
+
+  // Audit trail for system-generated invoices
+  await audit.log({
+    action: audit.ACTIONS.CREATE,
+    entity: 'invoice',
+    entityId: invoice.id,
+    entityName: invoice.number,
+    metadata: {
+      source: 'recurring',
+      recurringInvoiceId: recurringId,
+      companyId: recurring.companyId,
+      contactId: recurring.contactId,
+      total: invoice.total,
     },
   });
 

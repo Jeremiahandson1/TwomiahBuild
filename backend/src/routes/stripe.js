@@ -5,6 +5,7 @@ import stripeService from '../services/stripe.js';
 import factoryStripe from '../services/factory/stripe.js';
 import audit from '../services/audit.js';
 import { prisma } from '../config/prisma.js';
+import logger from '../services/logger.js';
 
 const router = Router();
 
@@ -23,7 +24,7 @@ router.post('/webhook', async (req, res) => {
     const factoryResult = await factoryStripe.handleFactoryWebhook(event);
     
     if (factoryResult.handled) {
-      console.log(`Factory webhook ${event.type}:`, factoryResult);
+      logger.info('Factory webhook', { type: event.type, result: factoryResult });
 
       // Apply updates to FactoryCustomer record
       if (factoryResult.updates) {
@@ -52,10 +53,10 @@ router.post('/webhook', async (req, res) => {
     // Fall through to CRM webhook handler
     const result = await stripeService.handleWebhook(event);
     
-    console.log(`Stripe webhook ${event.type}:`, result);
+    logger.info('Stripe webhook', { type: event.type, result });
     res.json({ received: true, ...result });
   } catch (error) {
-    console.error('Stripe webhook error:', error.message);
+    logger.error('Stripe webhook error', { message: error.message });
     res.status(400).json({ error: error.message });
   }
 });

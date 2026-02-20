@@ -144,9 +144,11 @@ export function notFoundHandler(req, res) {
 
 // Handle uncaught exceptions and unhandled rejections
 export function handleUncaughtExceptions() {
-  process.on('uncaughtException', (err) => {
+  process.on('uncaughtException', async (err) => {
     logger.error('Uncaught Exception', { error: err.message, stack: err.stack });
     if (process.env.SENTRY_DSN) Sentry.captureException(err);
+    // Give logger a moment to flush buffered writes before exit
+    await new Promise(resolve => setTimeout(resolve, 500));
     process.exit(1);
   });
 

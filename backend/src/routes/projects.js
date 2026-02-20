@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
 import { withCompany } from '../middleware/ownership.js';
+import { nextDocumentNumber } from '../utils/documentNumbers.js';
 
 
 const router = Router();
@@ -62,9 +63,9 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const data = schema.parse(req.body);
-    const count = await prisma.project.count({ where: { companyId: req.user.companyId } });
+    const number = await nextDocumentNumber('PRJ', req.user.companyId);
     const project = await prisma.project.create({
-      data: { ...data, number: `PRJ-${String(count + 1).padStart(4, '0')}`, startDate: data.startDate ? new Date(data.startDate) : null, endDate: data.endDate ? new Date(data.endDate) : null, companyId: req.user.companyId },
+      data: { ...data, number, startDate: data.startDate ? new Date(data.startDate) : null, endDate: data.endDate ? new Date(data.endDate) : null, companyId: req.user.companyId },
     });
     res.status(201).json(project);
   } catch (error) { next(error); }

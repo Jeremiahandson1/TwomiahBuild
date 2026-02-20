@@ -187,7 +187,7 @@ class ApiClient {
     approve: (id) => this.action('/api/v1/quotes', id, 'approve'),
     reject: (id) => this.action('/api/v1/quotes', id, 'reject'),
     convertToInvoice: (id) => this.action('/api/v1/quotes', id, 'convert-to-invoice'),
-    downloadPdf: (id) => `${this.baseUrl}/api/quotes/${id}/pdf`,
+    downloadPdf: (id) => `${this.baseUrl}/api/v1/quotes/${id}/pdf`,
   };
 
   // Invoices
@@ -199,8 +199,8 @@ class ApiClient {
     update: (id, data) => this.update('/api/v1/invoices', id, data),
     delete: (id) => this.delete('/api/v1/invoices', id),
     send: (id) => this.action('/api/v1/invoices', id, 'send'),
-    recordPayment: (id, data) => this.request(`/api/invoices/${id}/payments`, { method: 'POST', body: JSON.stringify(data) }),
-    downloadPdf: (id) => `${this.baseUrl}/api/invoices/${id}/pdf`,
+    recordPayment: (id, data) => this.request(`/api/v1/invoices/${id}/payments`, { method: 'POST', body: JSON.stringify(data) }),
+    downloadPdf: (id) => `${this.baseUrl}/api/v1/invoices/${id}/pdf`,
   };
 
   // Documents
@@ -315,8 +315,8 @@ class ApiClient {
     updateFeatures: (features) => this.request('/api/v1/company/features', { method: 'PUT', body: JSON.stringify({ features }) }),
     users: () => this.get('/api/v1/company/users'),
     createUser: (data) => this.request('/api/v1/company/users', { method: 'POST', body: JSON.stringify(data) }),
-    updateUser: (id, data) => this.request(`/api/company/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    deleteUser: (id) => this.request(`/api/company/users/${id}`, { method: 'DELETE' }),
+    updateUser: (id, data) => this.request(`/api/v1/company/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    deleteUser: (id) => this.request(`/api/v1/company/users/${id}`, { method: 'DELETE' }),
   };
 
   // Dashboard
@@ -327,7 +327,7 @@ class ApiClient {
 
   // Job Costing
   jobCosting = {
-    forJob: (jobId) => this.get(`/api/job-costing/job/${jobId}`),
+    forJob: (jobId) => this.get(`/api/v1/job-costing/job/${jobId}`),
     report: (params) => this.get('/api/v1/job-costing/report', params),
     trends: (params) => this.get('/api/v1/job-costing/trends', params),
   };

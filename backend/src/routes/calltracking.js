@@ -14,14 +14,16 @@ const router = Router();
 // CallRail webhook
 router.post('/webhook/callrail/:companyId', async (req, res) => {
   try {
-    // Verify CallRail shared secret if configured
+    // Verify CallRail shared secret — required; reject if not configured
     const secret = process.env.CALLRAIL_WEBHOOK_SECRET;
-    if (secret) {
-      const provided = req.headers['x-callrail-secret'] || req.body?.secret;
-      if (provided !== secret) {
-        logger.warn('CallRail webhook rejected — invalid secret', { companyId: req.params.companyId });
-        return res.status(403).json({ error: 'Invalid webhook secret' });
-      }
+    if (!secret) {
+      logger.error('CALLRAIL_WEBHOOK_SECRET not configured — rejecting webhook');
+      return res.status(501).json({ error: 'Webhook not configured' });
+    }
+    const provided = req.headers['x-callrail-secret'] || req.body?.secret;
+    if (provided !== secret) {
+      logger.warn('CallRail webhook rejected — invalid secret', { companyId: req.params.companyId });
+      return res.status(403).json({ error: 'Invalid webhook secret' });
     }
     await calltracking.handleCallRailWebhook(req.params.companyId, req.body);
     res.sendStatus(200);

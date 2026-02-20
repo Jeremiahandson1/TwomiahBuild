@@ -140,18 +140,22 @@ router.get('/track/open/:recipientId', async (req, res) => {
 router.get('/track/click/:recipientId', async (req, res) => {
   const { url } = req.query;
   try {
-    // Validate URL to prevent open redirect attacks
-    // Only allow http/https URLs and relative paths
+    // Validate URL — only allow redirects to configured FRONTEND_URL domain(s)
     if (url) {
       let parsedUrl;
-      try { parsedUrl = new URL(url); } catch { /* relative URL */ }
-      if (parsedUrl && !['http:', 'https:'].includes(parsedUrl.protocol)) {
-        return res.redirect('/');
-      }
-      // Block redirects to non-buildpro domains in production
-      const allowedHosts = (process.env.FRONTEND_URL || '').split(',').map(u => { try { return new URL(u.trim()).hostname; } catch { return ''; } }).filter(Boolean);
-      if (parsedUrl && allowedHosts.length && !allowedHosts.includes(parsedUrl.hostname)) {
-        return res.redirect('/');
+      try { parsedUrl = new URL(url); } catch { /* relative URL — allow */ }
+      if (parsedUrl) {
+        // Must be http/https
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+          return res.redirect('/');
+        }
+        // Must match a configured FRONTEND_URL domain; if FRONTEND_URL unset, block all external
+        const allowedHosts = (process.env.FRONTEND_URL || '').split(',')
+          .map(u => { try { return new URL(u.trim()).hostname; } catch { return ''; } })
+          .filter(Boolean);
+        if (!allowedHosts.includes(parsedUrl.hostname)) {
+          return res.redirect('/');
+        }
       }
     }
     await marketing.trackClick(req.params.recipientId, url);

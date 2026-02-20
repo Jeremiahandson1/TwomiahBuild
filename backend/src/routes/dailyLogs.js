@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
+import { requirePermission } from '../middleware/permissions.js';
 import { withCompany } from '../middleware/ownership.js';
 
 
@@ -10,7 +11,7 @@ router.use(authenticate);
 
 const schema = z.object({ date: z.string().optional(), projectId: z.string(), weather: z.string().optional(), temperature: z.number().optional(), conditions: z.string().optional(), crewSize: z.number().optional(), hoursWorked: z.number().optional(), workPerformed: z.string().optional(), materials: z.string().optional(), equipment: z.string().optional(), visitors: z.string().optional(), delays: z.string().optional(), safetyNotes: z.string().optional(), notes: z.string().optional() });
 
-router.get('/', async (req, res, next) => {
+router.get('/', requirePermission('daily-logs:read'), async (req, res, next) => {
   try {
     const { projectId, startDate, endDate, page = '1', limit = '50' } = req.query;
     const where = { companyId: req.user.companyId }; if (projectId) where.projectId = projectId;
@@ -20,13 +21,13 @@ router.get('/', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.get('/:id', async (req, res, next) => { try { const log = await prisma.dailyLog.findFirst({ where: { id: req.params.id, companyId: req.user.companyId }, include: { project: true, user: true } }); if (!log) return res.status(404).json({ error: 'Daily log not found' }); res.json(log); } catch (error) { next(error); } });
+router.get('/:id', requirePermission('daily-logs:read'), async (req, res, next) => { try { const log = await prisma.dailyLog.findFirst({ where: { id: req.params.id, companyId: req.user.companyId }, include: { project: true, user: true } }); if (!log) return res.status(404).json({ error: 'Daily log not found' }); res.json(log); } catch (error) { next(error); } });
 
-router.post('/', async (req, res, next) => {
+router.post('/', requirePermission('daily-logs:create'), async (req, res, next) => {
   try { const data = schema.parse(req.body); const log = await prisma.dailyLog.create({ data: { ...data, date: data.date ? new Date(data.date) : new Date(), companyId: req.user.companyId, userId: req.user.userId } }); res.status(201).json(log); } catch (error) { next(error); }
 });
 
-router.put('/:id', async (req, res, next) => { try { const data = schema.partial().parse(req.body); const log = await prisma.dailyLog.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...data, date: data.date ? new Date(data.date) : undefined } }); res.json(log); } catch (error) { next(error); } });
-router.delete('/:id', async (req, res, next) => { try { await prisma.dailyLog.delete({ where: withCompany(req.params.id, req.user.companyId) }); res.status(204).send(); } catch (error) { next(error); } });
+router.put('/:id', requirePermission('daily-logs:update'), async (req, res, next) => { try { const data = schema.partial().parse(req.body); const log = await prisma.dailyLog.update({ where: withCompany(req.params.id, req.user.companyId), data: { ...data, date: data.date ? new Date(data.date) : undefined } }); res.json(log); } catch (error) { next(error); } });
+router.delete('/:id', requirePermission('daily-logs:delete'), async (req, res, next) => { try { await prisma.dailyLog.delete({ where: withCompany(req.params.id, req.user.companyId) }); res.status(204).send(); } catch (error) { next(error); } });
 
 export default router;

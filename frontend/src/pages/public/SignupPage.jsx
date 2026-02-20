@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Building, User, CreditCard, Check, ArrowLeft, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
+import api from '../../services/api.js';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -198,7 +199,8 @@ export default function SignupPage() {
         throw new Error(data.error || 'Failed to create account');
       }
 
-      sessionStorage.setItem('signup_token', data.token);
+      sessionStorage.setItem('signup_token', data.accessToken);
+      sessionStorage.setItem('signup_refresh_token', data.refreshToken);
       sessionStorage.setItem('signup_company_id', data.company.id);
       setStep(3);
     } catch (err) {
@@ -230,8 +232,9 @@ export default function SignupPage() {
         throw new Error(data.error || 'Failed to start trial');
       }
 
-      localStorage.setItem('token', token);
+      api.setTokens(sessionStorage.getItem('signup_token'), sessionStorage.getItem('signup_refresh_token'));
       sessionStorage.removeItem('signup_token');
+      sessionStorage.removeItem('signup_refresh_token');
       sessionStorage.removeItem('signup_company_id');
       navigate('/?welcome=true');
     } catch (err) {

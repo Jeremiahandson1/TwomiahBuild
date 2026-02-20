@@ -71,7 +71,7 @@ router.get('/subscriptions', async (req, res, next) => {
 });
 
 // Send test notification to self
-router.post('/test', async (req, res, next) => {
+router.post('/test', requireRole('admin', 'owner'), async (req, res, next) => {
   try {
     const result = await push.sendToUser(req.user.userId, {
       title: 'Test Notification',

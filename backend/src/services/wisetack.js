@@ -207,16 +207,17 @@ export async function getApplicationsFor(companyId, { quoteId, invoiceId, contac
  * Process webhook from Wisetack
  */
 export async function processWebhook(payload, signature) {
-  // Verify webhook signature
-  if (WISETACK_WEBHOOK_SECRET) {
-    const expectedSignature = crypto
-      .createHmac('sha256', WISETACK_WEBHOOK_SECRET)
-      .update(JSON.stringify(payload))
-      .digest('hex');
+  // Verify webhook signature — secret required; reject if not configured
+  if (!WISETACK_WEBHOOK_SECRET) {
+    throw new Error('WISETACK_WEBHOOK_SECRET not configured — webhook rejected');
+  }
+  const expectedSignature = crypto
+    .createHmac('sha256', WISETACK_WEBHOOK_SECRET)
+    .update(JSON.stringify(payload))
+    .digest('hex');
 
-    if (signature !== expectedSignature) {
-      throw new Error('Invalid webhook signature');
-    }
+  if (signature !== expectedSignature) {
+    throw new Error('Invalid webhook signature');
   }
 
   const { event, data } = payload;
