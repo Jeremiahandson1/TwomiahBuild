@@ -1,10 +1,7 @@
 /**
  * Push Notification Registration
- *
- * Registers the device with Expo's push notification service and saves the
- * token to the BuildPro backend so the server can send targeted notifications.
- *
- * Call registerForPushNotifications() once after successful login.
+ * NOTE: Push notifications are not supported in Expo Go (removed in SDK 53).
+ * This module is a no-op in Expo Go and fully functional in production builds.
  */
 
 import * as Notifications from 'expo-notifications';
@@ -13,78 +10,84 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import api from '../api/client';
 
-// Configure how notifications behave while the app is in the foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+const isExpoGo = Constants.appOwnership === 'expo';
 
-/**
- * Request permission and register this device's push token with the backend.
- * Safe to call multiple times — the backend deduplicates by endpoint.
- */
+// Only configure handler in production builds
+if (!isExpoGo) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+}
+
 export async function registerForPushNotifications(): Promise<void> {
+  if (isExpoGo) {
+    console.log('[Push] Skipped — not supported in Expo Go');
+    return;
+  }
+
   if (!Device.isDevice) {
-    // Push notifications require a physical device
+    console.log('[Push] Skipped — simulator detected');
     return;
-  }
-
-  // Request permission
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== 'granted') {
-    console.warn('[Push] Permission not granted — skipping registration');
-    return;
-  }
-
-  // Android requires a notification channel
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'BuildPro Notifications',
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#F97316',
-    });
   }
 
   try {
-    // Get the Expo push token
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? process.env.EXPO_PUBLIC_PROJECT_ID;
-    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
 
-    // Register token with BuildPro backend
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus !== 'granted') {
+      console.log('[Push] Permission denied');
+      return;
+    }
+
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#2563EB',
+      });
+    }
+
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      process.env.EXPO_PUBLIC_PROJECT_ID;
+
+    if (!projectId) {
+      console.warn('[Push] No projectId configured — skipping registration');
+      return;
+    }
+
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     await api.post('/api/v1/push/register', {
-      token: tokenData.data,
+      token,
       platform: Platform.OS,
-      userAgent: `BuildPro Mobile / ${Platform.OS} ${Platform.Version}`,
+      userAgent: `BuildPro/${Constants.expoConfig?.version ?? '1.0.0'}`,
     });
-
-    console.info('[Push] Device registered successfully');
-  } catch (err) {
-    // Non-fatal — app works fine without push
-    console.warn('[Push] Registration failed:', err);
+    console.log('[Push] Registered:', token);
+  } catch (err: any) {
+    console.warn('[Push] Registration failed (non-fatal):', err.message);
   }
 }
 
-/**
- * Unregister this device from push notifications.
- * Call on logout.
- */
-export async function unregisterFromPushNotifications(): Promise<void> {
+export async function unregisterPushNotifications(): Promise<void> {
+  if (isExpoGo) return;
   try {
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? process.env.EXPO_PUBLIC_PROJECT_ID;
-    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
-    await api.post('/api/v1/push/unregister', { token: tokenData.data });
-  } catch {
-    // Best effort
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      process.env.EXPO_PUBLIC_PROJECT_ID;
+    if (!projectId) return;
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    await api.post('/api/v1/push/unregister', { token });
+  } catch (err: any) {
+    console.warn('[Push] Unregister failed (non-fatal):', err.message);
   }
 }
