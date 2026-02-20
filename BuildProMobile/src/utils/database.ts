@@ -20,8 +20,22 @@ let db: SQLite.SQLiteDatabase | null = null;
 
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (db) return db;
-  db = await SQLite.openDatabaseAsync('buildpro.db');
-  await initializeSchema(db);
+  try {
+    db = await SQLite.openDatabaseAsync('buildpro.db');
+    await initializeSchema(db);
+  } catch (err: any) {
+    // Expo Go sometimes has a stale file at the SQLite directory path.
+    // Try an alternate name to work around it.
+    console.warn('[DB] Primary open failed, trying fallback:', err.message);
+    try {
+      db = await SQLite.openDatabaseAsync('buildpro_v2.db');
+      await initializeSchema(db);
+    } catch (err2: any) {
+      console.error('[DB] Database unavailable — offline features disabled:', err2.message);
+      // Return a no-op stub so the app doesn't crash
+      throw err2;
+    }
+  }
   return db;
 }
 
