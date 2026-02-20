@@ -14,8 +14,11 @@ import { enqueueSync } from '../utils/database';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://api.buildpro.io';
 const TOKEN_KEY = 'buildpro_auth_token';
+const REFRESH_TOKEN_KEY = 'buildpro_refresh_token';
 
 class ApiClient {
+  private refreshPromise: Promise<boolean> | null = null;
+
   private async getAuthHeaders(): Promise<Record<string, string>> {
     const token = await SecureStore.getItemAsync(TOKEN_KEY);
     const headers: Record<string, string> = {
@@ -33,9 +36,64 @@ class ApiClient {
     return !!(state.isConnected && state.isInternetReachable);
   }
 
+  // Attempt to refresh the access token using the stored refresh token
+  private async refreshAccessToken(): Promise<boolean> {
+    // Deduplicate concurrent refresh attempts
+    if (this.refreshPromise) return this.refreshPromise;
+
+    this.refreshPromise = (async () => {
+      try {
+        const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
+        if (!refreshToken) return false;
+
+        const response = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Client': 'buildpro-mobile' },
+          body: JSON.stringify({ refreshToken }),
+        });
+
+        if (!response.ok) return false;
+
+        const data = await response.json();
+        if (!data.accessToken) return false;
+
+        await SecureStore.setItemAsync(TOKEN_KEY, data.accessToken);
+        if (data.refreshToken) {
+          await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, data.refreshToken);
+        }
+        return true;
+      } catch {
+        return false;
+      } finally {
+        this.refreshPromise = null;
+      }
+    })();
+
+    return this.refreshPromise;
+  }
+
+  // Core request handler with automatic 401 retry via token refresh
+  private async fetchWithRefresh(url: string, options: RequestInit, isRetry = false): Promise<Response> {
+    const response = await fetch(url, options);
+
+    if (response.status === 401 && !isRetry && !url.includes('/auth/refresh')) {
+      const refreshed = await this.refreshAccessToken();
+      if (refreshed) {
+        // Retry with new token
+        const newHeaders = await this.getAuthHeaders();
+        return this.fetchWithRefresh(url, { ...options, headers: { ...options.headers, ...newHeaders } }, true);
+      }
+      // Refresh failed — clear tokens and force re-login
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+    }
+
+    return response;
+  }
+
   async get<T>(endpoint: string): Promise<T> {
     const headers = await this.getAuthHeaders();
-    const response = await fetch(`${API_BASE}${endpoint}`, { headers });
+    const response = await this.fetchWithRefresh(`${API_BASE}${endpoint}`, { headers });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Request failed' }));
@@ -60,7 +118,7 @@ class ApiClient {
     }
 
     const headers = await this.getAuthHeaders();
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await this.fetchWithRefresh(`${API_BASE}${endpoint}`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
@@ -83,7 +141,7 @@ class ApiClient {
     }
 
     const headers = await this.getAuthHeaders();
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await this.fetchWithRefresh(`${API_BASE}${endpoint}`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(body),
@@ -106,7 +164,7 @@ class ApiClient {
     }
 
     const headers = await this.getAuthHeaders();
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await this.fetchWithRefresh(`${API_BASE}${endpoint}`, {
       method: 'PATCH',
       headers,
       body: JSON.stringify(body),

@@ -76,11 +76,33 @@ const CONTACT_COLUMN_MAP = {
   source: ['source', 'lead_source', 'referral_source'],
 };
 
+const IMPORT_ROW_LIMIT = 2000;
+
 export async function importContacts(csvContent, companyId, options = {}) {
   const { dryRun = false, skipDuplicates = true } = options;
   
-  const records = parseCSV(csvContent);
+  const allRecords = parseCSV(csvContent);
+
+  // Cap at IMPORT_ROW_LIMIT rows — prevents DB connection pool exhaustion (Bug #25)
+  if (allRecords.length > IMPORT_ROW_LIMIT) {
+    throw new Error(`Import limited to ${IMPORT_ROW_LIMIT} rows per request. Your file has ${allRecords.length} rows. Please split it into smaller files.`);
+  }
+
+  const records = allRecords;
   const results = { imported: 0, skipped: 0, errors: [], records: [] };
+
+  // Pre-load existing emails in batch to avoid N+1 queries (Bug #25)
+  const emailsInFile = records
+    .map(r => getValue(normalizeColumns(r), ...CONTACT_COLUMN_MAP.email))
+    .filter(Boolean);
+  
+  const existingContacts = skipDuplicates && emailsInFile.length > 0
+    ? await prisma.contact.findMany({
+        where: { companyId, email: { in: emailsInFile } },
+        select: { email: true },
+      })
+    : [];
+  const existingEmails = new Set(existingContacts.map(c => c.email));
 
   for (let i = 0; i < records.length; i++) {
     const row = normalizeColumns(records[i]);
@@ -97,16 +119,15 @@ export async function importContacts(csvContent, companyId, options = {}) {
         continue;
       }
 
-      // Check for duplicates
+      // Check for duplicates using pre-loaded set (not per-row DB query)
       if (skipDuplicates && email) {
-        const existing = await prisma.contact.findFirst({
-          where: { companyId, email },
-        });
-        if (existing) {
+        if (existingEmails.has(email)) {
           results.errors.push({ line: lineNum, error: `Duplicate email: ${email}` });
           results.skipped++;
           continue;
         }
+        // Add to set so subsequent rows in same file don't create duplicates either
+        existingEmails.add(email);
       }
 
       const contactData = {

@@ -738,21 +738,7 @@ function injectCSSColors(websiteDir, branding) {
   for (const cssPath of cssFiles) {
     let content = fs.readFileSync(cssPath, 'utf8');
     
-    // Replace :root variable defaults
-    content = content.replace(
-      /(:root\s*\{[^}]*--color-primary:\s*)#[0-9a-fA-F]{3,8}/g,
-      `$1${primary}`
-    );
-    content = content.replace(
-      /(:root\s*\{[^}]*--color-primary-light:\s*)#[0-9a-fA-F]{3,8}/g,
-      `$1${primaryLight}`
-    );
-    content = content.replace(
-      /(:root\s*\{[^}]*--color-secondary:\s*)#[0-9a-fA-F]{3,8}/g,
-      `$1${secondary}`
-    );
-    
-    // Simpler approach: just replace the hex values line by line
+    // Replace CSS custom properties line by line (supports multi-line :root blocks)
     const lines = content.split('\n');
     let inRoot = false;
     let braceDepth = 0;

@@ -23,10 +23,10 @@ export default function TimesheetPage() {
     setLoading(true);
     try {
       if (view === 'week') {
-        const data = await api.get(`/time/weekly?weekStart=${weekStart}`);
+        const data = await api.get(`/api/v1/time/weekly?weekStart=${weekStart}`);
         setTimesheet(data);
       } else {
-        const result = await api.get('/time?limit=50');
+        const result = await api.get('/api/v1/time?limit=50');
         setEntries(result.data || []);
       }
     } catch (error) {
@@ -351,8 +351,8 @@ function ManualEntryModal({ onClose, onSave }) {
   const loadOptions = async () => {
     try {
       const [jobsRes, projectsRes] = await Promise.all([
-        api.get('/jobs?limit=100'),
-        api.get('/projects?limit=100'),
+        api.get('/api/v1/jobs?limit=100'),
+        api.get('/api/v1/projects?limit=100'),
       ]);
       setJobs(jobsRes.data || []);
       setProjects(projectsRes.data || []);
@@ -365,7 +365,7 @@ function ManualEntryModal({ onClose, onSave }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post('/time', form);
+      await api.post('/api/v1/time', form);
       onSave();
     } catch (error) {
       alert(error.message || 'Failed to save entry');

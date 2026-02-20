@@ -30,8 +30,8 @@ export default function AgencyDashboard() {
     setLoading(true);
     try {
       const [statsData, customersData] = await Promise.all([
-        api.get('/agency/stats'),
-        api.get('/agency/customers'),
+        api.get('/api/v1/agency/stats'),
+        api.get('/api/v1/agency/customers'),
       ]);
       setStats(statsData);
       setCustomers(customersData.data || []);

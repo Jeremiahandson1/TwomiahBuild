@@ -21,10 +21,10 @@ export default function ReportsDashboard() {
     setLoading(true);
     try {
       const [dashboard, monthly, customers, team] = await Promise.all([
-        api.get('/reports/dashboard'),
-        api.get('/reports/revenue/monthly?months=6'),
-        api.get('/reports/revenue/customers?limit=5'),
-        api.get('/reports/team'),
+        api.get('/api/v1/reports/dashboard'),
+        api.get('/api/v1/reports/revenue/monthly?months=6'),
+        api.get('/api/v1/reports/revenue/customers?limit=5'),
+        api.get('/api/v1/reports/team'),
       ]);
       
       setData(dashboard);

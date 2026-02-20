@@ -29,7 +29,7 @@ export default function CustomerDetailPage() {
   async function fetchCustomer() {
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/factory/customers/${id}`, {
+      const res = await fetch(`${API_URL}/v1/factory/customers/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -60,7 +60,7 @@ export default function CustomerDetailPage() {
   async function fetchStripeConfig() {
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/factory/stripe/config`, {
+      const res = await fetch(`${API_URL}/v1/factory/stripe/config`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) setStripeConfig(await res.json());
@@ -72,7 +72,7 @@ export default function CustomerDetailPage() {
   async function fetchDeployConfig() {
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/factory/deploy/config`, {
+      const res = await fetch(`${API_URL}/v1/factory/deploy/config`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) setDeployConfig(await res.json());
@@ -86,7 +86,7 @@ export default function CustomerDetailPage() {
     setDeploying(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/factory/customers/${id}/deploy`, {
+      const res = await fetch(`${API_URL}/v1/factory/customers/${id}/deploy`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ region: 'ohio', plan: 'free' }),
@@ -112,7 +112,7 @@ export default function CustomerDetailPage() {
     if (!confirm('Redeploy all services for this customer?')) return;
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/factory/customers/${id}/redeploy`, {
+      const res = await fetch(`${API_URL}/v1/factory/customers/${id}/redeploy`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
       });
@@ -130,7 +130,7 @@ export default function CustomerDetailPage() {
   async function fetchDeployStatus() {
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/factory/customers/${id}/deploy/status`, {
+      const res = await fetch(`${API_URL}/v1/factory/customers/${id}/deploy/status`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) setDeployStatus(await res.json());
@@ -142,8 +142,8 @@ export default function CustomerDetailPage() {
     try {
       const token = localStorage.getItem('accessToken');
       const endpoint = type === 'subscription'
-        ? `${API_URL}/factory/customers/${id}/checkout/subscription`
-        : `${API_URL}/factory/customers/${id}/checkout/license`;
+        ? `${API_URL}/v1/factory/customers/${id}/checkout/subscription`
+        : `${API_URL}/v1/factory/customers/${id}/checkout/license`;
       
       const body = type === 'subscription'
         ? { planId: form.planId || 'custom', monthlyAmount: parseFloat(form.monthlyAmount) || 149 }
@@ -178,7 +178,7 @@ export default function CustomerDetailPage() {
   async function handleOpenPortal() {
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/factory/customers/${id}/portal`, {
+      const res = await fetch(`${API_URL}/v1/factory/customers/${id}/portal`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
       });
@@ -198,7 +198,7 @@ export default function CustomerDetailPage() {
     if (!confirm('Cancel this customer\'s subscription? They will retain access until the end of the billing period.')) return;
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/factory/customers/${id}/cancel`, {
+      const res = await fetch(`${API_URL}/v1/factory/customers/${id}/cancel`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ immediate: false }),
@@ -216,7 +216,7 @@ export default function CustomerDetailPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/factory/customers/${id}`, {
+      const res = await fetch(`${API_URL}/v1/factory/customers/${id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -247,7 +247,7 @@ export default function CustomerDetailPage() {
     if (!confirm('Delete this customer record? This cannot be undone.')) return;
     try {
       const token = localStorage.getItem('accessToken');
-      await fetch(`${API_URL}/factory/customers/${id}`, {
+      await fetch(`${API_URL}/v1/factory/customers/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });

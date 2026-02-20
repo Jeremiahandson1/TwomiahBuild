@@ -11,20 +11,32 @@ router.get('/stats', async (req, res, next) => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    const [contacts, projects, jobs, quotes, invoices, todayJobs] = await Promise.all([
+    const [contacts, projects, jobs, quoteGroups, invoiceGroups, todayJobs, quoteValues, invoiceValues] = await Promise.all([
       prisma.contact.count({ where: { companyId } }),
       prisma.project.groupBy({ by: ['status'], where: { companyId }, _count: true }),
       prisma.job.groupBy({ by: ['status'], where: { companyId }, _count: true }),
-      prisma.quote.findMany({ where: { companyId }, select: { status: true, total: true } }),
-      prisma.invoice.findMany({ where: { companyId }, select: { status: true, total: true, amountPaid: true } }),
+      // Use groupBy+aggregate instead of loading all records into memory (Bug #10)
+      prisma.quote.groupBy({ by: ['status'], where: { companyId }, _count: true, _sum: { total: true } }),
+      prisma.invoice.groupBy({ by: ['status'], where: { companyId }, _count: true, _sum: { total: true, amountPaid: true } }),
       prisma.job.count({ where: { companyId, scheduledDate: { gte: today, lt: new Date(today.getTime() + 86400000) } } }),
+      prisma.quote.aggregate({ where: { companyId }, _count: true, _sum: { total: true } }),
+      prisma.invoice.aggregate({ where: { companyId }, _count: true, _sum: { total: true, amountPaid: true } }),
     ]);
 
-    const quoteStats = { total: quotes.length, pending: 0, approved: 0, totalValue: 0 };
-    quotes.forEach(q => { if (['draft', 'sent'].includes(q.status)) quoteStats.pending++; if (q.status === 'approved') quoteStats.approved++; quoteStats.totalValue += Number(q.total); });
+    const quoteStats = {
+      total: quoteValues._count,
+      pending: quoteGroups.filter(q => ['draft', 'sent'].includes(q.status)).reduce((s, q) => s + q._count, 0),
+      approved: quoteGroups.find(q => q.status === 'approved')?._count || 0,
+      totalValue: Number(quoteValues._sum.total || 0),
+    };
 
-    const invoiceStats = { total: invoices.length, outstanding: 0, paid: 0, totalValue: 0, outstandingValue: 0 };
-    invoices.forEach(inv => { const balance = Number(inv.total) - Number(inv.amountPaid); invoiceStats.totalValue += Number(inv.total); invoiceStats.outstandingValue += balance; if (inv.status === 'paid') invoiceStats.paid++; else invoiceStats.outstanding++; });
+    const invoiceStats = {
+      total: invoiceValues._count,
+      paid: invoiceGroups.find(inv => inv.status === 'paid')?._count || 0,
+      outstanding: invoiceGroups.filter(inv => inv.status !== 'paid').reduce((s, inv) => s + inv._count, 0),
+      totalValue: Number(invoiceValues._sum.total || 0),
+      outstandingValue: Number(invoiceValues._sum.total || 0) - Number(invoiceValues._sum.amountPaid || 0),
+    };
 
     res.json({
       contacts,

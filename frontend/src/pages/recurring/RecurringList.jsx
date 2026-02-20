@@ -37,8 +37,8 @@ export default function RecurringInvoiceList() {
       if (filter) params.append('status', filter);
 
       const [listRes, statsRes] = await Promise.all([
-        api.get(`/recurring?${params}`),
-        api.get('/recurring/stats'),
+        api.get(`/api/v1/recurring?${params}`),
+        api.get('/api/v1/recurring/stats'),
       ]);
 
       setRecurring(listRes.data || []);
@@ -52,7 +52,7 @@ export default function RecurringInvoiceList() {
 
   const handlePause = async (id) => {
     try {
-      await api.post(`/recurring/${id}/pause`);
+      await api.post(`/api/v1/recurring/${id}/pause`);
       loadData();
     } catch (error) {
       alert('Failed to pause');
@@ -61,7 +61,7 @@ export default function RecurringInvoiceList() {
 
   const handleResume = async (id) => {
     try {
-      await api.post(`/recurring/${id}/resume`);
+      await api.post(`/api/v1/recurring/${id}/resume`);
       loadData();
     } catch (error) {
       alert('Failed to resume');
@@ -71,7 +71,7 @@ export default function RecurringInvoiceList() {
   const handleCancel = async (id) => {
     if (!confirm('Cancel this recurring invoice? This cannot be undone.')) return;
     try {
-      await api.post(`/recurring/${id}/cancel`);
+      await api.post(`/api/v1/recurring/${id}/cancel`);
       loadData();
     } catch (error) {
       alert('Failed to cancel');
@@ -80,7 +80,7 @@ export default function RecurringInvoiceList() {
 
   const handleGenerateNow = async (id) => {
     try {
-      const invoice = await api.post(`/recurring/${id}/generate`);
+      const invoice = await api.post(`/api/v1/recurring/${id}/generate`);
       navigate(`/invoices/${invoice.id}`);
     } catch (error) {
       alert('Failed to generate invoice');

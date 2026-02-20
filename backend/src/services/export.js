@@ -288,7 +288,7 @@ export async function exportToExcel(entityType, companyId, filters = {}) {
     where,
     include: config.include,
     orderBy: config.orderBy,
-    take: filters.limit || 10000,
+    take: Math.min(parseInt(filters.limit) || 5000, 5000), // Hard cap — prevent memory DoS (Bug #27)
   });
 
   // Build TSV (Excel opens this correctly)

@@ -24,7 +24,7 @@ export default function GeofencesPage() {
   const loadGeofences = async () => {
     setLoading(true);
     try {
-      const data = await api.get(`/geofencing?active=${filter}`);
+      const data = await api.get(`/api/v1/geofencing?active=${filter}`);
       setGeofences(data);
     } catch (error) {
       console.error('Failed to load geofences:', error);
@@ -45,7 +45,7 @@ export default function GeofencesPage() {
 
   const handleToggle = async (id, active) => {
     try {
-      await api.put(`/geofencing/${id}`, { active: !active });
+      await api.put(`/api/v1/geofencing/${id}`, { active: !active });
       loadGeofences();
     } catch (error) {
       alert('Failed to update geofence');
@@ -55,9 +55,9 @@ export default function GeofencesPage() {
   const handleSave = async (data) => {
     try {
       if (editing) {
-        await api.put(`/geofencing/${editing.id}`, data);
+        await api.put(`/api/v1/geofencing/${editing.id}`, data);
       } else {
-        await api.post('/geofencing', data);
+        await api.post('/api/v1/geofencing', data);
       }
       setShowForm(false);
       setEditing(null);
@@ -239,8 +239,8 @@ function GeofenceFormModal({ geofence, onSave, onClose }) {
   const loadOptions = async () => {
     try {
       const [jobsRes, projectsRes] = await Promise.all([
-        api.get('/jobs?status=scheduled&limit=100'),
-        api.get('/projects?status=active&limit=100'),
+        api.get('/api/v1/jobs?status=scheduled&limit=100'),
+        api.get('/api/v1/projects?status=active&limit=100'),
       ]);
       setJobs(jobsRes.data || jobsRes || []);
       setProjects(projectsRes.data || []);

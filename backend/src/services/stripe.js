@@ -349,6 +349,15 @@ async function handlePaymentSuccess(paymentIntent) {
   // Calculate payment amount (convert from cents)
   const amount = paymentIntent.amount / 100;
 
+  // Idempotency check — Stripe retries webhooks; prevent duplicate payment records (Bug #20)
+  const existing = await prisma.payment.findFirst({
+    where: { stripePaymentIntentId: paymentIntent.id },
+  });
+  if (existing) {
+    console.log(`Payment already recorded for intent ${paymentIntent.id}, skipping duplicate`);
+    return { handled: true, idempotent: true };
+  }
+
   // Create payment record
   const payment = await prisma.payment.create({
     data: {

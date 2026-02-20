@@ -28,7 +28,7 @@ export default function MessagesPage() {
 
   const loadConversations = async () => {
     try {
-      const data = await api.get(`/sms/conversations?search=${search}&unreadOnly=${unreadFilter}`);
+      const data = await api.get(`/api/v1/sms/conversations?search=${search}&unreadOnly=${unreadFilter}`);
       setConversations(data.data || []);
       setLoading(false);
     } catch (error) {
@@ -41,11 +41,11 @@ export default function MessagesPage() {
     setSelectedConversation(conv);
     setLoadingMessages(true);
     try {
-      const data = await api.get(`/sms/conversations/${conv.id}/messages`);
+      const data = await api.get(`/api/v1/sms/conversations/${conv.id}/messages`);
       setMessages(data || []);
       // Mark as read
       if (conv.unreadCount > 0) {
-        await api.post(`/sms/conversations/${conv.id}/read`);
+        await api.post(`/api/v1/sms/conversations/${conv.id}/read`);
         loadConversations();
       }
     } catch (error) {
@@ -245,7 +245,7 @@ function MessageThread({ messages, loading, conversationId, onMessageSent }) {
 
     setSending(true);
     try {
-      await api.post(`/sms/conversations/${conversationId}/messages`, {
+      await api.post(`/api/v1/sms/conversations/${conversationId}/messages`, {
         body: newMessage,
       });
       setNewMessage('');
@@ -354,7 +354,7 @@ function NewMessageModal({ onSend, onClose }) {
 
   const loadContacts = async () => {
     try {
-      const data = await api.get('/contacts?limit=100');
+      const data = await api.get('/api/v1/contacts?limit=100');
       setContacts(data.data || []);
     } catch (error) {
       console.error('Failed to load contacts:', error);
@@ -383,7 +383,7 @@ function NewMessageModal({ onSend, onClose }) {
     if (!phone || !message.trim()) return;
     setSending(true);
     try {
-      const result = await api.post('/sms/send', {
+      const result = await api.post('/api/v1/sms/send', {
         to: phone,
         body: message,
       });

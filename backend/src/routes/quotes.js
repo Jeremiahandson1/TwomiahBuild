@@ -5,7 +5,8 @@ import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
 import { withCompany } from '../middleware/ownership.js';
-
+import emailService from '../services/email.js';
+import logger from '../services/logger.js';
 import { emitToCompany, EVENTS } from '../services/socket.js';
 
 const router = Router();
@@ -104,9 +105,35 @@ router.delete('/:id', requirePermission('quotes:delete'), async (req, res, next)
 
 router.post('/:id/send', requirePermission('quotes:update'), async (req, res, next) => {
   try {
-    const quote = await prisma.quote.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'sent', sentAt: new Date() } });
-    emitToCompany(req.user.companyId, EVENTS.QUOTE_SENT, { id: quote.id, number: quote.number });
-    res.json(quote);
+    const quote = await prisma.quote.findFirst({
+      where: { id: req.params.id, companyId: req.user.companyId },
+      include: { contact: true, company: true },
+    });
+    if (!quote) return res.status(404).json({ error: 'Quote not found' });
+
+    const updated = await prisma.quote.update({
+      where: { id: req.params.id },
+      data: { status: 'sent', sentAt: new Date() },
+    });
+
+    // Email the customer
+    if (quote.contact?.email) {
+      try {
+        await emailService.sendQuote(quote.contact.email, {
+          quoteNumber: quote.number,
+          contactName: quote.contact.name,
+          total: quote.total,
+          expiresAt: quote.expiresAt ? new Date(quote.expiresAt).toLocaleDateString() : 'N/A',
+          companyName: quote.company?.name,
+          companyEmail: quote.company?.email,
+        });
+      } catch (emailErr) {
+        logger.logError(emailErr, null, { action: 'sendQuoteEmail', quoteId: quote.id });
+      }
+    }
+
+    emitToCompany(req.user.companyId, EVENTS.QUOTE_SENT, { id: updated.id, number: updated.number });
+    res.json(updated);
   } catch (error) { next(error); }
 });
 

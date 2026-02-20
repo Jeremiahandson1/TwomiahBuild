@@ -133,7 +133,7 @@ router.get('/team-routes', async (req, res, next) => {
 
     // Get all team members
     const teamMembers = await prisma.user.findMany({
-      where: { companyId: req.user.companyId, active: true },
+      where: { companyId: req.user.companyId, isActive: true },
       select: { id: true, firstName: true, lastName: true },
     });
 

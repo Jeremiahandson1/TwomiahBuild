@@ -169,59 +169,64 @@ export async function generateInvoiceFromRecurring(recurringId) {
   const invoiceDate = new Date();
   const dueDate = calculateDueDate(invoiceDate, recurring.terms);
 
-  // Create invoice
-  const invoice = await prisma.invoice.create({
-    data: {
-      companyId: recurring.companyId,
-      contactId: recurring.contactId,
-      projectId: recurring.projectId,
-      number,
-      status: 'draft',
-      issueDate: invoiceDate,
-      dueDate,
-      terms: recurring.terms,
-      subtotal: recurring.subtotal,
-      taxRate: recurring.taxRate,
-      taxAmount: recurring.taxAmount,
-      discount: recurring.discount,
-      total: recurring.total,
-      balance: recurring.total,
-      amountPaid: 0,
-      notes: recurring.notes,
-      recurringInvoiceId: recurring.id,
-      lineItems: {
-        create: recurring.lineItems.map(item => ({
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          total: item.total,
-          sortOrder: item.sortOrder,
-        })),
+  // Wrap invoice creation and recurring update in a transaction — prevents duplicates
+  // if the process fails halfway through (Bug #7)
+  const { invoice, nextRunDate } = await prisma.$transaction(async (tx) => {
+    const invoice = await tx.invoice.create({
+      data: {
+        companyId: recurring.companyId,
+        contactId: recurring.contactId,
+        projectId: recurring.projectId,
+        number,
+        status: 'draft',
+        issueDate: invoiceDate,
+        dueDate,
+        terms: recurring.terms,
+        subtotal: recurring.subtotal,
+        taxRate: recurring.taxRate,
+        taxAmount: recurring.taxAmount,
+        discount: recurring.discount,
+        total: recurring.total,
+        balance: recurring.total,
+        amountPaid: 0,
+        notes: recurring.notes,
+        recurringInvoiceId: recurring.id,
+        lineItems: {
+          create: recurring.lineItems.map(item => ({
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            total: item.total,
+            sortOrder: item.sortOrder,
+          })),
+        },
       },
-    },
-    include: {
-      lineItems: true,
-      contact: true,
-    },
-  });
+      include: {
+        lineItems: true,
+        contact: true,
+      },
+    });
 
-  // Update recurring invoice
-  const nextRunDate = calculateNextDate(recurring.nextRunDate, recurring.frequency);
-  
-  // Check if we've reached end date
-  let newStatus = recurring.status;
-  if (recurring.endDate && nextRunDate > recurring.endDate) {
-    newStatus = 'completed';
-  }
+    // Update recurring invoice
+    const nextRunDate = calculateNextDate(recurring.nextRunDate, recurring.frequency);
+    
+    // Check if we've reached end date
+    let newStatus = recurring.status;
+    if (recurring.endDate && nextRunDate > recurring.endDate) {
+      newStatus = 'completed';
+    }
 
-  await prisma.recurringInvoice.update({
-    where: { id: recurringId },
-    data: {
-      nextRunDate,
-      lastRunDate: invoiceDate,
-      invoiceCount: { increment: 1 },
-      status: newStatus,
-    },
+    await tx.recurringInvoice.update({
+      where: { id: recurringId },
+      data: {
+        nextRunDate,
+        lastRunDate: invoiceDate,
+        invoiceCount: { increment: 1 },
+        status: newStatus,
+      },
+    });
+
+    return { invoice, nextRunDate };
   });
 
   // Audit trail for system-generated invoices

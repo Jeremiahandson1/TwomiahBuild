@@ -122,7 +122,9 @@ async function createGitHubRepo(slug, description) {
  */
 async function pushToGitHub(repoFullName, extractDir) {
   const token = process.env.GITHUB_TOKEN;
+  // NOTE: remoteUrl contains the token — never log this variable or include it in error messages
   const remoteUrl = `https://${token}@github.com/${repoFullName}.git`;
+  const safeRemoteUrl = `https://github.com/${repoFullName}.git`; // token-free URL for logging
 
   try {
     // Initialize git, add all files, commit, and push
@@ -138,12 +140,21 @@ async function pushToGitHub(repoFullName, extractDir) {
     ];
 
     for (const cmd of cmds) {
-      execSync(cmd, { stdio: 'pipe', timeout: 60000 });
+      try {
+        execSync(cmd, { stdio: 'pipe', timeout: 60000 });
+      } catch (cmdErr) {
+        // Sanitize error message — replace token with [REDACTED] before surfacing (Bug #21)
+        const safeMessage = token
+          ? (cmdErr.message || '').replace(new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '[REDACTED]')
+          : cmdErr.message;
+        throw new Error(`Git command failed for ${safeRemoteUrl}: ${safeMessage}`);
+      }
     }
 
     return { success: true };
   } catch (err) {
-    throw new Error(`Git push failed: ${err.message}`);
+    // Re-throw without re-wrapping if already sanitized above
+    throw err;
   }
 }
 

@@ -25,8 +25,8 @@ export default function TasksPage() {
       if (filter === 'completed') params.append('status', 'completed');
 
       const [tasksRes, statsRes] = await Promise.all([
-        api.get(`/tasks?${params}`),
-        api.get('/tasks/stats'),
+        api.get(`/api/v1/tasks?${params}`),
+        api.get('/api/v1/tasks/stats'),
       ]);
 
       let taskList = tasksRes.data || [];
@@ -49,7 +49,7 @@ export default function TasksPage() {
 
   const handleToggle = async (taskId) => {
     try {
-      const updated = await api.post(`/tasks/${taskId}/toggle`);
+      const updated = await api.post(`/api/v1/tasks/${taskId}/toggle`);
       setTasks(prev => prev.map(t => t.id === taskId ? updated : t));
       loadData(); // Refresh stats
     } catch (error) {
@@ -71,10 +71,10 @@ export default function TasksPage() {
   const handleSave = async (taskData) => {
     try {
       if (editingTask) {
-        const updated = await api.put(`/tasks/${editingTask.id}`, taskData);
+        const updated = await api.put(`/api/v1/tasks/${editingTask.id}`, taskData);
         setTasks(prev => prev.map(t => t.id === editingTask.id ? updated : t));
       } else {
-        const created = await api.post('/tasks', taskData);
+        const created = await api.post('/api/v1/tasks', taskData);
         setTasks(prev => [created, ...prev]);
       }
       setShowForm(false);
@@ -305,8 +305,8 @@ function TaskFormModal({ task, onSave, onClose }) {
   const loadOptions = async () => {
     try {
       const [usersRes, projectsRes] = await Promise.all([
-        api.get('/team'),
-        api.get('/projects?status=active&limit=100'),
+        api.get('/api/v1/team'),
+        api.get('/api/v1/projects?status=active&limit=100'),
       ]);
       setUsers(usersRes.data || usersRes || []);
       setProjects(projectsRes.data || []);
@@ -500,7 +500,7 @@ export function TaskWidget() {
 
   const loadTasks = async () => {
     try {
-      const data = await api.get('/tasks/upcoming');
+      const data = await api.get('/api/v1/tasks/upcoming');
       setTasks(data);
     } catch (error) {
       console.error('Failed to load tasks:', error);
@@ -511,7 +511,7 @@ export function TaskWidget() {
 
   const handleToggle = async (taskId) => {
     try {
-      await api.post(`/tasks/${taskId}/toggle`);
+      await api.post(`/api/v1/tasks/${taskId}/toggle`);
       loadTasks();
     } catch (error) {
       console.error('Failed to toggle task:', error);

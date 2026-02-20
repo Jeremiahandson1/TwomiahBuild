@@ -216,7 +216,7 @@ export async function processWebhook(payload, signature) {
     .update(JSON.stringify(payload))
     .digest('hex');
 
-  if (signature !== expectedSignature) {
+  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
     throw new Error('Invalid webhook signature');
   }
 

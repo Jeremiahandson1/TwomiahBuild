@@ -14,6 +14,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
+import audit from '../services/audit.js';
 import { 
   FEATURE_REGISTRY, 
   FEATURE_PACKAGES,

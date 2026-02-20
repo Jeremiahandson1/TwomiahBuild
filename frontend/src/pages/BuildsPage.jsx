@@ -15,7 +15,7 @@ export default function BuildsPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
-    fetch(`${API_BASE}/api/factory/builds`, {
+    fetch(`${API_BASE}/api/v1/factory/builds`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(r => r.json())
@@ -28,7 +28,7 @@ export default function BuildsPage() {
     try {
       const token = localStorage.getItem('accessToken');
       const res = await fetch(
-        `${API_BASE}/api/factory/download/${build.buildId}/${build.zipName}`,
+        `${API_BASE}/api/v1/factory/download/${build.buildId}/${build.zipName}`,
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
       if (!res.ok) throw new Error('File not found — it may have expired');
@@ -51,14 +51,14 @@ export default function BuildsPage() {
     try {
       const token = localStorage.getItem('accessToken');
       // Need customerId — get it from the build's customer
-      const res = await fetch(`${API_BASE}/api/factory/customers?search=${encodeURIComponent(build.companyName)}`, {
+      const res = await fetch(`${API_BASE}/api/v1/factory/customers?search=${encodeURIComponent(build.companyName)}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const customers = await res.json();
       const customer = customers.find(c => c.slug === build.slug || c.name === build.companyName);
       if (!customer) throw new Error('Customer not found');
 
-      const deployRes = await fetch(`${API_BASE}/api/factory/customers/${customer.id}/deploy`, {
+      const deployRes = await fetch(`${API_BASE}/api/v1/factory/customers/${customer.id}/deploy`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -77,7 +77,7 @@ export default function BuildsPage() {
     setDeleting(build.id);
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_BASE}/api/factory/builds/${build.id}`, {
+      const res = await fetch(`${API_BASE}/api/v1/factory/builds/${build.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

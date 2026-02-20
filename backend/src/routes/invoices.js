@@ -6,6 +6,8 @@ import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
 import { withCompany } from '../middleware/ownership.js';
 import { emitToCompany, EVENTS } from '../services/socket.js';
+import emailService from '../services/email.js';
+import logger from '../services/logger.js';
 
 const router = Router();
 router.use(authenticate);
@@ -104,9 +106,36 @@ router.delete('/:id', requirePermission('invoices:delete'), async (req, res, nex
 
 router.post('/:id/send', requirePermission('invoices:update'), async (req, res, next) => {
   try {
-    const invoice = await prisma.invoice.update({ where: withCompany(req.params.id, req.user.companyId), data: { status: 'sent', sentAt: new Date() } });
-    emitToCompany(req.user.companyId, EVENTS.INVOICE_SENT, { id: invoice.id, number: invoice.number });
-    res.json(invoice);
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: req.params.id, companyId: req.user.companyId },
+      include: { contact: true, company: true },
+    });
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+    const updated = await prisma.invoice.update({
+      where: { id: req.params.id },
+      data: { status: 'sent', sentAt: new Date() },
+    });
+
+    // Email the customer
+    if (invoice.contact?.email) {
+      try {
+        await emailService.sendInvoice(invoice.contact.email, {
+          invoiceNumber: invoice.number,
+          contactName: invoice.contact.name,
+          total: invoice.total,
+          balance: invoice.balance,
+          dueDate: invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A',
+          companyName: invoice.company?.name,
+          companyEmail: invoice.company?.email,
+        });
+      } catch (emailErr) {
+        logger.logError(emailErr, null, { action: 'sendInvoiceEmail', invoiceId: invoice.id });
+      }
+    }
+
+    emitToCompany(req.user.companyId, EVENTS.INVOICE_SENT, { id: updated.id, number: updated.number });
+    res.json(updated);
   } catch (error) { next(error); }
 });
 

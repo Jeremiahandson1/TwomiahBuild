@@ -141,6 +141,19 @@ class ApiClient {
     return this.request(`${endpoint}/${id}/${action}`, { method: 'POST', body: JSON.stringify(data) });
   }
 
+  // Convenience aliases so pages can call api.post/put/patch directly (Bug #16)
+  async post(endpoint, data) {
+    return this.request(endpoint, { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async put(endpoint, data) {
+    return this.request(endpoint, { method: 'PUT', body: JSON.stringify(data) });
+  }
+
+  async patch(endpoint, data) {
+    return this.request(endpoint, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
   // Contacts
   contacts = {
     list: (params) => this.get('/api/v1/contacts', params),
@@ -338,6 +351,51 @@ class ApiClient {
     revenue: (params) => this.get('/api/v1/reports/revenue', params),
     expenses: (params) => this.get('/api/v1/reports/expenses', params),
     profitability: (params) => this.get('/api/v1/reports/profitability', params),
+  };
+
+  // Online Booking (Bug #11 — gap feature methods were missing)
+  booking = {
+    getSettings: (companySlug) => this.get(`/api/v1/booking/${companySlug}`),
+    create: (companySlug, data) => this.request(`/api/v1/booking/${companySlug}`, { method: 'POST', body: JSON.stringify(data) }),
+    list: (params) => this.get('/api/v1/gap/booking/requests', params),
+    confirm: (id) => this.action('/api/v1/gap/booking/requests', id, 'confirm'),
+    cancel: (id, data) => this.action('/api/v1/gap/booking/requests', id, 'cancel', data),
+  };
+
+  // Job Costing — extend with gap routes
+  jobCostingGap = {
+    forJob: (jobId) => this.get(`/api/v1/gap/job-costing/jobs/${jobId}`),
+    updateBudget: (jobId, data) => this.request(`/api/v1/gap/job-costing/jobs/${jobId}/budget`, { method: 'PUT', body: JSON.stringify(data) }),
+    report: (params) => this.get('/api/v1/gap/job-costing/report', params),
+  };
+
+  // Custom Forms (Bug #11)
+  customForms = {
+    list: (params) => this.get('/api/v1/gap/forms', params),
+    get: (id) => this.getOne('/api/v1/gap/forms', id),
+    create: (data) => this.create('/api/v1/gap/forms', data),
+    update: (id, data) => this.update('/api/v1/gap/forms', id, data),
+    delete: (id) => this.delete('/api/v1/gap/forms', id),
+    submit: (id, data) => this.request(`/api/v1/gap/forms/${id}/submit`, { method: 'POST', body: JSON.stringify(data) }),
+  };
+
+  // Lien Waivers (Bug #11)
+  lienWaivers = {
+    list: (params) => this.get('/api/v1/gap/lien-waivers', params),
+    get: (id) => this.getOne('/api/v1/gap/lien-waivers', id),
+    create: (data) => this.create('/api/v1/gap/lien-waivers', data),
+    send: (id) => this.action('/api/v1/gap/lien-waivers', id, 'send'),
+    sign: (id, data) => this.action('/api/v1/gap/lien-waivers', id, 'sign', data),
+  };
+
+  // Draw Schedules (Bug #11)
+  drawSchedules = {
+    list: (params) => this.get('/api/v1/gap/draw-schedules', params),
+    get: (id) => this.getOne('/api/v1/gap/draw-schedules', id),
+    create: (data) => this.create('/api/v1/gap/draw-schedules', data),
+    update: (id, data) => this.update('/api/v1/gap/draw-schedules', id, data),
+    requestDraw: (id, data) => this.action('/api/v1/gap/draw-schedules', id, 'request-draw', data),
+    approveDraw: (id, drawId) => this.request(`/api/v1/gap/draw-schedules/${id}/draws/${drawId}/approve`, { method: 'POST' }),
   };
 }
 

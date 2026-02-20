@@ -355,7 +355,7 @@ function RevenueWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/reports/revenue')
+    api.get('/api/v1/reports/revenue')
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -394,7 +394,7 @@ function JobsTodayWidget() {
       endDate: today.toISOString().split('T')[0],
       limit: '10',
     });
-    api.get(`/jobs?${params}`)
+    api.get(`/api/v1/jobs?${params}`)
       .then(res => setJobs(res.data || res || []))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -435,7 +435,7 @@ function OverdueInvoicesWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/invoices?status=overdue&limit=1')
+    api.get('/api/v1/invoices?status=overdue&limit=1')
       .then(res => {
         const invoices = res.data || [];
         const total = invoices.reduce((sum, i) => sum + Number(i.balance || 0), 0);
@@ -465,7 +465,7 @@ function PendingQuotesWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/quotes?status=sent&limit=100')
+    api.get('/api/v1/quotes?status=sent&limit=100')
       .then(res => {
         const quotes = res.data || [];
         const total = quotes.reduce((sum, q) => sum + Number(q.total || 0), 0);
@@ -495,7 +495,7 @@ function TeamActivityWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/reports/team')
+    api.get('/api/v1/reports/team')
       .then(data => setTeam(data || []))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -525,7 +525,7 @@ function MyTasksWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/tasks?mine=true&status=pending&limit=5')
+    api.get('/api/v1/tasks?mine=true&status=pending&limit=5')
       .then(res => setTasks(res.data || []))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -554,7 +554,7 @@ function RecentActivityWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/comments/activity/feed?limit=10')
+    api.get('/api/v1/comments/activity/feed?limit=10')
       .then(res => setActivity(res.activities || []))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -587,7 +587,7 @@ function ProjectProgressWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/projects?status=active&limit=5')
+    api.get('/api/v1/projects?status=active&limit=5')
       .then(res => setProjects(res.data || []))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -620,7 +620,7 @@ function QuickStatsWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/reports/dashboard')
+    api.get('/api/v1/reports/dashboard')
       .then(setStats)
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -662,7 +662,7 @@ function UpcomingScheduleWidget() {
       limit: '10',
     });
     
-    api.get(`/jobs?${params}`)
+    api.get(`/api/v1/jobs?${params}`)
       .then(res => setJobs(res.data || res || []))
       .catch(console.error)
       .finally(() => setLoading(false));

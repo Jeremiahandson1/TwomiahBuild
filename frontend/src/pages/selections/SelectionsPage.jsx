@@ -34,9 +34,9 @@ export default function SelectionsPage({ projectId }) {
     setLoading(true);
     try {
       const [selectionsRes, summaryRes, categoriesRes] = await Promise.all([
-        api.get(`/selections/project/${projectId}`),
-        api.get(`/selections/project/${projectId}/summary`),
-        api.get('/selections/categories'),
+        api.get(`/api/v1/selections/project/${projectId}`),
+        api.get(`/api/v1/selections/project/${projectId}/summary`),
+        api.get('/api/v1/selections/categories'),
       ]);
       setSelections(selectionsRes || []);
       setSummary(summaryRes);
@@ -189,7 +189,7 @@ export default function SelectionsPage({ projectId }) {
 
   async function handleSelectOption(selectionId, optionId) {
     try {
-      await api.post(`/selections/${selectionId}/select`, { optionId });
+      await api.post(`/api/v1/selections/${selectionId}/select`, { optionId });
       setShowOptionPicker(null);
       loadData();
     } catch (error) {
@@ -227,7 +227,7 @@ function SelectionRow({ selection, onSelect, onRefresh }) {
 
   const handleApprove = async () => {
     try {
-      await api.post(`/selections/${selection.id}/approve`);
+      await api.post(`/api/v1/selections/${selection.id}/approve`);
       onRefresh();
     } catch (error) {
       alert('Failed to approve');
@@ -237,7 +237,7 @@ function SelectionRow({ selection, onSelect, onRefresh }) {
   const handleMarkOrdered = async () => {
     const orderNumber = prompt('Enter order/PO number (optional):');
     try {
-      await api.post(`/selections/${selection.id}/ordered`, { orderNumber });
+      await api.post(`/api/v1/selections/${selection.id}/ordered`, { orderNumber });
       onRefresh();
     } catch (error) {
       alert('Failed to update');
@@ -246,7 +246,7 @@ function SelectionRow({ selection, onSelect, onRefresh }) {
 
   const handleMarkReceived = async () => {
     try {
-      await api.post(`/selections/${selection.id}/received`, {});
+      await api.post(`/api/v1/selections/${selection.id}/received`, {});
       onRefresh();
     } catch (error) {
       alert('Failed to update');
@@ -373,7 +373,7 @@ function OptionPickerModal({ selection, onSelect, onClose }) {
 
   const loadOptions = async () => {
     try {
-      const data = await api.get(`/selections/options?categoryId=${selection.categoryId}`);
+      const data = await api.get(`/api/v1/selections/options?categoryId=${selection.categoryId}`);
       setOptions(data || []);
     } catch (error) {
       console.error('Failed to load options:', error);
@@ -495,7 +495,7 @@ function AddSelectionModal({ projectId, categories, onSave, onClose }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post(`/selections/project/${projectId}`, form);
+      await api.post(`/api/v1/selections/project/${projectId}`, form);
       onSave();
     } catch (error) {
       alert('Failed to create selection');

@@ -204,9 +204,13 @@ export async function updateCampaign(campaignId, companyId, data) {
 }
 
 /**
- * Send campaign
+ * Send campaign — processes up to BATCH_SIZE contacts per call.
+ * For lists larger than BATCH_SIZE, call again with offset to continue.
+ * This prevents Render's 30s request timeout from killing large sends.
  */
-export async function sendCampaign(campaignId, companyId) {
+const CAMPAIGN_BATCH_SIZE = 50;
+
+export async function sendCampaign(campaignId, companyId, offset = 0) {
   const campaign = await prisma.emailCampaign.findFirst({
     where: { id: campaignId, companyId },
   });
@@ -215,60 +219,84 @@ export async function sendCampaign(campaignId, companyId) {
     throw new Error('Campaign already sent or not found');
   }
 
-  // Get recipients based on audience
+  // Get recipients based on audience — capped at batch size for timeout safety (Bug #24)
   const contacts = await getAudienceContacts(companyId, campaign.audienceType, campaign.audienceFilter);
 
-  // Create recipient records
-  await prisma.emailRecipient.createMany({
-    data: contacts.map(c => ({
-      campaignId,
-      contactId: c.id,
-      email: c.email,
-      status: 'pending',
-    })),
-  });
+  // On first call (offset 0), create all recipient records
+  if (offset === 0) {
+    await prisma.emailRecipient.createMany({
+      data: contacts.map(c => ({
+        campaignId,
+        contactId: c.id,
+        email: c.email,
+        status: 'pending',
+      })),
+      skipDuplicates: true,
+    });
 
-  // Update campaign status
-  await prisma.emailCampaign.update({
-    where: { id: campaignId },
-    data: { status: 'sending', sentAt: new Date() },
-  });
+    // Update campaign status to sending
+    await prisma.emailCampaign.update({
+      where: { id: campaignId },
+      data: { status: 'sending', sentAt: new Date() },
+    });
+  }
 
-  // Send emails (in batches)
+  // Fetch the next batch of pending recipients
   const recipients = await prisma.emailRecipient.findMany({
     where: { campaignId, status: 'pending' },
     include: { contact: true },
+    take: CAMPAIGN_BATCH_SIZE,
+    skip: offset,
+    orderBy: { id: 'asc' },
   });
 
-  for (const recipient of recipients) {
-    try {
-      await sendEmail({
-        to: recipient.email,
-        subject: personalizeContent(campaign.subject, recipient.contact),
-        html: personalizeContent(campaign.body, recipient.contact),
-        fromName: campaign.fromName,
-        fromEmail: campaign.fromEmail,
-      });
+  let sent = 0;
+  let failed = 0;
 
-      await prisma.emailRecipient.update({
-        where: { id: recipient.id },
-        data: { status: 'sent', sentAt: new Date() },
-      });
-    } catch (error) {
-      await prisma.emailRecipient.update({
-        where: { id: recipient.id },
-        data: { status: 'failed', errorMessage: error.message },
-      });
-    }
+  // Send in parallel batches of 10 for speed (Bug #33 — actually batching now)
+  for (let i = 0; i < recipients.length; i += 10) {
+    const batch = recipients.slice(i, i + 10);
+    await Promise.allSettled(batch.map(async (recipient) => {
+      try {
+        await sendEmail({
+          to: recipient.email,
+          subject: personalizeContent(campaign.subject, recipient.contact),
+          html: personalizeContent(campaign.body, recipient.contact),
+          fromName: campaign.fromName,
+          fromEmail: campaign.fromEmail,
+        });
+
+        await prisma.emailRecipient.update({
+          where: { id: recipient.id },
+          data: { status: 'sent', sentAt: new Date() },
+        });
+        sent++;
+      } catch (error) {
+        await prisma.emailRecipient.update({
+          where: { id: recipient.id },
+          data: { status: 'failed', errorMessage: error.message },
+        });
+        failed++;
+      }
+    }));
   }
 
-  // Update campaign status
-  await prisma.emailCampaign.update({
-    where: { id: campaignId },
-    data: { status: 'sent' },
-  });
+  const hasMore = recipients.length === CAMPAIGN_BATCH_SIZE;
 
-  return { sent: recipients.length };
+  // Only mark as 'sent' when there are no more pending recipients
+  if (!hasMore) {
+    await prisma.emailCampaign.update({
+      where: { id: campaignId },
+      data: { status: 'sent' },
+    });
+  }
+
+  return {
+    sent,
+    failed,
+    hasMore,
+    nextOffset: hasMore ? offset + CAMPAIGN_BATCH_SIZE : null,
+  };
 }
 
 /**

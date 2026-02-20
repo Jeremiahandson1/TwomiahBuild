@@ -24,7 +24,7 @@ export default function OperatorDashboard() {
   async function fetchStats() {
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/api/factory/stats`, {
+      const res = await fetch(`${API_URL}/api/v1/factory/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {

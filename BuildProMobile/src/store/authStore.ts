@@ -31,14 +31,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
 
   login: async (email, password) => {
-    const response = await api.post<{ token: string; user: User }>(
+    const response = await api.post<{ accessToken: string; refreshToken: string; user: User }>(
       '/api/v1/auth/login',
       { email, password }
     );
     if (!response) throw new Error('Login failed');
 
+    // Validate token before storing — prevents "undefined" string being saved (Bug #18)
+    if (!response.accessToken || typeof response.accessToken !== 'string') {
+      throw new Error('Invalid token received from server');
+    }
+
     // Store JWT in SecureStore (encrypted, not readable on rooted devices)
-    await SecureStore.setItemAsync(TOKEN_KEY, response.token);
+    await SecureStore.setItemAsync(TOKEN_KEY, response.accessToken);
 
     // Store non-sensitive session data in SQLite for offline use
     await saveSession({
@@ -50,7 +55,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       token: '', // token no longer stored in SQLite
     });
 
-    set({ user: response.user, token: response.token, isAuthenticated: true });
+    set({ user: response.user, token: response.accessToken, isAuthenticated: true });
   },
 
   logout: async () => {

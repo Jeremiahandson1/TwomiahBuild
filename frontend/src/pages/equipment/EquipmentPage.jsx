@@ -41,8 +41,8 @@ export default function EquipmentPage() {
       if (filter === 'warrantyExpiring') params.set('warrantyExpiring', 'true');
 
       const [equipmentRes, statsRes] = await Promise.all([
-        api.get(`/equipment?${params}`),
-        api.get('/equipment/stats'),
+        api.get(`/api/v1/equipment?${params}`),
+        api.get('/api/v1/equipment/stats'),
       ]);
       setEquipment(equipmentRes.data || []);
       setStats(statsRes);
@@ -308,7 +308,7 @@ function EquipmentFormModal({ equipment, onSave, onClose }) {
 
   const loadContacts = async () => {
     try {
-      const data = await api.get('/contacts?limit=100');
+      const data = await api.get('/api/v1/contacts?limit=100');
       setContacts(data.data || []);
     } catch (error) {
       console.error('Failed to load contacts:', error);
@@ -320,9 +320,9 @@ function EquipmentFormModal({ equipment, onSave, onClose }) {
     setSaving(true);
     try {
       if (equipment) {
-        await api.put(`/equipment/${equipment.id}`, form);
+        await api.put(`/api/v1/equipment/${equipment.id}`, form);
       } else {
-        await api.post('/equipment', form);
+        await api.post('/api/v1/equipment', form);
       }
       onSave();
     } catch (error) {
@@ -506,7 +506,7 @@ function ServiceHistoryModal({ equipment, onClose, onRefresh }) {
 
   const loadHistory = async () => {
     try {
-      const data = await api.get(`/equipment/${equipment.id}/history`);
+      const data = await api.get(`/api/v1/equipment/${equipment.id}/history`);
       setHistory(data || []);
     } catch (error) {
       console.error('Failed to load history:', error);

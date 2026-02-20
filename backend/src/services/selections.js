@@ -306,49 +306,48 @@ export async function approveSelection(selectionId, companyId, { approvedBy, cre
   if (!selection) throw new Error('Selection not found');
   if (!selection.selectedOptionId) throw new Error('No option selected');
 
-  // Update status
-  await prisma.projectSelection.update({
-    where: { id: selectionId },
-    data: {
-      status: 'approved',
-      approvedAt: new Date(),
-      approvedById: approvedBy,
-    },
+  // Wrap in transaction — prevents selection being approved without the change order (Bug #31)
+  return prisma.$transaction(async (tx) => {
+    await tx.projectSelection.update({
+      where: { id: selectionId },
+      data: {
+        status: 'approved',
+        approvedAt: new Date(),
+        approvedById: approvedBy,
+      },
+    });
+
+    let changeOrder = null;
+    if (createChangeOrder && selection.priceDifference > 0) {
+      changeOrder = await tx.changeOrder.create({
+        data: {
+          companyId,
+          projectId: selection.projectId,
+          title: `Selection Upgrade: ${selection.name}`,
+          description: `Upgrade from allowance to ${selection.selectedOption.name}\n\nLocation: ${selection.location || 'N/A'}\nQuantity: ${selection.quantity} ${selection.unit}`,
+          amount: selection.priceDifference,
+          status: 'pending',
+          selectionId: selectionId,
+        },
+      });
+    }
+
+    if (createChangeOrder && selection.priceDifference < 0) {
+      changeOrder = await tx.changeOrder.create({
+        data: {
+          companyId,
+          projectId: selection.projectId,
+          title: `Selection Credit: ${selection.name}`,
+          description: `Credit for selecting ${selection.selectedOption.name} under allowance`,
+          amount: selection.priceDifference,
+          status: 'pending',
+          selectionId: selectionId,
+        },
+      });
+    }
+
+    return { selection: { ...selection, status: 'approved' }, changeOrder };
   });
-
-  // Create change order if there's an upgrade
-  let changeOrder = null;
-  if (createChangeOrder && selection.priceDifference > 0) {
-    changeOrder = await prisma.changeOrder.create({
-      data: {
-        companyId,
-        projectId: selection.projectId,
-        title: `Selection Upgrade: ${selection.name}`,
-        description: `Upgrade from allowance to ${selection.selectedOption.name}\n\nLocation: ${selection.location || 'N/A'}\nQuantity: ${selection.quantity} ${selection.unit}`,
-        amount: selection.priceDifference,
-        status: 'pending',
-        selectionId: selectionId,
-      },
-    });
-  }
-
-  // Credit change order if under allowance
-  if (createChangeOrder && selection.priceDifference < 0) {
-    changeOrder = await prisma.changeOrder.create({
-      data: {
-        companyId,
-        projectId: selection.projectId,
-        title: `Selection Credit: ${selection.name}`,
-        description: `Credit for selecting ${selection.selectedOption.name} under allowance`,
-        amount: selection.priceDifference, // Negative
-        status: 'pending',
-        selectionId: selectionId,
-      },
-    });
-  }
-
-  return { selection, changeOrder };
-}
 
 /**
  * Mark selection as ordered

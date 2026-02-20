@@ -90,7 +90,7 @@ export default function AuditPage() {
       if (filters.userId) params.set('userId', filters.userId);
       if (filters.startDate) params.set('startDate', filters.startDate);
       if (filters.endDate) params.set('endDate', filters.endDate);
-      const res = await api.get(`/audit?${params}`);
+      const res = await api.get(`/api/v1/audit?${params}`);
       setLogs(res.data?.data || res.data || []);
       setPagination(res.data?.pagination || null);
     } catch (err) {
@@ -104,7 +104,7 @@ export default function AuditPage() {
 
   const exportCsv = async () => {
     try {
-      const res = await api.get('/audit?limit=5000', { responseType: 'blob' });
+      const res = await api.get('/api/v1/audit?limit=5000', { responseType: 'blob' });
       const url = URL.createObjectURL(new Blob([res.data]));
       const a = document.createElement('a');
       a.href = url; a.download = `audit-log-${new Date().toISOString().slice(0,10)}.csv`;

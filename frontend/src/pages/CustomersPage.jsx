@@ -26,7 +26,7 @@ export default function CustomersPage() {
       const params = new URLSearchParams();
       if (statusFilter) params.set('status', statusFilter);
       if (billingFilter) params.set('billing', billingFilter);
-      const res = await fetch(`${API_URL}/factory/customers?${params}`, {
+      const res = await fetch(`${API_URL}/v1/factory/customers?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {

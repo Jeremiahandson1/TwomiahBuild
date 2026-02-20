@@ -44,7 +44,7 @@ export const useJobsStore = create<JobsState>((set) => ({
       const response = await api.get<{ data: any[] }>('/api/v1/jobs?status=active&limit=200');
       const jobs: Job[] = (response.data || []).map((j: any) => ({
         id: j.id,
-        name: j.name,
+        name: j.title,  // backend uses 'title', not 'name'
         number: j.number,
         status: j.status,
         address: j.address,

@@ -564,36 +564,37 @@ export async function exportToPurchaseOrder(sheetId, companyId, { vendorId }) {
     include: { project: true },
   });
 
-  // Create purchase order
-  const po = await prisma.purchaseOrder.create({
-    data: {
-      companyId,
-      projectId: sheet.projectId,
-      vendorId,
-      
-      status: 'draft',
-      notes: `Generated from takeoff: ${sheet.name}`,
-      
-      subtotal: totals.totalCost,
-      total: totals.totalCost,
-    },
-  });
-
-  // Add line items
-  for (const mat of materials) {
-    await prisma.purchaseOrderItem.create({
+  // Wrap in transaction — prevents PO with partial line items if creation fails halfway (Bug #30)
+  const po = await prisma.$transaction(async (tx) => {
+    const purchaseOrder = await tx.purchaseOrder.create({
       data: {
-        purchaseOrderId: po.id,
-        inventoryItemId: mat.inventoryItemId,
-        
-        description: mat.name,
-        quantity: mat.totalQuantity,
-        unit: mat.unit,
-        unitCost: mat.totalCost / mat.totalQuantity,
-        total: mat.totalCost,
+        companyId,
+        projectId: sheet.projectId,
+        vendorId,
+        status: 'draft',
+        notes: `Generated from takeoff: ${sheet.name}`,
+        subtotal: totals.totalCost,
+        total: totals.totalCost,
       },
     });
-  }
+
+    // Add all line items in one createMany call
+    if (materials.length > 0) {
+      await tx.purchaseOrderItem.createMany({
+        data: materials.map(mat => ({
+          purchaseOrderId: purchaseOrder.id,
+          inventoryItemId: mat.inventoryItemId,
+          description: mat.name,
+          quantity: mat.totalQuantity,
+          unit: mat.unit,
+          unitCost: mat.totalCost / mat.totalQuantity,
+          total: mat.totalCost,
+        })),
+      });
+    }
+
+    return purchaseOrder;
+  });
 
   return po;
 }

@@ -193,12 +193,22 @@ export function ipFilter(req, res, next) {
   next();
 }
 
-// SQL injection pattern detection (for logging/alerting)
+// SQL injection pattern detection — only flags clear attack sequences,
+// NOT individual SQL keywords that appear in normal text like job descriptions and notes.
+// e.g. "update the window frame", "select the blue option" are valid business data (Bug #29)
 const sqlPatterns = [
-  /(\%27)|(\')|(--)|(\%23)|(#)/i,
-  /(\%22)|(")/i,
-  /(\%3B)|(;)/i,
-  /(union|select|insert|update|delete|drop|truncate|alter|exec|execute)/i,
+  // String termination + comment attacks: ' -- or ' #
+  /('|%27)\s*(--|#|\/\*)/i,
+  // Stacked queries: ; DROP TABLE or ; DELETE FROM
+  /;\s*(drop|truncate|delete|alter|exec|execute)\s/i,
+  // Boolean injection: 1=1 or OR 1=1
+  /\b(or|and)\s+\d+\s*=\s*\d+/i,
+  // UNION-based: UNION SELECT (must appear together)
+  /\bunion\b.{0,20}\bselect\b/i,
+  // Dangerous stored procedures
+  /\b(xp_cmdshell|sp_executesql|exec\s*\(|execute\s*\()/i,
+  // Hex-encoded payloads
+  /0x[0-9a-f]{4,}/i,
 ];
 
 export function detectSqlInjection(value) {

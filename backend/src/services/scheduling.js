@@ -78,8 +78,12 @@ export async function createTask(companyId, data) {
  * Update task
  */
 export async function updateTask(taskId, companyId, data) {
+  // Verify the task belongs to this company before updating (Bug #23 — cross-tenant security)
+  const existing = await prisma.projectTask.findFirst({ where: { id: taskId, companyId } });
+  if (!existing) throw new Error('Task not found');
+
   const task = await prisma.projectTask.update({
-    where: { id: taskId },
+    where: { id: taskId, companyId },
     data: {
       ...data,
       startDate: data.startDate ? new Date(data.startDate) : undefined,

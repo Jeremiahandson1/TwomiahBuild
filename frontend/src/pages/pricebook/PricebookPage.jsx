@@ -28,8 +28,8 @@ export default function PricebookPage() {
     setLoading(true);
     try {
       const [itemsRes, catsRes] = await Promise.all([
-        api.get(`/pricebook/items?search=${search}&categoryId=${selectedCategory}`),
-        api.get('/pricebook/categories?flat=true'),
+        api.get(`/api/v1/pricebook/items?search=${search}&categoryId=${selectedCategory}`),
+        api.get('/api/v1/pricebook/categories?flat=true'),
       ]);
       setItems(itemsRes.data || []);
       setCategories(catsRes || []);
@@ -42,7 +42,7 @@ export default function PricebookPage() {
 
   const handleDuplicate = async (itemId) => {
     try {
-      await api.post(`/pricebook/items/${itemId}/duplicate`);
+      await api.post(`/api/v1/pricebook/items/${itemId}/duplicate`);
       loadData();
     } catch (error) {
       alert('Failed to duplicate item');
@@ -293,9 +293,9 @@ function ServiceFormModal({ item, categories, onSave, onClose }) {
     setSaving(true);
     try {
       if (item) {
-        await api.put(`/pricebook/items/${item.id}`, form);
+        await api.put(`/api/v1/pricebook/items/${item.id}`, form);
       } else {
-        await api.post('/pricebook/items', form);
+        await api.post('/api/v1/pricebook/items', form);
       }
       onSave();
     } catch (error) {
@@ -475,7 +475,7 @@ function CategoriesModal({ categories, onSave, onClose }) {
     if (!newCategory.trim()) return;
     setSaving(true);
     try {
-      await api.post('/pricebook/categories', { name: newCategory });
+      await api.post('/api/v1/pricebook/categories', { name: newCategory });
       setNewCategory('');
       onSave();
     } catch (error) {
@@ -545,7 +545,7 @@ function GoodBetterBestModal({ item, onSave, onClose }) {
 
   const loadOptions = async () => {
     try {
-      const data = await api.get(`/pricebook/items/${item.id}/options`);
+      const data = await api.get(`/api/v1/pricebook/items/${item.id}/options`);
       if (data.length > 0) {
         setOptions(data.map(o => ({ ...o, features: o.features || [] })));
       }
@@ -563,7 +563,7 @@ function GoodBetterBestModal({ item, onSave, onClose }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.put(`/pricebook/items/${item.id}/options`, { 
+      await api.put(`/api/v1/pricebook/items/${item.id}/options`, { 
         options: options.filter(o => o.name && o.price)
       });
       onSave();

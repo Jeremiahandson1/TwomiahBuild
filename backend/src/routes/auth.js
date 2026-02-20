@@ -135,7 +135,7 @@ router.post('/signup', async (req, res, next) => {
 
     // Send welcome email
     try {
-      await emailService.sendWelcomeEmail(data.email, {
+      await emailService.sendWelcome(data.email, {
         firstName: data.firstName,
         companyName: data.companyName,
         plan: data.plan,
