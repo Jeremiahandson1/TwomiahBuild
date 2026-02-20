@@ -141,3 +141,58 @@ async function initializeSchema(database: SQLite.SQLiteDatabase) {
     );
   `);
 }
+
+// ─── Sync Queue Helpers (no-ops in Expo Go) ───────────────────────────────
+
+export interface SyncQueueItem {
+  id: number;
+  operation: string;
+  entity_type: string;
+  entity_id: string;
+  payload: string;
+  attempts: number;
+}
+
+export async function getPendingSync(): Promise<SyncQueueItem[]> {
+  const database = await getDatabaseSafe();
+  if (!database) return [];
+  return await database.getAllAsync<SyncQueueItem>(
+    `SELECT * FROM sync_queue WHERE attempts < 5 ORDER BY created_at ASC LIMIT 50`
+  );
+}
+
+export async function markSyncComplete(id: number): Promise<void> {
+  const database = await getDatabaseSafe();
+  if (!database) return;
+  await database.runAsync(`DELETE FROM sync_queue WHERE id = ?`, [id]);
+}
+
+export async function markSyncFailed(id: number, error: string): Promise<void> {
+  const database = await getDatabaseSafe();
+  if (!database) return;
+  await database.runAsync(
+    `UPDATE sync_queue SET attempts = attempts + 1, last_error = ? WHERE id = ?`,
+    [error, id]
+  );
+}
+
+export async function resetFailedSync(): Promise<void> {
+  const database = await getDatabaseSafe();
+  if (!database) return;
+  await database.runAsync(`UPDATE sync_queue SET attempts = 0 WHERE attempts >= 5`);
+}
+
+export async function getSyncQueueCount(): Promise<number> {
+  const database = await getDatabaseSafe();
+  if (!database) return 0;
+  const result = await database.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) as count FROM sync_queue`
+  );
+  return result?.count ?? 0;
+}
+
+export async function getSession(): Promise<{ token: string } | null> {
+  // Session is managed by SecureStore in authStore, not DB
+  // This stub satisfies syncEngine's import
+  return null;
+}
