@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Location from 'expo-location';
 import { useAuthStore } from '../src/store/authStore';
 import { startSyncEngine, stopSyncEngine, registerBackgroundSync } from '../src/api/syncEngine';
 import { registerForPushNotifications } from '../src/utils/pushNotifications';
@@ -14,6 +15,8 @@ export default function RootLayout() {
     restoreSession();
     startSyncEngine();
     registerBackgroundSync();
+    // Request location permission early so clock-in GPS works without interruption
+    Location.requestForegroundPermissionsAsync().catch(() => {});
     return () => stopSyncEngine();
   }, []);
 

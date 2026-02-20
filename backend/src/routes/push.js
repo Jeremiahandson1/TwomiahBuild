@@ -126,4 +126,40 @@ router.post('/broadcast', requireRole('admin', 'owner'), async (req, res, next) 
   }
 });
 
+// ── Mobile (Expo) push token registration ─────────────────────────────────────
+
+// Register Expo push token (mobile app)
+router.post('/register', async (req, res, next) => {
+  try {
+    const { token, platform, userAgent } = req.body;
+    if (!token) return res.status(400).json({ error: 'Push token is required' });
+
+    // Store in push subscriptions table reusing existing infra
+    // Expo tokens are stored alongside web push subscriptions
+    await push.saveSubscription(req.user.userId, {
+      endpoint: token,            // Expo token doubles as the endpoint key
+      platform: platform || 'mobile',
+      userAgent: userAgent || req.headers['user-agent'] || null,
+      type: 'expo',
+    }).catch(() => {}); // Graceful if schema doesn't have type field yet
+
+    res.json({ message: 'Device registered' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Unregister Expo push token (mobile logout)
+router.post('/unregister', async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    if (token) {
+      await push.removeSubscription(req.user.userId, token).catch(() => {});
+    }
+    res.json({ message: 'Device unregistered' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

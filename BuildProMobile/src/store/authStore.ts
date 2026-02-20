@@ -5,6 +5,7 @@ import api, { ApiError } from '../api/client';
 import { unregisterFromPushNotifications } from '../utils/pushNotifications';
 
 const TOKEN_KEY = 'buildpro_auth_token';
+const REFRESH_TOKEN_KEY = 'buildpro_refresh_token';
 
 interface User {
   id: string;
@@ -44,6 +45,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // Store JWT in SecureStore (encrypted, not readable on rooted devices)
     await SecureStore.setItemAsync(TOKEN_KEY, response.accessToken);
+    if (response.refreshToken) {
+      await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, response.refreshToken);
+    }
 
     // Store non-sensitive session data in SQLite for offline use
     await saveSession({
@@ -61,6 +65,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     await unregisterFromPushNotifications();
     await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
     await clearSession();
     set({ user: null, token: null, isAuthenticated: false });
   },

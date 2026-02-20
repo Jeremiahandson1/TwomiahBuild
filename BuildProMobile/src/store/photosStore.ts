@@ -35,7 +35,7 @@ export const usePhotosStore = create<PhotosState>((set, get) => ({
     if (status !== 'granted') throw new Error('Camera permission denied');
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       quality: 0.8,
       exif: true,
     });
@@ -49,7 +49,7 @@ export const usePhotosStore = create<PhotosState>((set, get) => ({
     if (status !== 'granted') throw new Error('Photo library permission denied');
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsMultipleSelection: false,
       quality: 0.8,
     });

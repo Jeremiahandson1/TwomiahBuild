@@ -9,6 +9,7 @@
 
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import api from '../api/client';
 
@@ -57,9 +58,8 @@ export async function registerForPushNotifications(): Promise<void> {
 
   try {
     // Get the Expo push token
-    const tokenData = await Notifications.getExpoPushTokenAsync({
-      projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
-    });
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? process.env.EXPO_PUBLIC_PROJECT_ID;
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
 
     // Register token with BuildPro backend
     await api.post('/api/v1/push/register', {
@@ -81,10 +81,9 @@ export async function registerForPushNotifications(): Promise<void> {
  */
 export async function unregisterFromPushNotifications(): Promise<void> {
   try {
-    const tokenData = await Notifications.getExpoPushTokenAsync({
-      projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
-    });
-    await api.delete('/api/v1/push/register', { token: tokenData.data });
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? process.env.EXPO_PUBLIC_PROJECT_ID;
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+    await api.post('/api/v1/push/unregister', { token: tokenData.data });
   } catch {
     // Best effort
   }

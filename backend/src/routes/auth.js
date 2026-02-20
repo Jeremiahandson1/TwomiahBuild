@@ -276,16 +276,18 @@ router.post('/login', async (req, res, next) => {
     setAuthCookies(res, tokens);
     res.json({
       accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken, // included for mobile clients (SecureStore)
       user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, avatar: user.avatar },
       company: { id: user.company.id, name: user.company.name, slug: user.company.slug, logo: user.company.logo, primaryColor: user.company.primaryColor, enabledFeatures: user.company.enabledFeatures },
     });
   } catch (error) { next(error); }
 });
 
-// Refresh token — reads refreshToken from httpOnly cookie
+// Refresh token — reads from httpOnly cookie (web) or request body (mobile)
 router.post('/refresh', async (req, res, next) => {
   try {
-    const refreshToken = req.cookies?.refreshToken;
+    // Web sends via httpOnly cookie, mobile sends in request body
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
     if (!refreshToken) return res.status(401).json({ error: 'Refresh token required' });
 
     let decoded;
@@ -301,7 +303,12 @@ router.post('/refresh', async (req, res, next) => {
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
     setAuthCookies(res, tokens);
-    res.json({ accessToken: tokens.accessToken });
+    // Return accessToken always; also return refreshToken in body for mobile clients
+    // (mobile uses SecureStore, not cookies — both are secure for their platform)
+    res.json({
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    });
   } catch (error) { next(error); }
 });
 

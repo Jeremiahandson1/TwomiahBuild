@@ -41,9 +41,6 @@ export default function HomeScreen() {
             <Text style={styles.greeting}>Good {getGreeting()}</Text>
             <Text style={styles.name}>{user?.name || 'Field Crew'}</Text>
           </View>
-          <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
-            <Text style={styles.logoutText}>Sign Out</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Connection status */}
@@ -125,9 +122,6 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
   greeting: { fontSize: 14, color: '#64748b' },
   name: { fontSize: 24, fontWeight: '800', color: '#1e293b', marginTop: 2 },
-  logoutBtn: { padding: 8 },
-  logoutText: { color: '#ef4444', fontSize: 13, fontWeight: '600' },
-
   statusBar: { borderRadius: 8, padding: 10, marginBottom: 20, flexDirection: 'row', justifyContent: 'space-between' },
   statusOnline: { backgroundColor: '#d1fae5' },
   statusOffline: { backgroundColor: '#fee2e2' },

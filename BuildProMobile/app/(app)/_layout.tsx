@@ -10,6 +10,7 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     time: '⏱️',
     'daily-logs': '📋',
     photos: '📷',
+    profile: '👤',
   };
   return (
     <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.5 }}>
@@ -79,6 +80,13 @@ export default function AppLayout() {
           options={{
             title: 'Photos',
             tabBarIcon: ({ focused }) => <TabIcon name="photos" focused={focused} />,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ focused }) => <TabIcon name="profile" focused={focused} />,
           }}
         />
       </Tabs>
