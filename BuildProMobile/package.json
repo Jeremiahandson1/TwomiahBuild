@@ -19,7 +19,6 @@
     "expo-notifications": "~0.32.0",
     "expo-secure-store": "~15.0.0",
     "expo-sqlite": "~16.0.0",
-    "expo-background-fetch": "~14.0.0",
     "expo-task-manager": "~14.0.0",
     "expo-network": "~8.0.0",
     "expo-file-system": "~19.0.0",
@@ -42,7 +41,8 @@
     "expo-splash-screen": "~0.29.0",
     "react-native-web": "^0.21.0",
     "@expo/metro-runtime": "~6.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "expo-background-task": "~0.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
