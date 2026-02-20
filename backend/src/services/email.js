@@ -470,6 +470,31 @@ const templates = {
     `,
     text: `Low Stock Alert: ${data.itemName}\n\nCurrent stock: ${data.currentQuantity} ${data.unit || 'units'}\nReorder point: ${data.reorderPoint}\n\nPlease reorder soon.`,
   }),
+
+  subscriptionPaymentFailed: (data) => ({
+    subject: `Action Required: Payment Failed for ${data.companyName}`,
+    html: `
+      <!DOCTYPE html><html><head><style>${baseStyles}</style></head>
+      <body><div class="container">
+        <div class="header"><h1 style="margin:0;">BuildPro</h1></div>
+        <div class="content">
+          <h2>⚠️ Payment Failed</h2>
+          <p>Hi ${data.firstName || 'there'},</p>
+          <p>We were unable to process your BuildPro subscription payment.</p>
+          <div class="highlight">
+            <p><strong>Account:</strong> ${data.companyName}</p>
+            ${data.amount ? `<p><strong>Amount:</strong> $${data.amount}</p>` : ''}
+            ${data.nextAttempt ? `<p><strong>Next Retry:</strong> ${data.nextAttempt}</p>` : ''}
+          </div>
+          <p>To keep your account active, please update your payment method or ensure your card has sufficient funds.</p>
+          <p><a href="${data.billingUrl || 'https://app.buildpro.com/settings/billing'}" style="background:#2563eb;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:8px;">Update Payment Method</a></p>
+          <p style="color:#6b7280;font-size:14px;margin-top:16px;">If you need help, reply to this email or contact support.</p>
+        </div>
+        <div class="footer">BuildPro</div>
+      </div></body></html>
+    `,
+    text: `Payment Failed for ${data.companyName}\n\nWe were unable to process your subscription payment. Please update your payment method to keep your account active.\n\nVisit your billing settings: ${data.billingUrl || 'https://app.buildpro.com/settings/billing'}`,
+  }),
 };
 
 // ============================================
@@ -544,6 +569,9 @@ const emailService = {
   sendJobAssigned: (to, data) => send(to, 'jobAssigned', data),
   sendJobStatusChanged: (to, data) => send(to, 'jobStatusChanged', data),
   
+  // Billing
+  sendSubscriptionPaymentFailed: (to, data) => send(to, 'subscriptionPaymentFailed', data),
+
   // Digest
   sendDailyDigest: (to, data) => send(to, 'dailyDigest', data),
 };

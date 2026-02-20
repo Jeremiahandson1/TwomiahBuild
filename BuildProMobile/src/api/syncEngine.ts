@@ -162,7 +162,7 @@ export async function drainSyncQueue() {
 
 // ── Manual trigger (pull-to-sync) ─────────────────────────────────────────────
 
-export async function forcSync() {
+export async function forceSync() {
   await resetFailedSync();
   await drainSyncQueue();
 }

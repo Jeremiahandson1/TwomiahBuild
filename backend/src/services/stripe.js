@@ -275,10 +275,25 @@ async function handleSubscriptionChange(subscription) {
 }
 
 async function handleSubscriptionPaymentFailed(stripeInvoice) {
-  const company = await prisma.company.findFirst({ where: { stripeCustomerId: stripeInvoice.customer } });
+  const company = await prisma.company.findFirst({
+    where: { stripeCustomerId: stripeInvoice.customer },
+    include: { users: { where: { role: 'owner' }, take: 1 } },
+  });
   if (!company) return { handled: false };
   logger.warn('Subscription payment failed', { companyId: company.id, stripeInvoiceId: stripeInvoice.id });
-  // TODO: send dunning email via email service
+
+  const owner = company.users?.[0];
+  if (owner?.email) {
+    await emailService.sendSubscriptionPaymentFailed(owner.email, {
+      firstName: owner.firstName,
+      companyName: company.name,
+      amount: stripeInvoice.amount_due ? (stripeInvoice.amount_due / 100).toFixed(2) : null,
+      nextAttempt: stripeInvoice.next_payment_attempt
+        ? new Date(stripeInvoice.next_payment_attempt * 1000).toLocaleDateString()
+        : null,
+    }).catch(err => logger.error('Failed to send dunning email', { error: err.message }));
+  }
+
   return { handled: true };
 }
 

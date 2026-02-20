@@ -69,13 +69,13 @@ router.post('/generate', async (req, res) => {
       return res.status(400).json({ error: 'Company name is required' });
     }
 
-    logger.info('[Factory] Generating build for "${config.company.name}" — products: ${config.products.join(', ')}');
+    logger.info(`[Factory] Generating build for "${config.company.name}" — products: ${config.products.join(', ')}`);
     const startTime = Date.now();
 
     const result = await generate(config);
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    logger.info('[Factory] Build complete in ${elapsed}s — ${result.zipName}');
+    logger.info(`[Factory] Build complete in ${elapsed}s — ${result.zipName}`);
 
     // Track customer and build in database
     let customer = null;
@@ -174,7 +174,7 @@ router.get('/download/:buildId/:filename', async (req, res) => {
   // Look up build scoped to requesting company — prevents cross-tenant downloads
   
   const build = await prisma.factoryBuild.findFirst({
-    where: { id: buildId, companyId: req.user.companyId },
+    where: { buildId: buildId, companyId: req.user.companyId },
   });
 
   if (!build || !build.zipPath) {
@@ -790,16 +790,15 @@ router.post('/customers/:id/deploy', async (req, res) => {
       if (result.siteUrl) updateData.siteUrl = result.siteUrl;
       if (result.repoUrl) updateData.notes = `${customer.notes || ''}\nGitHub: ${result.repoUrl}`.trim();
 
-      // Store Render service IDs for status tracking
-      if (result.services) {
-        const serviceIds = {};
-        if (result.services.backend?.id) serviceIds.backend = result.services.backend.id;
-        if (result.services.frontend?.id) serviceIds.frontend = result.services.frontend.id;
-        if (result.services.site?.id) serviceIds.site = result.services.site.id;
-        if (result.services.database?.id) serviceIds.database = result.services.database.id;
-        // Store as JSON string since we don't have a dedicated field
-        updateData.buildId = JSON.stringify(serviceIds);
-      }
+        // Store Render service IDs for status tracking
+        if (result.services) {
+          const serviceIds = {};
+          if (result.services.backend?.id) serviceIds.backend = result.services.backend.id;
+          if (result.services.frontend?.id) serviceIds.frontend = result.services.frontend.id;
+          if (result.services.site?.id) serviceIds.site = result.services.site.id;
+          if (result.services.database?.id) serviceIds.database = result.services.database.id;
+          updateData.renderServiceIds = JSON.stringify(serviceIds);
+        }
 
       await prisma.factoryCustomer.update({
         where: { id: customer.id },
@@ -838,13 +837,13 @@ router.get('/customers/:id/deploy/status', async (req, res) => {
 
     if (!customer) return res.status(404).json({ error: 'Customer not found' });
 
-    // Parse service IDs from buildId field (we store them as JSON)
+    // Parse service IDs from renderServiceIds field
     let renderServiceIds = null;
     try {
-      if (customer.buildId) {
-        renderServiceIds = JSON.parse(customer.buildId);
+      if (customer.renderServiceIds) {
+        renderServiceIds = JSON.parse(customer.renderServiceIds);
       }
-    } catch (e) { /* not JSON, that's fine */ }
+    } catch (e) { /* malformed JSON */ }
 
     if (!renderServiceIds) {
       return res.json({ status: 'not_deployed', services: {} });
@@ -878,7 +877,7 @@ router.post('/customers/:id/redeploy', async (req, res) => {
 
     let renderServiceIds = null;
     try {
-      if (customer.buildId) renderServiceIds = JSON.parse(customer.buildId);
+      if (customer.renderServiceIds) renderServiceIds = JSON.parse(customer.renderServiceIds);
     } catch (e) { /* */ }
 
     if (!renderServiceIds) {

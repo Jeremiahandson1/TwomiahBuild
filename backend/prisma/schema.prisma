@@ -2260,10 +2260,11 @@ model FactoryCustomer {
   stripeSubscriptionId String?
 
   // Metadata
-  notes     String?
-  buildId   String?  // References the generated zip build ID
-  adminEmail    String?
-  adminPassword String? // Stored temporarily, cleared after first login
+  notes            String?
+  buildId          String?  // References the generated zip build ID
+  renderServiceIds String?  // JSON: Render service IDs after deploy (backend, frontend, site, database)
+  adminEmail       String?
+  adminPassword    String? // Stored temporarily, cleared after first login
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
