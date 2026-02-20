@@ -348,6 +348,7 @@ export async function approveSelection(selectionId, companyId, { approvedBy, cre
 
     return { selection: { ...selection, status: 'approved' }, changeOrder };
   });
+}
 
 /**
  * Mark selection as ordered
