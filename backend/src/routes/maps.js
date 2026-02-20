@@ -72,7 +72,11 @@ router.get('/jobs', requirePermission('jobs:read'), async (req, res, next) => {
     
     const jobs = await prisma.job.findMany({
       where,
-      take: 1000, // Cap map pins — paginate or use bounding box for larger datasets (Bug #32)
+      take: 1000, // Cap map pins — paginate or use bounding box for larger datasets
+      select: {
+        id: true,
+        number: true,
+        title: true,
         status: true,
         priority: true,
         scheduledDate: true,

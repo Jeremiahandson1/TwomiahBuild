@@ -7,14 +7,15 @@
     "start": "node src/index.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
-    "db:generate": "prisma generate",
+    "db:generate": "prisma generate && node --input-type=commonjs -e \"require('fs').writeFileSync('node_modules/.prisma/client/package.json', JSON.stringify({type:'commonjs'}))\"",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.js",
     "db:reset": "prisma db push --force-reset && npm run db:seed",
     "test:integration": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=integration --runInBand --forceExit",
     "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathIgnorePatterns=integration",
-    "postinstall": "node --input-type=commonjs -e \"require('fs').writeFileSync('node_modules/.prisma/client/package.json', JSON.stringify({type:'commonjs'}))\""
+    "postinstall": "node --input-type=commonjs -e \"require('fs').writeFileSync('node_modules/.prisma/client/package.json', JSON.stringify({type:'commonjs'}))\"",
+    "prisma:fix": "node --input-type=commonjs -e \"require('fs').writeFileSync('node_modules/.prisma/client/package.json', JSON.stringify({type:'commonjs'}))\""
   },
   "prisma": {
     "seed": "node prisma/seed.js"
