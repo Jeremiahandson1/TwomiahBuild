@@ -91,3 +91,6 @@ export async function unregisterPushNotifications(): Promise<void> {
     console.warn('[Push] Unregister failed (non-fatal):', err.message);
   }
 }
+
+// Alias for backward compatibility
+export const unregisterFromPushNotifications = unregisterPushNotifications;

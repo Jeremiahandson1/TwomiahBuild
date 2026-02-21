@@ -30,7 +30,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   }
 
   try {
-    db = await SQLite.openDatabaseAsync('buildpro_v2.db');
+    db = await SQLite.openDatabaseAsync('buildpro_v3.db');
     await initializeSchema(db);
   } catch (err: any) {
     dbUnavailable = true;
@@ -93,13 +93,16 @@ async function initializeSchema(database: SQLite.SQLiteDatabase) {
     CREATE TABLE IF NOT EXISTS time_entries (
       id          TEXT PRIMARY KEY,
       server_id   TEXT,
-      job_id      TEXT NOT NULL,
-      user_id     TEXT NOT NULL,
+      job_id      TEXT,
+      user_id     TEXT NOT NULL DEFAULT 'local',
       clock_in    TEXT NOT NULL,
       clock_out   TEXT,
+      duration    INTEGER,
       latitude    REAL,
       longitude   REAL,
       notes       TEXT,
+      status      TEXT NOT NULL DEFAULT 'active',
+      synced      INTEGER NOT NULL DEFAULT 0,
       synced_at   TEXT,
       updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
     );
