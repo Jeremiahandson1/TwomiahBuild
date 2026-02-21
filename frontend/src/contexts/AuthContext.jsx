@@ -13,7 +13,11 @@ export function AuthProvider({ children }) {
     // Try refreshing first (httpOnly cookie sent automatically),
     // then call getMe with the new accessToken in memory.
     try {
-      await api.refreshAccessToken();
+      const refreshed = await api.refreshAccessToken();
+      if (!refreshed) {
+        // No valid session — stay on login page
+        return;
+      }
       const data = await api.getMe();
       setUser(data.user);
       setCompany(data.company);

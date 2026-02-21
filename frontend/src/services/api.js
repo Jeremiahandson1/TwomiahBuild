@@ -39,7 +39,10 @@ class ApiClient {
           return fetch(url, { ...options, headers, credentials: 'include' }).then(r => this.handleResponse(r));
         } else {
           this.clearTokens();
-          window.location.href = '/login';
+          // Only redirect if not already on an auth page
+          if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+            window.location.href = '/login';
+          }
           throw new Error('Session expired');
         }
       }
