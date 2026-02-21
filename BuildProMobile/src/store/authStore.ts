@@ -32,20 +32,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
 
   login: async (email, password) => {
-    const API_URL = process.env.EXPO_PUBLIC_API_URL || 'NOT_SET';
-    console.log('[Login] API URL:', API_URL);
-    console.log('[Login] Attempting login for:', email);
-    let response;
-    try {
-      response = await api.postDirect<{ accessToken: string; refreshToken: string; user: User }>(
-        '/api/v1/auth/login',
-        { email, password }
-      );
-      console.log('[Login] Success:', !!response);
-    } catch (err: any) {
-      console.log('[Login] Error:', err.message, 'Status:', err.statusCode);
-      throw err;
-    }
+    const response = await api.postDirect<{ accessToken: string; refreshToken: string; user: User }>(
+      '/api/v1/auth/login',
+      { email, password }
+    );
 
     // Validate token before storing — prevents "undefined" string being saved (Bug #18)
     if (!response.accessToken || typeof response.accessToken !== 'string') {
