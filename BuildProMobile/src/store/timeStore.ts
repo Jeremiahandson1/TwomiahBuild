@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getDatabaseSafe as getDatabase, enqueueSync } from '../utils/database';
+import { getDatabaseSafe, enqueueSync } from '../utils/database';
 import api from '../api/client';
 import * as Location from 'expo-location';
 import { v4 as uuid } from 'uuid';

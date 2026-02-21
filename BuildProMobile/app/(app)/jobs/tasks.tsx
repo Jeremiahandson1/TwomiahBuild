@@ -4,7 +4,7 @@ import {
   StyleSheet, SafeAreaView, Modal, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { getDatabase, enqueueSync } from '../../../src/utils/database';
+import { getDatabaseSafe, enqueueSync } from '../../../src/utils/database';
 import { v4 as uuid } from 'uuid';
 
 interface Task {
@@ -27,7 +27,8 @@ export default function TasksScreen() {
   useEffect(() => { loadTasks(); }, []);
 
   const loadTasks = async () => {
-    const db = await getDatabase();
+    const db = await getDatabaseSafe();
+    if (!db) return;
     const rows = await db.getAllAsync<Task>(
       `SELECT id, server_id as serverId, title, description, status, synced
        FROM tasks WHERE job_id = ? ORDER BY updated_at DESC`,
@@ -38,7 +39,8 @@ export default function TasksScreen() {
 
   const toggleStatus = async (task: Task) => {
     const next = task.status === 'completed' ? 'pending' : 'completed';
-    const db = await getDatabase();
+    const db = await getDatabaseSafe();
+    if (!db) return;
     const now = new Date().toISOString();
     await db.runAsync(
       `UPDATE tasks SET status = ?, completed_at = ?, updated_at = ?, synced = 0 WHERE id = ?`,
@@ -60,7 +62,8 @@ export default function TasksScreen() {
     }
     setSaving(true);
     try {
-      const db = await getDatabase();
+      const db = await getDatabaseSafe();
+      if (!db) return;
       const id = uuid();
       const now = new Date().toISOString();
 

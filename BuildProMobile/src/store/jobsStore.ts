@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getDatabaseSafe as getDatabase } from '../utils/database';
+import { getDatabaseSafe } from '../utils/database';
 import api from '../api/client';
 
 export interface Job {
