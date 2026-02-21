@@ -105,17 +105,25 @@ class ApiClient {
 
   // Direct POST — always hits network, no offline check (use for auth)
   async postDirect<T>(endpoint: string, body: object): Promise<T> {
+    const url = `${API_BASE}${endpoint}`;
+    console.log('[API] postDirect URL:', url);
     const headers = await this.getAuthHeaders();
-    const response = await this.fetchWithRefresh(`${API_BASE}${endpoint}`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Request failed' }));
-      throw new ApiError(response.status, error.error || 'Request failed');
+    try {
+      const response = await this.fetchWithRefresh(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+      console.log('[API] postDirect status:', response.status);
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Request failed' }));
+        throw new ApiError(response.status, error.error || 'Request failed');
+      }
+      return response.json();
+    } catch (err: any) {
+      console.log('[API] postDirect threw:', err.message);
+      throw err;
     }
-    return response.json();
   }
 
   async post<T>(endpoint: string, body: object, options?: { offlineQueue?: boolean; localId?: string; entityType?: string }): Promise<T | null> {
