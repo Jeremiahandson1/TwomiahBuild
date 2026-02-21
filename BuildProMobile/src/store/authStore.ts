@@ -32,11 +32,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
 
   login: async (email, password) => {
-    const response = await api.post<{ accessToken: string; refreshToken: string; user: User }>(
+    const response = await api.postDirect<{ accessToken: string; refreshToken: string; user: User }>(
       '/api/v1/auth/login',
       { email, password }
     );
-    if (!response) throw new Error('Login failed');
 
     // Validate token before storing — prevents "undefined" string being saved (Bug #18)
     if (!response.accessToken || typeof response.accessToken !== 'string') {
