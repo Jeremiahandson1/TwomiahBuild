@@ -51,11 +51,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // Store non-sensitive session data in SQLite for offline use
     await saveSession({
       userId: response.user.id,
-      companyId: response.user.companyId,
-      name: response.user.name,
-      email: response.user.email,
-      role: response.user.role,
-      token: '', // token no longer stored in SQLite
+      companyId: response.user.companyId || '',
+      name: response.user.name || '',
+      email: response.user.email || '',
+      role: response.user.role || 'field_crew',
     });
 
     set({ user: response.user, token: response.accessToken, isAuthenticated: true });

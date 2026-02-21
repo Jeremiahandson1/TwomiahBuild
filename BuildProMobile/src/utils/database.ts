@@ -232,11 +232,11 @@ export async function saveSession(data: SessionData): Promise<void> {
     )`
   );
   const entries = [
-    ['user_id', data.userId],
-    ['company_id', data.companyId],
-    ['name', data.name],
-    ['email', data.email],
-    ['role', data.role],
+    ['user_id', data.userId || ''],
+    ['company_id', data.companyId || ''],
+    ['name', data.name || ''],
+    ['email', data.email || ''],
+    ['role', data.role || ''],
   ];
   for (const [key, value] of entries) {
     await database.runAsync(
