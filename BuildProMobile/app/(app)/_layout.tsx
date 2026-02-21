@@ -44,14 +44,14 @@ export default function AppLayout() {
           name="jobs/index"
           options={{
             title: 'Jobs',
-            tabBarIcon: ({ color, size }) => <Ionicons name="construct" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="briefcase" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
           name="time/index"
           options={{
             title: 'Time',
-            tabBarIcon: ({ color, size }) => <Ionicons name="time" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="clock" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
