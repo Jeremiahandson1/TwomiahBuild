@@ -81,13 +81,17 @@ async function initializeSchema(database: SQLite.SQLiteDatabase) {
     );
 
     CREATE TABLE IF NOT EXISTS jobs (
-      id          TEXT PRIMARY KEY,
-      server_id   TEXT,
-      name        TEXT NOT NULL,
-      address     TEXT,
-      status      TEXT NOT NULL DEFAULT 'active',
-      synced_at   TEXT,
-      updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+      id           TEXT PRIMARY KEY,
+      server_id    TEXT,
+      name         TEXT NOT NULL,
+      number       TEXT,
+      address      TEXT,
+      contact_name TEXT,
+      start_date   TEXT,
+      description  TEXT,
+      status       TEXT NOT NULL DEFAULT 'active',
+      synced_at    TEXT,
+      updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS time_entries (
