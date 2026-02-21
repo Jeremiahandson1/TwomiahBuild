@@ -41,28 +41,28 @@ export default function AppLayout() {
           }}
         />
         <Tabs.Screen
-          name="jobs"
+          name="jobs/index"
           options={{
             title: 'Jobs',
             tabBarIcon: ({ color, size }) => <Ionicons name="hammer" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="time"
+          name="time/index"
           options={{
             title: 'Time',
             tabBarIcon: ({ color, size }) => <Ionicons name="timer" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="daily-logs"
+          name="daily-logs/index"
           options={{
             title: 'Logs',
             tabBarIcon: ({ color, size }) => <Ionicons name="clipboard" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="photos"
+          name="photos/index"
           options={{
             title: 'Photos',
             tabBarIcon: ({ color, size }) => <Ionicons name="camera" size={size} color={color} />,
