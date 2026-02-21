@@ -44,21 +44,21 @@ export default function AppLayout() {
           name="jobs/index"
           options={{
             title: 'Jobs',
-            tabBarIcon: ({ color, size }) => <Ionicons name="hammer" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="construct" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
           name="time/index"
           options={{
             title: 'Time',
-            tabBarIcon: ({ color, size }) => <Ionicons name="timer" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="time" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
           name="daily-logs/index"
           options={{
             title: 'Logs',
-            tabBarIcon: ({ color, size }) => <Ionicons name="clipboard" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
