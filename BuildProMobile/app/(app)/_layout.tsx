@@ -1,23 +1,8 @@
 import { Tabs, Redirect } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import { useSyncStore } from '../../src/store/syncStore';
-
-function TabIcon({ name, focused }: { name: string; focused: boolean }) {
-  const icons: Record<string, string> = {
-    index: '🏠',
-    jobs: '🔨',
-    time: '⏱️',
-    'daily-logs': '📋',
-    photos: '📷',
-    profile: '👤',
-  };
-  return (
-    <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.5 }}>
-      {icons[name] || '•'}
-    </Text>
-  );
-}
 
 export default function AppLayout() {
   const { isAuthenticated, isLoading } = useAuthStore();
@@ -29,11 +14,12 @@ export default function AppLayout() {
 
   return (
     <>
-      {/* Offline sync banner */}
       {pendingCount > 0 && (
         <View style={styles.syncBanner}>
           <Text style={styles.syncText}>
-            {isSyncing ? `Syncing ${pendingCount} item${pendingCount !== 1 ? 's' : ''}...` : `${pendingCount} item${pendingCount !== 1 ? 's' : ''} pending sync`}
+            {isSyncing
+              ? `Syncing ${pendingCount} item${pendingCount !== 1 ? 's' : ''}...`
+              : `${pendingCount} item${pendingCount !== 1 ? 's' : ''} pending sync`}
           </Text>
         </View>
       )}
@@ -51,42 +37,42 @@ export default function AppLayout() {
           name="index"
           options={{
             title: 'Home',
-            tabBarIcon: ({ focused }) => <TabIcon name="index" focused={focused} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
           name="jobs"
           options={{
             title: 'Jobs',
-            tabBarIcon: ({ focused }) => <TabIcon name="jobs" focused={focused} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="hammer" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
           name="time"
           options={{
             title: 'Time',
-            tabBarIcon: ({ focused }) => <TabIcon name="time" focused={focused} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="timer" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
           name="daily-logs"
           options={{
             title: 'Logs',
-            tabBarIcon: ({ focused }) => <TabIcon name="daily-logs" focused={focused} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="clipboard" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
           name="photos"
           options={{
             title: 'Photos',
-            tabBarIcon: ({ focused }) => <TabIcon name="photos" focused={focused} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="camera" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ focused }) => <TabIcon name="profile" focused={focused} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
           }}
         />
       </Tabs>
