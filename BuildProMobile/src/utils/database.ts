@@ -30,7 +30,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   }
 
   try {
-    db = await SQLite.openDatabaseAsync('buildpro_v3.db');
+    db = await SQLite.openDatabaseAsync('buildpro_v4.db');
     await initializeSchema(db);
   } catch (err: any) {
     dbUnavailable = true;
@@ -112,28 +112,36 @@ async function initializeSchema(database: SQLite.SQLiteDatabase) {
     );
 
     CREATE TABLE IF NOT EXISTS daily_logs (
-      id            TEXT PRIMARY KEY,
-      server_id     TEXT,
-      job_id        TEXT NOT NULL,
-      log_date      TEXT NOT NULL,
-      weather       TEXT,
-      temperature   INTEGER,
-      workers_count INTEGER,
-      work_performed TEXT,
-      delays        TEXT,
-      notes         TEXT,
-      synced_at     TEXT,
-      updated_at    TEXT NOT NULL DEFAULT (datetime('now'))
+      id              TEXT PRIMARY KEY,
+      server_id       TEXT,
+      job_id          TEXT NOT NULL,
+      user_id         TEXT NOT NULL DEFAULT 'local',
+      log_date        TEXT NOT NULL,
+      weather         TEXT,
+      temperature     TEXT,
+      workers_on_site INTEGER DEFAULT 0,
+      work_performed  TEXT,
+      delays          TEXT,
+      notes           TEXT,
+      synced          INTEGER NOT NULL DEFAULT 0,
+      synced_at       TEXT,
+      updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS photos (
-      id          TEXT PRIMARY KEY,
-      server_id   TEXT,
-      job_id      TEXT NOT NULL,
-      uri         TEXT NOT NULL,
-      caption     TEXT,
-      synced_at   TEXT,
-      updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+      id              TEXT PRIMARY KEY,
+      server_id       TEXT,
+      job_id          TEXT NOT NULL,
+      user_id         TEXT NOT NULL DEFAULT 'local',
+      local_uri       TEXT NOT NULL DEFAULT '',
+      caption         TEXT,
+      upload_progress INTEGER NOT NULL DEFAULT 0,
+      synced          INTEGER NOT NULL DEFAULT 0,
+      latitude        REAL,
+      longitude       REAL,
+      taken_at        TEXT NOT NULL DEFAULT (datetime('now')),
+      synced_at       TEXT,
+      updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS tasks (
