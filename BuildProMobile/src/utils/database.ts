@@ -191,8 +191,56 @@ export async function getSyncQueueCount(): Promise<number> {
   return result?.count ?? 0;
 }
 
-export async function getSession(): Promise<{ token: string } | null> {
-  // Session is managed by SecureStore in authStore, not DB
-  // This stub satisfies syncEngine's import
-  return null;
+export async function getSession(): Promise<Record<string, string> | null> {
+  const database = await getDatabaseSafe();
+  if (!database) return null;
+  try {
+    const rows = await database.getAllAsync<{ key: string; value: string }>(
+      `SELECT key, value FROM session`
+    );
+    if (!rows.length) return null;
+    return Object.fromEntries(rows.map(r => [r.key, r.value]));
+  } catch {
+    return null;
+  }
+}
+
+// ─── Session Helpers ───────────────────────────────────────────────────────
+
+export interface SessionData {
+  userId: string;
+  companyId: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export async function saveSession(data: SessionData): Promise<void> {
+  const database = await getDatabaseSafe();
+  if (!database) return; // no-op in Expo Go
+  await database.runAsync(
+    `CREATE TABLE IF NOT EXISTS session (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )`
+  );
+  const entries = [
+    ['user_id', data.userId],
+    ['company_id', data.companyId],
+    ['name', data.name],
+    ['email', data.email],
+    ['role', data.role],
+  ];
+  for (const [key, value] of entries) {
+    await database.runAsync(
+      `INSERT OR REPLACE INTO session (key, value) VALUES (?, ?)`,
+      [key, value]
+    );
+  }
+}
+
+export async function clearSession(): Promise<void> {
+  const database = await getDatabaseSafe();
+  if (!database) return;
+  await database.runAsync(`DELETE FROM session`).catch(() => {});
 }
