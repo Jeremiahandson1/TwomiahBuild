@@ -4,12 +4,22 @@ import {
   StyleSheet, SafeAreaView, Alert,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useTimeStore } from '../../../src/store/timeStore';
+
+type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+interface Action {
+  icon: IoniconName;
+  label: string;
+  color: string;
+  onPress: () => void;
+}
 
 export default function JobDetailScreen() {
   const { id, name } = useLocalSearchParams<{ id: string; name: string }>();
   const { activeEntry, clockIn, clockOut } = useTimeStore();
-  const [clocingIn, setClockingIn] = useState(false);
+  const [clockingIn, setClockingIn] = useState(false);
 
   const isClockedInHere = activeEntry?.jobId === id;
 
@@ -26,27 +36,27 @@ export default function JobDetailScreen() {
     }
   };
 
-  const actions = [
+  const actions: Action[] = [
     {
-      icon: '⏱️',
+      icon: isClockedInHere ? 'stop-circle' : 'play-circle',
       label: isClockedInHere ? 'Clock Out' : 'Clock In',
       color: isClockedInHere ? '#ef4444' : '#10b981',
       onPress: isClockedInHere ? () => clockOut() : handleClockIn,
     },
     {
-      icon: '📋',
+      icon: 'newspaper',
       label: 'Daily Log',
       color: '#f59e0b',
-      onPress: () => router.push({ pathname: '/(app)/daily-logs/new', params: { jobId: id, jobName: name } } as any),
+      onPress: () => router.push({ pathname: '/(app)/daily-logs/index', params: { jobId: id, jobName: name } } as any),
     },
     {
-      icon: '📷',
+      icon: 'camera',
       label: 'Photos',
       color: '#8b5cf6',
-      onPress: () => router.push({ pathname: '/(app)/photos', params: { jobId: id } } as any),
+      onPress: () => router.push({ pathname: '/(app)/photos/index', params: { jobId: id } } as any),
     },
     {
-      icon: '✅',
+      icon: 'checkmark-circle',
       label: 'Tasks',
       color: '#2563eb',
       onPress: () => router.push({ pathname: '/(app)/jobs/tasks', params: { jobId: id, jobName: name } } as any),
@@ -56,21 +66,18 @@ export default function JobDetailScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.container}>
-        {/* Back */}
         <TouchableOpacity onPress={() => router.back()} style={styles.back}>
           <Text style={styles.backText}>← Jobs</Text>
         </TouchableOpacity>
 
-        {/* Job header */}
         <Text style={styles.title}>{name}</Text>
 
         {isClockedInHere && (
           <View style={styles.activeClockBadge}>
-            <Text style={styles.activeClockText}>⏱️ You're clocked in on this job</Text>
+            <Text style={styles.activeClockText}>⏱ You're clocked in on this job</Text>
           </View>
         )}
 
-        {/* Action grid */}
         <Text style={styles.sectionTitle}>Field Actions</Text>
         <View style={styles.actions}>
           {actions.map((action) => (
@@ -80,7 +87,7 @@ export default function JobDetailScreen() {
               onPress={action.onPress}
               activeOpacity={0.8}
             >
-              <Text style={styles.actionIcon}>{action.icon}</Text>
+              <Ionicons name={action.icon} size={36} color={action.color} style={{ marginBottom: 8 }} />
               <Text style={styles.actionLabel}>{action.label}</Text>
             </TouchableOpacity>
           ))}
@@ -105,6 +112,5 @@ const styles = StyleSheet.create({
     borderTopWidth: 4, alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 3,
   },
-  actionIcon: { fontSize: 32, marginBottom: 8 },
   actionLabel: { fontSize: 14, fontWeight: '700', color: '#1e293b' },
 });
