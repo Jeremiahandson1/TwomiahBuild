@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { prisma } from './config/prisma.js';
+import { authenticate } from './middleware/auth.js';
 
 // Services
 import logger from './services/logger.js';
@@ -171,9 +172,9 @@ app.use('/api/v1/auth/register', authLimiter);
 app.use('/api/v1/auth/forgot-password', authLimiter);
 app.use('/api/v1/auth/signup', authLimiter);
 
-// Static files (uploads)
+// Static files (uploads) — auth-gated so document paths aren't publicly guessable
 const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
-app.use('/uploads', express.static(uploadsDir));
+app.use('/uploads', authenticate, express.static(uploadsDir));
 
 // Make prisma available to routes
 app.use((req, res, next) => {

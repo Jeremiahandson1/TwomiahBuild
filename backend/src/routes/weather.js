@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import weather from '../services/weather.js';
+import { prisma } from '../config/prisma.js';
 
 const router = Router();
 router.use(authenticate);
@@ -89,6 +90,14 @@ router.get('/forecast', async (req, res, next) => {
 // Get weather for a job
 router.get('/job/:jobId', async (req, res, next) => {
   try {
+    // Verify the job belongs to the requesting user's company
+    const job = await prisma.job.findUnique({
+      where: { id: req.params.jobId },
+      select: { companyId: true },
+    });
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+    if (job.companyId !== req.user.companyId) return res.status(403).json({ error: 'Forbidden' });
+
     const data = await weather.getWeatherForJob(req.params.jobId);
     
     if (!data) {
@@ -104,6 +113,14 @@ router.get('/job/:jobId', async (req, res, next) => {
 // Get weather for a project
 router.get('/project/:projectId', async (req, res, next) => {
   try {
+    // Verify the project belongs to the requesting user's company
+    const project = await prisma.project.findUnique({
+      where: { id: req.params.projectId },
+      select: { companyId: true },
+    });
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (project.companyId !== req.user.companyId) return res.status(403).json({ error: 'Forbidden' });
+
     const data = await weather.getWeatherForProject(req.params.projectId);
     
     if (!data) {

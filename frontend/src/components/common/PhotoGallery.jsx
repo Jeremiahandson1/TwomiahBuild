@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Camera, Upload, X, ZoomIn, Trash2, Edit2, ChevronLeft, ChevronRight, Loader2, Image } from 'lucide-react';
 import api from '../../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { API_URL } from '../../config/api.js';
 
 const CATEGORIES = [
   { value: 'before', label: 'Before', color: 'bg-blue-100 text-blue-700' },

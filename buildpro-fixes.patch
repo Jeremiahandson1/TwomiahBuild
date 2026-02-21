@@ -1,614 +1,1379 @@
-From 84a3d49c22799af9e4abd28f0039c90203bb1a1e Mon Sep 17 00:00:00 2001
-From: BuildPro Fix <buildpro@fix.local>
-Date: Wed, 18 Feb 2026 13:46:28 +0000
-Subject: [PATCH] fix: resolve all 7 production gaps
+From 8960bc48f37e9cebbf7c20317eec11f6f6e7aa5b Mon Sep 17 00:00:00 2001
+From: Jeremiah <jeremiah@buildpro.com>
+Date: Sat, 21 Feb 2026 18:01:38 +0000
+Subject: [PATCH] =?UTF-8?q?fix:=20resolve=208=20bugs=20=E2=80=94=20email?=
+ =?UTF-8?q?=20case,=20uploads=20auth,=20weather=20ownership,=20generator?=
+ =?UTF-8?q?=20dedup,=20stray=20migration,=20hardcoded=20API=20URLs,=20.env?=
+ =?UTF-8?q?.example,=20PWA=20wiring?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-- QB sync: wire route to actual syncAllCustomers/syncAllInvoices service methods
-- Booking: send confirmation email after booking creation via bookingConfirmation template
-- Stripe: send payment confirmation email on successful payment webhook
-- Wisetack: send approval notification email on application.approved webhook
-- Inventory: send lowStock email alert when stock drops to/below reorder point
-- Draw schedules: calculate netChangeByChangeOrders from real approved COs; read materialsStored from DrawLineItem
-- Job costing/Reports tabs: replace stub UI with live API calls (JobCostingTab + ReportsTab components)
-- CI: rename workflow from 'ci (5).yml' to ci.yml
-- Agreements: implement Stripe subscription cancellation on agreement cancel
-- Email: add bookingConfirmation and lowStock templates
+BUG FIXES:
+- auth: toLowerCase().trim() on email in signup, register, login, forgot-password
+- security: protect /uploads static route with authenticate middleware
+- security: weather /job/:id and /project/:id now verify company ownership before fetching
+- generator: replace diverged services/generator.js with re-export of factory/generator.js
+- prisma: remove stray 'migrations20260220...' folder (missing slash)
+- frontend: create src/config/api.js as single source of truth for API_BASE_URL
+  - update 16 files to import from shared config
+  - fix 3 files pointing at wrong port (3000 instead of 3001)
+- .env.example: add UPLOAD_DIR, add Stripe price ID placeholders for all plans/cycles
+- PWA: add PWAProvider wrapper in App.jsx + manifest/apple-touch-icon links in index.html
+
+STILL NEEDS MANUAL ACTION (external credentials):
+- SENDGRID_API_KEY, TWILIO_*, FIELD_ENCRYPTION_KEY, STRIPE_PRICE_*, QUICKBOOKS_*
 ---
- .github/workflows/{ci (5).yml => ci.yml}      |   0
- backend/src/routes/integrations.js            |  29 +++-
- backend/src/services/agreements.js            |  20 ++-
- backend/src/services/booking.js               |  27 ++-
- backend/src/services/drawSchedules.js         |  22 ++-
- backend/src/services/email.js                 |  51 ++++++
- backend/src/services/inventory.js             |  22 ++-
- backend/src/services/stripe.js                |  20 ++-
- backend/src/services/wisetack.js              |  19 ++-
- .../components/features/PlaceholderPages.jsx  | 158 +++++++++++++++++-
- frontend/src/services/api.js                  |  15 ++
- 11 files changed, 363 insertions(+), 20 deletions(-)
- rename .github/workflows/{ci (5).yml => ci.yml} (100%)
+ backend/.env.example                          |  13 +
+ .../migration.sql                             |  16 -
+ backend/src/index.js                          |   5 +-
+ backend/src/routes/auth.js                    |   6 +-
+ backend/src/routes/weather.js                 |  17 +
+ backend/src/services/generator.js             | 877 +-----------------
+ frontend/index.html                           |   7 +-
+ frontend/src/App.jsx                          |   3 +
+ .../src/components/builder/FactoryWizard.jsx  |   2 +-
+ .../src/components/common/ExportButton.jsx    |   2 +-
+ .../src/components/common/PhotoGallery.jsx    |   2 +-
+ .../src/components/portal/PortalInvoices.jsx  |   2 +-
+ frontend/src/config/api.js                    |  11 +
+ frontend/src/contexts/PortalContext.jsx       |   2 +-
+ frontend/src/contexts/SocketContext.jsx       |   2 +-
+ frontend/src/pages/BuildsPage.jsx             |   2 +-
+ frontend/src/pages/CustomerDetailPage.jsx     |   2 +-
+ frontend/src/pages/CustomersPage.jsx          |   2 +-
+ frontend/src/pages/OperatorDashboard.jsx      |   2 +-
+ frontend/src/pages/SettingsPage.jsx           |   2 +-
+ .../pages/public/SelfHostedPurchasePage.jsx   |   2 +-
+ frontend/src/pages/public/SignupPage.jsx      |   2 +-
+ .../src/pages/public/SignupSuccessPage.jsx    |   2 +-
+ .../pages/settings/BillingSettingsPage.jsx    |   2 +-
+ .../src/pages/settings/IntegrationsPage.jsx   |   2 +-
+ frontend/src/services/api.js                  |   3 +-
+ 26 files changed, 78 insertions(+), 912 deletions(-)
+ delete mode 100644 backend/prisma/migrations/migrations20260220000001_add_portal_approval_fields/migration.sql
+ create mode 100644 frontend/src/config/api.js
 
-diff --git a/.github/workflows/ci (5).yml b/.github/workflows/ci.yml
-similarity index 100%
-rename from .github/workflows/ci (5).yml
-rename to .github/workflows/ci.yml
-diff --git a/backend/src/routes/integrations.js b/backend/src/routes/integrations.js
-index 9c5aeb7..99178f2 100644
---- a/backend/src/routes/integrations.js
-+++ b/backend/src/routes/integrations.js
-@@ -12,6 +12,7 @@ import { Router } from 'express';
+diff --git a/backend/.env.example b/backend/.env.example
+index 01b5632..5cda101 100644
+--- a/backend/.env.example
++++ b/backend/.env.example
+@@ -27,8 +27,21 @@ FROM_EMAIL=noreply@yourdomain.com
+ STRIPE_SECRET_KEY=sk_test_...
+ STRIPE_WEBHOOK_SECRET=whsec_...
+ 
++# Stripe Price IDs — get these from your Stripe dashboard (Products → Prices → copy the price_... ID)
++# Monthly prices
++STRIPE_PRICE_STARTER_MONTHLY=price_...
++STRIPE_PRICE_PRO_MONTHLY=price_...
++STRIPE_PRICE_BUSINESS_MONTHLY=price_...
++STRIPE_PRICE_ENTERPRISE_MONTHLY=price_...
++# Annual prices
++STRIPE_PRICE_STARTER_ANNUAL=price_...
++STRIPE_PRICE_PRO_ANNUAL=price_...
++STRIPE_PRICE_BUSINESS_ANNUAL=price_...
++STRIPE_PRICE_ENTERPRISE_ANNUAL=price_...
++
+ # Storage (S3 or local)
+ STORAGE_BACKEND=local
++UPLOAD_DIR=./uploads
+ # AWS_ACCESS_KEY_ID=
+ # AWS_SECRET_ACCESS_KEY=
+ # AWS_REGION=us-east-1
+diff --git a/backend/prisma/migrations/migrations20260220000001_add_portal_approval_fields/migration.sql b/backend/prisma/migrations/migrations20260220000001_add_portal_approval_fields/migration.sql
+deleted file mode 100644
+index 9252f1c..0000000
+--- a/backend/prisma/migrations/migrations20260220000001_add_portal_approval_fields/migration.sql
++++ /dev/null
+@@ -1,16 +0,0 @@
+--- Quote: add portal approval/rejection fields
+-ALTER TABLE "Quote" ADD COLUMN IF NOT EXISTS "approvedBy"      TEXT;
+-ALTER TABLE "Quote" ADD COLUMN IF NOT EXISTS "signedBy"        TEXT;
+-ALTER TABLE "Quote" ADD COLUMN IF NOT EXISTS "approvalNotes"   TEXT;
+-ALTER TABLE "Quote" ADD COLUMN IF NOT EXISTS "approvalIp"      TEXT;
+-ALTER TABLE "Quote" ADD COLUMN IF NOT EXISTS "rejectionReason" TEXT;
+-ALTER TABLE "Quote" ADD COLUMN IF NOT EXISTS "validUntil"      TIMESTAMP(3);
+-
+--- ChangeOrder: add portal approval/signature/rejection fields
+-ALTER TABLE "ChangeOrder" ADD COLUMN IF NOT EXISTS "signature"       TEXT;
+-ALTER TABLE "ChangeOrder" ADD COLUMN IF NOT EXISTS "signedBy"        TEXT;
+-ALTER TABLE "ChangeOrder" ADD COLUMN IF NOT EXISTS "signedAt"        TIMESTAMP(3);
+-ALTER TABLE "ChangeOrder" ADD COLUMN IF NOT EXISTS "approvalNotes"   TEXT;
+-ALTER TABLE "ChangeOrder" ADD COLUMN IF NOT EXISTS "approvalIp"      TEXT;
+-ALTER TABLE "ChangeOrder" ADD COLUMN IF NOT EXISTS "rejectionReason" TEXT;
+-ALTER TABLE "ChangeOrder" ADD COLUMN IF NOT EXISTS "rejectedAt"      TIMESTAMP(3);
+diff --git a/backend/src/index.js b/backend/src/index.js
+index 61d8567..9e47631 100644
+--- a/backend/src/index.js
++++ b/backend/src/index.js
+@@ -8,6 +8,7 @@ import path from 'path';
+ import { fileURLToPath } from 'url';
+ import dotenv from 'dotenv';
+ import { prisma } from './config/prisma.js';
++import { authenticate } from './middleware/auth.js';
+ 
+ // Services
+ import logger from './services/logger.js';
+@@ -171,9 +172,9 @@ app.use('/api/v1/auth/register', authLimiter);
+ app.use('/api/v1/auth/forgot-password', authLimiter);
+ app.use('/api/v1/auth/signup', authLimiter);
+ 
+-// Static files (uploads)
++// Static files (uploads) — auth-gated so document paths aren't publicly guessable
+ const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+-app.use('/uploads', express.static(uploadsDir));
++app.use('/uploads', authenticate, express.static(uploadsDir));
+ 
+ // Make prisma available to routes
+ app.use((req, res, next) => {
+diff --git a/backend/src/routes/auth.js b/backend/src/routes/auth.js
+index 0fc569e..f9ae682 100644
+--- a/backend/src/routes/auth.js
++++ b/backend/src/routes/auth.js
+@@ -70,6 +70,7 @@ router.post('/signup', async (req, res, next) => {
+     });
+     
+     const data = schema.parse(req.body);
++    data.email = data.email.toLowerCase().trim();
+ 
+     // Check if email already exists
+     const existing = await prisma.user.findFirst({ where: { email: data.email } });
+@@ -214,6 +215,7 @@ router.post('/register', async (req, res, next) => {
+       phone: z.string().optional(),
+     });
+     const data = schema.parse(req.body);
++    data.email = data.email.toLowerCase().trim();
+ 
+     const existing = await prisma.user.findFirst({ where: { email: data.email } });
+     if (existing) return res.status(409).json({ error: 'Email already registered' });
+@@ -262,6 +264,7 @@ router.post('/login', async (req, res, next) => {
+   try {
+     const schema = z.object({ email: z.string().email(), password: z.string() });
+     const data = schema.parse(req.body);
++    data.email = data.email.toLowerCase().trim();
+ 
+     const user = await prisma.user.findFirst({ where: { email: data.email }, include: { company: true } });
+     if (!user) return res.status(401).json({ error: 'Invalid email or password' });
+@@ -381,7 +384,8 @@ router.put('/password', authenticate, async (req, res, next) => {
+ // Forgot password
+ router.post('/forgot-password', async (req, res, next) => {
+   try {
+-    const { email } = req.body;
++    const { email: rawEmail } = req.body;
++    const email = (rawEmail || '').toLowerCase().trim();
+     const user = await prisma.user.findFirst({ where: { email } });
+     
+     if (user) {
+diff --git a/backend/src/routes/weather.js b/backend/src/routes/weather.js
+index 423e41d..004c808 100644
+--- a/backend/src/routes/weather.js
++++ b/backend/src/routes/weather.js
+@@ -1,6 +1,7 @@
+ import { Router } from 'express';
  import { authenticate } from '../middleware/auth.js';
- import { prisma } from '../index.js';
- import Stripe from 'stripe';
-+import * as quickbooksService from '../services/quickbooks.js';
+ import weather from '../services/weather.js';
++import { prisma } from '../config/prisma.js';
  
  const router = Router();
- 
-@@ -263,8 +264,19 @@ router.post('/quickbooks/sync', authenticate, async (req, res, next) => {
-       return res.status(400).json({ error: 'QuickBooks not connected' });
-     }
- 
--    // TODO: Implement actual sync logic
--    // For now, just update last sync time
-+    const { syncType = 'all' } = req.body;
-+
-+    const results = { customers: null, invoices: null };
-+
-+    if (syncType === 'all' || syncType === 'customers') {
-+      results.customers = await quickbooksService.syncAllCustomers(req.user.companyId);
-+    }
-+
-+    if (syncType === 'all' || syncType === 'invoices') {
-+      results.invoices = await quickbooksService.syncAllInvoices(req.user.companyId);
-+    }
-+
-+    // Update last sync timestamp
-     await prisma.company.update({
-       where: { id: req.user.companyId },
-       data: {
-@@ -275,7 +287,18 @@ router.post('/quickbooks/sync', authenticate, async (req, res, next) => {
-       },
-     });
- 
--    res.json({ success: true, message: 'Sync started' });
-+    const totalSynced = [
-+      ...(results.customers || []),
-+      ...(results.invoices || []),
-+    ];
-+    const failed = totalSynced.filter(r => !r.success);
-+
-+    res.json({
-+      success: true,
-+      message: `Sync complete. ${totalSynced.length} records synced, ${failed.length} failed.`,
-+      results,
-+      syncedAt: new Date(),
+ router.use(authenticate);
+@@ -89,6 +90,14 @@ router.get('/forecast', async (req, res, next) => {
+ // Get weather for a job
+ router.get('/job/:jobId', async (req, res, next) => {
+   try {
++    // Verify the job belongs to the requesting user's company
++    const job = await prisma.job.findUnique({
++      where: { id: req.params.jobId },
++      select: { companyId: true },
 +    });
-   } catch (error) {
-     next(error);
-   }
-diff --git a/backend/src/services/agreements.js b/backend/src/services/agreements.js
-index 4329aa2..a632dac 100644
---- a/backend/src/services/agreements.js
-+++ b/backend/src/services/agreements.js
-@@ -10,6 +10,9 @@
-  */
- 
- import { PrismaClient } from '@prisma/client';
-+import Stripe from 'stripe';
++    if (!job) return res.status(404).json({ error: 'Job not found' });
++    if (job.companyId !== req.user.companyId) return res.status(403).json({ error: 'Forbidden' });
 +
-+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
- 
- const prisma = new PrismaClient();
- 
-@@ -219,8 +222,21 @@ export async function updateAgreement(agreementId, companyId, data) {
-  * Cancel agreement
+     const data = await weather.getWeatherForJob(req.params.jobId);
+     
+     if (!data) {
+@@ -104,6 +113,14 @@ router.get('/job/:jobId', async (req, res, next) => {
+ // Get weather for a project
+ router.get('/project/:projectId', async (req, res, next) => {
+   try {
++    // Verify the project belongs to the requesting user's company
++    const project = await prisma.project.findUnique({
++      where: { id: req.params.projectId },
++      select: { companyId: true },
++    });
++    if (!project) return res.status(404).json({ error: 'Project not found' });
++    if (project.companyId !== req.user.companyId) return res.status(403).json({ error: 'Forbidden' });
++
+     const data = await weather.getWeatherForProject(req.params.projectId);
+     
+     if (!data) {
+diff --git a/backend/src/services/generator.js b/backend/src/services/generator.js
+index 4aeb3d1..d725d93 100644
+--- a/backend/src/services/generator.js
++++ b/backend/src/services/generator.js
+@@ -1,875 +1,6 @@
+ /**
+- * BuildPro Factory — Generator Service
+- * 
+- * Takes wizard config and produces deployable zip packages from templates.
+- * 
+- * Flow:
+- *   1. Copy selected template dirs to temp workspace
+- *   2. Run token injection across all text files
+- *   3. For CRM: populate seed.js with company + features, generate .env
+- *   4. For Website/CMS: inject CSS variables, update settings
+- *   5. Zip the workspace
+- *   6. Return download path
++ * @deprecated Use ./factory/generator.js directly.
++ * This file exists only for backwards-compat imports.
++ * The canonical implementation lives in services/factory/generator.js.
   */
- export async function cancelAgreement(agreementId, companyId, reason) {
--  // TODO: Cancel Stripe subscription if exists
+-
+-import fs from 'fs';
+-import path from 'path';
+-import { fileURLToPath } from 'url';
+-import crypto from 'crypto';
+-import archiver from 'archiver';
+-import bcrypt from 'bcryptjs';
+-
+-const __filename = fileURLToPath(import.meta.url);
+-const __dirname = path.dirname(__filename);
+-
+-// Template and output directories — configurable via env vars
+-// Walks up from generator.js → services/factory/ → services/ → src/ → backend/ → project root
+-const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
+-const TEMPLATES_ROOT = process.env.BUILDPRO_TEMPLATES_DIR || path.join(PROJECT_ROOT, 'templates');
+-const OUTPUT_DIR = process.env.BUILDPRO_OUTPUT_DIR || path.join(PROJECT_ROOT, 'generated');
+-
+-// Text file extensions to process for token injection
+-const TEXT_EXTS = new Set([
+-  '.js', '.jsx', '.ts', '.tsx', '.ejs', '.html', '.css', '.json',
+-  '.md', '.txt', '.yml', '.yaml', '.xml', '.svg', '.env', '.sql',
+-  '.prisma', '.template', '.mjs'
+-]);
+-
+-// Files to always skip
+-const SKIP_PATTERNS = ['node_modules', '.git', 'package-lock.json', '.DS_Store'];
+-
+-
+-/**
+- * Main generate function
+- * @param {Object} config - Wizard output
+- * @returns {Object} { zipPath, zipName, buildId }
+- */
+-export async function generate(config) {
+-  // Validate templates exist
+-  if (!fs.existsSync(TEMPLATES_ROOT)) {
+-    throw new Error(
+-      `Templates directory not found at ${TEMPLATES_ROOT}. ` +
+-      `Set BUILDPRO_TEMPLATES_DIR env var or ensure templates/ exists at project root.`
+-    );
+-  }
+-
+-  const buildId = crypto.randomUUID();
+-  const workDir = path.join(OUTPUT_DIR, buildId);
+-  const slug = slugify(config.company.name);
 -  
-+  // Cancel Stripe subscription if one exists
-+  const agreement = await prisma.serviceAgreement.findFirst({
-+    where: { id: agreementId, companyId },
-+    select: { stripeSubscriptionId: true },
-+  });
-+
-+  if (agreement?.stripeSubscriptionId && stripe) {
-+    try {
-+      await stripe.subscriptions.cancel(agreement.stripeSubscriptionId);
-+    } catch (stripeErr) {
-+      // Log but don't block — cancellation should still proceed in our DB
-+      console.error('Stripe subscription cancel failed:', stripeErr.message);
-+    }
-+  }
-+
-   return prisma.serviceAgreement.updateMany({
-     where: { id: agreementId, companyId },
-     data: {
-diff --git a/backend/src/services/booking.js b/backend/src/services/booking.js
-index 312ee02..d71352b 100644
---- a/backend/src/services/booking.js
-+++ b/backend/src/services/booking.js
-@@ -10,6 +10,7 @@
-  */
- 
- import { PrismaClient } from '@prisma/client';
-+import emailService from './email.js';
- 
- const prisma = new PrismaClient();
- 
-@@ -336,7 +337,31 @@ export async function createBooking(companyId, data) {
-     },
-   });
- 
--  // TODO: Send confirmation email/SMS
-+  // Send booking confirmation email/SMS
-+  if (email) {
-+    try {
-+      // Get company name for the email
-+      const company = await prisma.company.findUnique({
-+        where: { id: companyId },
-+        select: { name: true },
-+      });
-+
-+      await emailService.send(email, 'bookingConfirmation', {
-+        customerName: `${firstName} ${lastName}`,
-+        companyName: company?.name || 'Your Service Provider',
-+        serviceName: service?.name || 'Service',
-+        scheduledDate: new Date(scheduledDate).toLocaleDateString('en-US', {
-+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-+        }),
-+        scheduledTime: time,
-+        confirmationCode: booking.confirmationCode,
-+        notes,
-+      });
-+    } catch (emailErr) {
-+      // Don't fail the booking if email fails — log and continue
-+      console.error('Booking confirmation email failed:', emailErr.message);
-+    }
-+  }
- 
-   return {
-     booking,
-diff --git a/backend/src/services/drawSchedules.js b/backend/src/services/drawSchedules.js
-index bf532c7..862907d 100644
---- a/backend/src/services/drawSchedules.js
-+++ b/backend/src/services/drawSchedules.js
-@@ -413,6 +413,20 @@ export async function generateG702Data(drawId, companyId) {
-   const previousRetainage = allDraws.reduce((sum, d) => sum + Number(d.retainageAmount || 0), 0);
-   const previousNet = allDraws.reduce((sum, d) => sum + Number(d.netAmount || 0), 0);
- 
-+  // Sum approved change orders for this project
-+  const approvedChangeOrders = await prisma.changeOrder.findMany({
-+    where: {
-+      projectId: project.id,
-+      companyId,
-+      status: 'approved',
-+    },
-+    select: { amount: true },
-+  });
-+  const netChangeByChangeOrders = approvedChangeOrders.reduce(
-+    (sum, co) => sum + Number(co.amount || 0), 0
-+  );
-+  const contractSumToDate = Number(sov.contractAmount) + netChangeByChangeOrders;
-+
-   return {
-     applicationNumber: draw.drawNumber,
-     periodTo: draw.periodTo,
-@@ -420,8 +434,8 @@ export async function generateG702Data(drawId, companyId) {
-     projectAddress: project?.address,
+-  // Ensure output dir exists
+-  fs.mkdirSync(workDir, { recursive: true });
+-
+-  // Build the token map from config
+-  const tokens = buildTokenMap(config, slug);
+-
+-  try {
+-    // 1. Copy selected products into workspace
+-    const products = config.products || [];
+-    
+-    if (products.includes('website')) {
+-      copyTemplate('website', path.join(workDir, 'website'), tokens);
+-      // Inject CSS custom property values
+-      injectCSSColors(path.join(workDir, 'website'), config.branding || {});
+-      // Strip disabled website features
+-      stripWebsiteFeatures(path.join(workDir, 'website'), config.features?.website || []);
+-      // Write logo + favicon files
+-      writeBrandingAssets(path.join(workDir, 'website'), config.branding || {});
+-      // If CMS is also selected, nest it inside website
+-      if (products.includes('cms')) {
+-        copyTemplate('cms', path.join(workDir, 'website', 'admin'), tokens);
+-      }
+-    } else if (products.includes('cms')) {
+-      // CMS standalone
+-      copyTemplate('cms', path.join(workDir, 'cms'), tokens);
+-    }
+-
+-    if (products.includes('crm')) {
+-      copyTemplate('crm', path.join(workDir, 'crm'), tokens);
+-      // Process CRM-specific files
+-      processCRM(path.join(workDir, 'crm'), config, tokens);
+-      // Write logo to CRM frontend public dir
+-      writeBrandingAssets(path.join(workDir, 'crm', 'frontend', 'public'), config.branding || {});
+-    }
+-
+-    // 2. Generate deployment configs at root
+-    generateReadme(workDir, config, tokens);
+-    generateDeployScript(workDir, config, products);
+-
+-    // 3. Zip everything
+-    const zipName = `${slug}-buildpro.zip`;
+-    const zipPath = path.join(OUTPUT_DIR, zipName);
+-    await createZip(workDir, zipPath);
+-
+-    // 4. Clean up workspace (keep zip)
+-    fs.rmSync(workDir, { recursive: true, force: true });
+-
+-    return { zipPath, zipName, buildId, slug };
+-
+-  } catch (err) {
+-    // Clean up on failure
+-    if (fs.existsSync(workDir)) {
+-      fs.rmSync(workDir, { recursive: true, force: true });
+-    }
+-    throw err;
+-  }
+-}
+-
+-
+-/**
+- * Build the complete token replacement map
+- */
+-function buildTokenMap(config, slug) {
+-  const c = config.company || {};
+-  const b = config.branding || {};
+-  
+-  const ownerParts = (c.ownerName || 'Admin User').split(' ');
+-  const firstName = ownerParts[0] || 'Admin';
+-  const lastName = ownerParts.slice(1).join(' ') || 'User';
+-  const defaultPassword = c.defaultPassword || generatePassword();
+-
+-  return {
+-    // Company
+-    '{{COMPANY_NAME}}': c.name || 'My Company',
+-    '{{COMPANY_LEGAL_NAME}}': c.legalName || `${c.name || 'My Company'} LLC`,
+-    '{{COMPANY_NAME_UPPER}}': (c.name || 'My Company').toUpperCase(),
+-    '{{COMPANY_SLUG}}': slug,
+-    '{{COMPANY_NAME_SLUG}}': pascalCase(c.name || 'MyCompany'),
+-    '{{COMPANY_EMAIL}}': c.email || `info@${slug}.com`,
+-    '{{COMPANY_PHONE}}': c.phone || '(555) 000-0000',
+-    '{{COMPANY_PHONE_RAW}}': (c.phone || '5550000000').replace(/\D/g, ''),
+-    '{{COMPANY_ADDRESS}}': c.address || '123 Main St',
+-    '{{COMPANY_DESCRIPTION}}': c.description || `Professional services from ${c.name || 'our company'}.`,
+-
+-    // Location
+-    '{{CITY}}': c.city || 'Your City',
+-    '{{STATE}}': c.state || 'ST',
+-    '{{STATE_FULL}}': c.stateFull || c.state || 'State',
+-    '{{ZIP}}': c.zip || '00000',
+-    '{{SERVICE_REGION}}': c.serviceRegion || c.city || 'the area',
+-    '{{NEARBY_CITY_1}}': (c.nearbyCities || [])[0] || 'Nearby City 1',
+-    '{{NEARBY_CITY_2}}': (c.nearbyCities || [])[1] || 'Nearby City 2',
+-    '{{NEARBY_CITY_3}}': (c.nearbyCities || [])[2] || 'Nearby City 3',
+-    '{{NEARBY_CITY_4}}': (c.nearbyCities || [])[3] || 'Nearby City 4',
+-
+-    // Domain / URLs
+-    '{{DOMAIN}}': c.domain || `${slug}.com`,
+-    '{{SITE_URL}}': c.siteUrl || `https://${c.domain || slug + '.com'}`,
+-    '{{FRONTEND_URL}}': c.frontendUrl || `https://${slug}-crm.onrender.com`,
+-    '{{BACKEND_URL}}': c.backendUrl || `https://${slug}-api.onrender.com`,
+-
+-    // Industry
+-    '{{INDUSTRY}}': c.industry || 'Contractor',
+-    '{{META_DESCRIPTION}}': c.metaDescription || `Professional services in ${c.city || 'your area'}.`,
+-    '{{HERO_TAGLINE}}': c.heroTagline || `Trusted ${c.industry || 'Contractor'}`,
+-
+-    // Owner / Admin
+-    '{{OWNER_NAME}}': c.ownerName || 'Admin',
+-    '{{OWNER_FIRST_NAME}}': firstName,
+-    '{{OWNER_LAST_NAME}}': lastName,
+-    '{{ADMIN_EMAIL}}': c.adminEmail || c.email || `admin@${slug}.com`,
+-    '{{DEFAULT_PASSWORD}}': defaultPassword,
+-    '{{HASHED_DEFAULT_PASSWORD}}': bcrypt.hashSync(defaultPassword, 10),
+-
+-    // Branding / Colors
+-    '{{PRIMARY_COLOR}}': b.primaryColor || '#f97316',
+-    '{{SECONDARY_COLOR}}': b.secondaryColor || '#1e3a5f',
+-
+-    // Products selected
+-    '{{PRODUCTS_JSON}}': JSON.stringify(config.products || ['crm']),
+-    '{{CMS_URL}}': c.siteUrl 
+-      ? `${c.siteUrl}/admin` 
+-      : (config.products || []).includes('cms') 
+-        ? `https://${slug}-site.onrender.com/admin` 
+-        : '',
+-
+-    // Generated secrets
+-    '{{JWT_SECRET}}': crypto.randomBytes(32).toString('hex'),
+-    '{{DATABASE_URL}}': c.databaseUrl || `postgresql://user:pass@localhost:5432/${slug}_crm`,
+-  };
+-}
+-
+-
+-/**
+- * Copy a template directory to dest, injecting tokens into text files
+- */
+-function copyTemplate(templateName, destDir, tokens) {
+-  const srcDir = path.join(TEMPLATES_ROOT, templateName);
+-  
+-  if (!fs.existsSync(srcDir)) {
+-    throw new Error(`Template not found: ${templateName} (looked in ${srcDir})`);
+-  }
+-
+-  fs.mkdirSync(destDir, { recursive: true });
+-  copyAndInject(srcDir, destDir, tokens);
+-}
+-
+-
+-/**
+- * Recursively copy files, injecting tokens into text files
+- */
+-function copyAndInject(src, dest, tokens) {
+-  const entries = fs.readdirSync(src, { withFileTypes: true });
+-
+-  for (const entry of entries) {
+-    if (SKIP_PATTERNS.includes(entry.name)) continue;
+-
+-    const srcPath = path.join(src, entry.name);
+-    const destPath = path.join(dest, entry.name);
+-
+-    if (entry.isDirectory()) {
+-      fs.mkdirSync(destPath, { recursive: true });
+-      copyAndInject(srcPath, destPath, tokens);
+-    } else {
+-      const ext = path.extname(entry.name).toLowerCase();
+-      const baseName = entry.name.toLowerCase();
+-
+-      if (TEXT_EXTS.has(ext) || baseName === '.env' || baseName === '.env.example' || baseName.endsWith('.template')) {
+-        // Text file — inject tokens
+-        let content = fs.readFileSync(srcPath, 'utf8');
+-        content = injectTokens(content, tokens);
+-        fs.writeFileSync(destPath, content, 'utf8');
+-      } else {
+-        // Binary — copy as-is
+-        fs.copyFileSync(srcPath, destPath);
+-      }
+-    }
+-  }
+-}
+-
+-
+-/**
+- * Replace all {{TOKEN}} placeholders in content
+- */
+-function injectTokens(content, tokens) {
+-  for (const [token, value] of Object.entries(tokens)) {
+-    content = content.split(token).join(value);
+-  }
+-  return content;
+-}
+-
+-
+-/**
+- * CRM-specific processing
+- */
+-function processCRM(crmDir, config, tokens) {
+-  const features = config.features?.crm || [];
+-  const manifest = loadManifest(crmDir);
+-  
+-  // 1. Generate seed.js from template
+-  const seedTemplatePath = path.join(crmDir, 'backend', 'prisma', 'seed.template.js');
+-  const seedOutputPath = path.join(crmDir, 'backend', 'prisma', 'seed.js');
+-  
+-  if (fs.existsSync(seedTemplatePath)) {
+-    let seedContent = fs.readFileSync(seedTemplatePath, 'utf8');
+-    
+-    // Inject the enabled features array
+-    const featuresJson = JSON.stringify(features, null, 6).replace(/\n/g, '\n      ');
+-    seedContent = seedContent.replace('{{ENABLED_FEATURES_JSON}}', featuresJson);
+-    seedContent = seedContent.replace('{{ENABLED_FEATURES_COUNT}}', `${features.length} features`);
+-    
+-    // Inject remaining tokens
+-    seedContent = injectTokens(seedContent, tokens);
+-    
+-    fs.writeFileSync(seedOutputPath, seedContent, 'utf8');
+-    fs.unlinkSync(seedTemplatePath); // remove template file
+-  }
+-
+-  // 2. Strip unused backend routes/services using manifest
+-  if (manifest) {
+-    stripUnusedCRMFiles(crmDir, features, manifest);
+-  }
+-
+-  // 3. Generate backend .env from template
+-  processEnvTemplate(path.join(crmDir, 'backend'), tokens);
+-  
+-  // 4. Generate frontend .env from template
+-  processEnvTemplate(path.join(crmDir, 'frontend'), tokens);
+-
+-  // 5. Generate render.yaml from template
+-  const renderTemplatePath = path.join(crmDir, 'render.yaml.template');
+-  if (fs.existsSync(renderTemplatePath)) {
+-    let renderContent = fs.readFileSync(renderTemplatePath, 'utf8');
+-    renderContent = injectTokens(renderContent, tokens);
+-    fs.writeFileSync(path.join(crmDir, 'render.yaml'), renderContent, 'utf8');
+-    fs.unlinkSync(renderTemplatePath);
+-  }
+-
+-  // 6. Clean up other template files
+-  const otherTemplates = findFiles(crmDir, f => f.endsWith('.template'));
+-  otherTemplates.forEach(f => {
+-    const output = f.replace('.template', '');
+-    let content = fs.readFileSync(f, 'utf8');
+-    content = injectTokens(content, tokens);
+-    fs.writeFileSync(output, content, 'utf8');
+-    fs.unlinkSync(f);
+-  });
+-
+-  // 7. Remove manifest from output (internal-only file)
+-  const manifestPath = path.join(crmDir, 'feature-manifest.json');
+-  if (fs.existsSync(manifestPath)) fs.unlinkSync(manifestPath);
+-}
+-
+-
+-/**
+- * Strip unused CRM backend route/service files and prune index.js imports
+- */
+-function stripUnusedCRMFiles(crmDir, enabledFeatures, manifest) {
+-  // Collect all route/service files needed by enabled features
+-  const neededRoutes = new Set();
+-  const neededServices = new Set();
+-
+-  // Core files are always needed
+-  if (manifest.core?.backend) {
+-    (manifest.core.backend.routes || []).forEach(f => neededRoutes.add(f));
+-    (manifest.core.backend.services || []).forEach(f => neededServices.add(f));
+-    (manifest.core.backend.middleware || []).forEach(() => {}); // middleware always kept
+-  }
+-
+-  // Add files for each enabled feature
+-  for (const featureId of enabledFeatures) {
+-    const feature = manifest.features?.[featureId];
+-    if (!feature?.backend) continue;
+-    (feature.backend.routes || []).forEach(f => neededRoutes.add(f));
+-    (feature.backend.services || []).forEach(f => neededServices.add(f));
+-  }
+-
+-  // Remove unneeded route files
+-  const routesDir = path.join(crmDir, 'backend', 'src', 'routes');
+-  if (fs.existsSync(routesDir)) {
+-    for (const file of fs.readdirSync(routesDir)) {
+-      if (file === 'auth.js' || file === 'factory.js') continue; // always keep
+-      if (!neededRoutes.has(file)) {
+-        fs.unlinkSync(path.join(routesDir, file));
+-      }
+-    }
+-  }
+-
+-  // Remove unneeded service files
+-  const servicesDir = path.join(crmDir, 'backend', 'src', 'services');
+-  if (fs.existsSync(servicesDir)) {
+-    for (const entry of fs.readdirSync(servicesDir, { withFileTypes: true })) {
+-      if (entry.isDirectory()) continue; // keep subdirectories (like factory/)
+-      if (!neededServices.has(entry.name)) {
+-        fs.unlinkSync(path.join(servicesDir, entry.name));
+-      }
+-    }
+-  }
+-
+-  // Prune index.js imports/mounts for removed routes
+-  const indexPath = path.join(crmDir, 'backend', 'src', 'index.js');
+-  if (fs.existsSync(indexPath)) {
+-    let indexContent = fs.readFileSync(indexPath, 'utf8');
+-    const allRouteFiles = new Set(
+-      (indexContent.match(/from '\.\/routes\/([^']+)'/g) || [])
+-        .map(m => m.match(/\/([^/]+)'/)[1])
+-    );
+-
+-    for (const routeFile of allRouteFiles) {
+-      if (neededRoutes.has(routeFile) || routeFile === 'auth.js' || routeFile === 'factory.js') continue;
+-      // Remove the import line
+-      indexContent = indexContent.replace(
+-        new RegExp(`import \\w+ from './routes/${routeFile}';?\\n?`, 'g'), ''
+-      );
+-      // Remove the app.use mount line
+-      const routeName = routeFile.replace('.js', '');
+-      indexContent = indexContent.replace(
+-        new RegExp(`app\\.use\\('/api/[^']*',\\s*\\w*${routeName}\\w*Routes?\\);?\\n?`, 'gi'), ''
+-      );
+-    }
+-
+-    fs.writeFileSync(indexPath, indexContent, 'utf8');
+-  }
+-}
+-
+-
+-/**
+- * Process .env.template → .env
+- */
+-function processEnvTemplate(dir, tokens) {
+-  const templatePath = path.join(dir, '.env.template');
+-  if (fs.existsSync(templatePath)) {
+-    let content = fs.readFileSync(templatePath, 'utf8');
+-    content = injectTokens(content, tokens);
+-    fs.writeFileSync(path.join(dir, '.env'), content, 'utf8');
+-    fs.unlinkSync(templatePath);
+-  }
+-}
+-
+-
+-/**
+- * Load feature manifest
+- */
+-function loadManifest(crmDir) {
+-  const manifestPath = path.join(crmDir, 'feature-manifest.json');
+-  if (fs.existsSync(manifestPath)) {
+-    return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+-  }
+-  return null;
+-}
+-
+-
+-/**
+- * Generate a root README for the package
+- */
+-function generateReadme(workDir, config, tokens) {
+-  const products = config.products || [];
+-  const name = config.company?.name || 'Your Company';
+-  const slug = tokens['{{COMPANY_SLUG}}'];
+-  
+-  let readme = `# ${name} — Software Package\n\n`;
+-  readme += `Generated by BuildPro Factory on ${new Date().toISOString().split('T')[0]}\n\n`;
+-  
+-  readme += `## Quick Start\n\n`;
+-  readme += `Run \`bash deploy.sh\` to install all dependencies, or follow the manual steps below.\n\n`;
+-
+-  readme += `## Admin Credentials\n\n`;
+-  readme += `- **Email:** \`${tokens['{{ADMIN_EMAIL}}']}\`\n`;
+-  readme += `- **Password:** \`${tokens['{{DEFAULT_PASSWORD}}']}\`\n`;
+-  readme += `- ⚠️ **Change the default password after first login!**\n\n`;
+-
+-  readme += `## Included Products\n\n`;
+-
+-  if (products.includes('crm')) {
+-    readme += `### CRM (\`/crm\`)\n`;
+-    readme += `Full construction management CRM with PostgreSQL backend and React frontend.\n\n`;
+-    readme += `**Requirements:** Node.js 18+, PostgreSQL 14+\n\n`;
+-    readme += `\`\`\`bash\n`;
+-    readme += `# 1. Set up database\n`;
+-    readme += `createdb ${slug}_crm\n\n`;
+-    readme += `# 2. Configure environment\n`;
+-    readme += `cd crm/backend\n`;
+-    readme += `# Edit .env — set DATABASE_URL to your PostgreSQL connection string\n\n`;
+-    readme += `# 3. Install & migrate\n`;
+-    readme += `npm install\n`;
+-    readme += `npx prisma migrate deploy\n`;
+-    readme += `npx prisma db seed\n`;
+-    readme += `npm start\n\n`;
+-    readme += `# 4. Frontend (separate terminal)\n`;
+-    readme += `cd crm/frontend\n`;
+-    readme += `npm install\n`;
+-    readme += `npm run build   # For production\n`;
+-    readme += `npm run dev     # For development\n`;
+-    readme += `\`\`\`\n\n`;
+-    
+-    const features = config.features?.crm || [];
+-    if (features.length > 0) {
+-      readme += `**Enabled Features (${features.length}):** ${features.join(', ')}\n\n`;
+-    }
+-  }
+-
+-  if (products.includes('website')) {
+-    readme += `### Website (\`/website\`)\n`;
+-    readme += `Server-rendered EJS site with Express backend and JSON data storage.\n\n`;
+-    readme += `\`\`\`bash\ncd website\nnpm install\nnpm start\n\`\`\`\n\n`;
+-    
+-    if (products.includes('cms')) {
+-      readme += `### CMS Admin Panel (\`/website/admin\`)\n`;
+-      readme += `React admin panel for managing site content. Accessible at \`/admin\` on the website.\n\n`;
+-      readme += `\`\`\`bash\ncd website/admin\nnpm install\nnpm run build\n\`\`\`\n\n`;
+-    }
+-  } else if (products.includes('cms')) {
+-    readme += `### CMS (\`/cms\`)\nStandalone React admin panel.\n\n`;
+-    readme += `\`\`\`bash\ncd cms\nnpm install\nnpm run build\n\`\`\`\n\n`;
+-  }
+-
+-  readme += `## Deploy to Render (Recommended)\n\n`;
+-  readme += `Each product includes a \`render.yaml\` blueprint for one-click deployment:\n\n`;
+-  readme += `1. Push this code to a GitHub/GitLab repo\n`;
+-  readme += `2. Go to [render.com](https://render.com) → New → Blueprint\n`;
+-  readme += `3. Connect your repo and select \`render.yaml\`\n`;
+-  readme += `4. Render will automatically create all services and database\n\n`;
+-  
+-  readme += `## Customer Portal\n\n`;
+-  readme += `After deploying the CRM, your customers log in and see a unified portal at the root URL.\n`;
+-  readme += `From there they can access:\n`;
+-  readme += `- **Business CRM** → Full CRM at \`/crm\`\n`;
+-  if (products.includes('website')) readme += `- **Live Website** → Public site\n`;
+-  if (products.includes('cms')) readme += `- **Website Manager** → CMS admin at \`/admin\`\n`;
+-  readme += `- **Account Settings** → Company config, users, integrations\n\n`;
+-
+-  readme += `## Support\n\n`;
+-  readme += `Generated by BuildPro — [buildpro.dev](https://buildpro.dev)\n`;
+-
+-  fs.writeFileSync(path.join(workDir, 'README.md'), readme, 'utf8');
+-}
+-
+-
+-/**
+- * Generate a quick deploy script
+- */
+-function generateDeployScript(workDir, config, products) {
+-  let script = `#!/bin/bash\n# Quick deploy script\nset -e\n\n`;
+-  
+-  if (products.includes('website')) {
+-    script += `echo "Installing website dependencies..."\ncd website && npm install\n`;
+-    if (products.includes('cms')) {
+-      script += `echo "Building CMS admin panel..."\ncd admin && npm install && npm run build\ncd ..\n`;
+-    }
+-    script += `echo "Website ready! Run: cd website && npm start"\ncd ..\n\n`;
+-  } else if (products.includes('cms')) {
+-    script += `echo "Installing CMS dependencies..."\ncd cms && npm install && npm run build\n`;
+-    script += `echo "CMS built!"\ncd ..\n\n`;
+-  }
+-
+-  if (products.includes('crm')) {
+-    script += `echo "Installing CRM backend..."\ncd crm/backend && npm install\n`;
+-    script += `echo "Running database migrations..."\nnpx prisma migrate deploy\n`;
+-    script += `echo "Seeding database..."\nnpx prisma db seed\n`;
+-    script += `echo "CRM backend ready!"\ncd ../..\n\n`;
+-    script += `echo "Installing CRM frontend..."\ncd crm/frontend && npm install && npm run build\n`;
+-    script += `echo "CRM frontend built!"\ncd ../..\n\n`;
+-  }
+-
+-  script += `echo "\\n✅ All products deployed!"\n`;
+-
+-  const scriptPath = path.join(workDir, 'deploy.sh');
+-  fs.writeFileSync(scriptPath, script, 'utf8');
+-  fs.chmodSync(scriptPath, '755');
+-}
+-
+-
+-/**
+- * Create a zip archive from a directory
+- */
+-function createZip(sourceDir, outputPath) {
+-  return new Promise((resolve, reject) => {
+-    const output = fs.createWriteStream(outputPath);
+-    const archive = archiver('zip', { zlib: { level: 6 } });
+-
+-    output.on('close', () => resolve(archive.pointer()));
+-    archive.on('error', reject);
+-
+-    archive.pipe(output);
+-    archive.directory(sourceDir, false);
+-    archive.finalize();
+-  });
+-}
+-
+-
+-/**
+- * Write logo and favicon from base64 data URLs to disk
+- */
+-function writeBrandingAssets(targetDir, branding) {
+-  const uploadsDir = path.join(targetDir, 'uploads');
+-  fs.mkdirSync(uploadsDir, { recursive: true });
+-
+-  if (branding.logo && branding.logo.startsWith('data:')) {
+-    const ext = getExtFromDataUrl(branding.logo) || 'png';
+-    const logoPath = path.join(uploadsDir, `logo.${ext}`);
+-    writeDataUrl(branding.logo, logoPath);
+-
+-    // Update settings.json if it exists
+-    updateSettingsField(targetDir, 'logo', `/uploads/logo.${ext}`);
+-  }
+-
+-  if (branding.favicon && branding.favicon.startsWith('data:')) {
+-    const ext = getExtFromDataUrl(branding.favicon) || 'ico';
+-    const faviconPath = path.join(uploadsDir, `favicon.${ext}`);
+-    writeDataUrl(branding.favicon, faviconPath);
+-
+-    updateSettingsField(targetDir, 'favicon', `/uploads/favicon.${ext}`);
+-  }
+-}
+-
+-
+-/**
+- * Extract file extension from data URL
+- */
+-function getExtFromDataUrl(dataUrl) {
+-  const match = dataUrl.match(/data:image\/(\w+)/);
+-  if (match) {
+-    const type = match[1].toLowerCase();
+-    if (type === 'jpeg') return 'jpg';
+-    if (type === 'svg+xml') return 'svg';
+-    if (type === 'x-icon' || type === 'vnd.microsoft.icon') return 'ico';
+-    return type;
+-  }
+-  return null;
+-}
+-
+-
+-/**
+- * Write base64 data URL to file
+- */
+-function writeDataUrl(dataUrl, filePath) {
+-  const base64 = dataUrl.split(',')[1];
+-  if (base64) {
+-    fs.writeFileSync(filePath, Buffer.from(base64, 'base64'));
+-  }
+-}
+-
+-
+-/**
+- * Update a field in settings.json if it exists
+- */
+-function updateSettingsField(dir, field, value) {
+-  // Check multiple possible locations
+-  const paths = [
+-    path.join(dir, 'data', 'settings.json'),
+-    path.join(dir, 'settings.json'),
+-  ];
+-  for (const settingsPath of paths) {
+-    if (fs.existsSync(settingsPath)) {
+-      try {
+-        const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+-        settings[field] = value;
+-        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+-      } catch (e) { /* skip if JSON parse fails */ }
+-      break;
+-    }
+-  }
+-}
+-
+-
+-/**
+- * Strip disabled website features — removes view files, updates nav config
+- */
+-function stripWebsiteFeatures(websiteDir, enabledFeatures) {
+-  // Map feature IDs to their files
+-  const featureFiles = {
+-    blog: {
+-      views: ['blog.ejs', 'blog-post.ejs'],
+-      data: ['posts.json'],
+-    },
+-    gallery: {
+-      views: ['gallery.ejs'],
+-      data: ['gallery.json'],
+-    },
+-    testimonials: {
+-      data: ['testimonials.json'],
+-    },
+-    services_pages: {
+-      views: ['service.ejs', 'subservice.ejs'],
+-      data: ['services.json'],
+-      routes: ['services.js'],
+-    },
+-    contact_form: {
+-      views: ['contact.ejs'],
+-      routes: ['leads.js'],
+-    },
+-    visualizer: {
+-      views: ['visualize.html'],
+-    },
+-  };
+-
+-  // For each disabled feature, remove its files
+-  for (const [featureId, files] of Object.entries(featureFiles)) {
+-    if (enabledFeatures.includes(featureId)) continue;
+-
+-    // Remove view files
+-    if (files.views) {
+-      for (const view of files.views) {
+-        const viewPath = path.join(websiteDir, 'views', view);
+-        if (fs.existsSync(viewPath)) fs.unlinkSync(viewPath);
+-      }
+-    }
+-
+-    // Remove route files (optional features only)
+-    if (files.routes) {
+-      for (const route of files.routes) {
+-        const routePath = path.join(websiteDir, 'routes', route);
+-        if (fs.existsSync(routePath)) fs.unlinkSync(routePath);
+-      }
+-    }
+-
+-    // Empty data files (set to [] so JSON parsing doesn't break)
+-    if (files.data) {
+-      for (const dataFile of files.data) {
+-        const dataPath = path.join(websiteDir, 'data', dataFile);
+-        if (fs.existsSync(dataPath)) {
+-          fs.writeFileSync(dataPath, '[]', 'utf8');
+-        }
+-      }
+-    }
+-  }
+-
+-  // Update nav-config.json to only show enabled features
+-  const navConfigPath = path.join(websiteDir, 'data', 'nav-config.json');
+-  if (fs.existsSync(navConfigPath)) {
+-    const navConfig = JSON.parse(fs.readFileSync(navConfigPath, 'utf8'));
+-    const featureToNav = {
+-      services_pages: 'services',
+-      gallery: 'gallery',
+-      blog: 'blog',
+-      contact_form: 'contact',
+-    };
+-    
+-    if (navConfig.items) {
+-      navConfig.items = navConfig.items.map(item => {
+-        // Find if this nav item maps to a feature
+-        const featureId = Object.entries(featureToNav).find(([, navId]) => navId === item.id)?.[0];
+-        if (featureId) {
+-          item.visible = enabledFeatures.includes(featureId);
+-        }
+-        return item;
+-      });
+-    }
+-    
+-    fs.writeFileSync(navConfigPath, JSON.stringify(navConfig, null, 2), 'utf8');
+-  }
+-
+-  // Handle analytics — add a flag file if not enabled
+-  if (!enabledFeatures.includes('analytics')) {
+-    const settingsPath = path.join(websiteDir, 'data', 'settings.json');
+-    if (fs.existsSync(settingsPath)) {
+-      const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+-      settings.analytics = { googleAnalyticsId: '', facebookPixelId: '', googleTagManagerId: '' };
+-      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+-    }
+-  }
+-}
+-
+-
+-/**
+- * Inject CSS custom property values into :root blocks
+- */
+-function injectCSSColors(websiteDir, branding) {
+-  const primary = branding.primaryColor || '#f97316';
+-  const secondary = branding.secondaryColor || '#1e3a5f';
+-  const accent = branding.accentColor || primary; // default accent = primary
+-  
+-  // Derive lighter shade from primary
+-  const primaryLight = lightenHex(primary, 20);
+-  const accentLight = lightenHex(accent, 20);
+-  
+-  const cssFiles = findFiles(websiteDir, f => f.endsWith('.css'));
+-  
+-  for (const cssPath of cssFiles) {
+-    let content = fs.readFileSync(cssPath, 'utf8');
+-    
+-    // Replace :root variable defaults
+-    content = content.replace(
+-      /(:root\s*\{[^}]*--color-primary:\s*)#[0-9a-fA-F]{3,8}/g,
+-      `$1${primary}`
+-    );
+-    content = content.replace(
+-      /(:root\s*\{[^}]*--color-primary-light:\s*)#[0-9a-fA-F]{3,8}/g,
+-      `$1${primaryLight}`
+-    );
+-    content = content.replace(
+-      /(:root\s*\{[^}]*--color-secondary:\s*)#[0-9a-fA-F]{3,8}/g,
+-      `$1${secondary}`
+-    );
+-    
+-    // Simpler approach: just replace the hex values line by line
+-    const lines = content.split('\n');
+-    let inRoot = false;
+-    let braceDepth = 0;
+-    const output = lines.map(line => {
+-      if (line.includes(':root')) inRoot = true;
+-      if (inRoot) {
+-        if (line.includes('{')) braceDepth++;
+-        if (line.includes('}')) { braceDepth--; if (braceDepth <= 0) inRoot = false; }
+-        
+-        if (line.includes('--color-primary-light:')) {
+-          return line.replace(/#[0-9a-fA-F]{3,8}/, primaryLight);
+-        }
+-        if (line.includes('--color-primary:')) {
+-          return line.replace(/#[0-9a-fA-F]{3,8}/, primary);
+-        }
+-        if (line.includes('--color-secondary:')) {
+-          return line.replace(/#[0-9a-fA-F]{3,8}/, secondary);
+-        }
+-        if (line.includes('--color-accent-light:')) {
+-          return line.replace(/#[0-9a-fA-F]{3,8}/, accentLight);
+-        }
+-        if (line.includes('--color-accent:')) {
+-          return line.replace(/#[0-9a-fA-F]{3,8}/, accent);
+-        }
+-      }
+-      return line;
+-    });
+-    
+-    fs.writeFileSync(cssPath, output.join('\n'), 'utf8');
+-  }
+-}
+-
+-
+-/**
+- * Lighten a hex color by a percentage
+- */
+-function lightenHex(hex, percent) {
+-  hex = hex.replace('#', '');
+-  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+-  const num = parseInt(hex, 16);
+-  let r = (num >> 16) + Math.round(255 * percent / 100);
+-  let g = ((num >> 8) & 0x00FF) + Math.round(255 * percent / 100);
+-  let b = (num & 0x0000FF) + Math.round(255 * percent / 100);
+-  r = Math.min(255, Math.max(0, r));
+-  g = Math.min(255, Math.max(0, g));
+-  b = Math.min(255, Math.max(0, b));
+-  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+-}
+-
+-
+-// ─── UTILS ─────────────────────────────────────────────────────────
+-
+-function slugify(str) {
+-  return (str || 'company')
+-    .toLowerCase()
+-    .replace(/[^a-z0-9]+/g, '-')
+-    .replace(/^-|-$/g, '');
+-}
+-
+-function pascalCase(str) {
+-  return (str || '')
+-    .replace(/[^a-zA-Z0-9]+/g, ' ')
+-    .split(' ')
+-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+-    .join('');
+-}
+-
+-function generatePassword() {
+-  const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+-  let pw = '';
+-  for (let i = 0; i < 12; i++) {
+-    pw += chars[crypto.randomInt(chars.length)];
+-  }
+-  return pw;
+-}
+-
+-function findFiles(dir, filterFn, result = []) {
+-  if (!fs.existsSync(dir)) return result;
+-  const entries = fs.readdirSync(dir, { withFileTypes: true });
+-  for (const entry of entries) {
+-    const fullPath = path.join(dir, entry.name);
+-    if (entry.isDirectory() && !SKIP_PATTERNS.includes(entry.name)) {
+-      findFiles(fullPath, filterFn, result);
+-    } else if (entry.isFile() && filterFn(entry.name)) {
+-      result.push(fullPath);
+-    }
+-  }
+-  return result;
+-}
+-
+-
+-/**
+- * List available templates
+- */
+-export function listTemplates() {
+-  if (!fs.existsSync(TEMPLATES_ROOT)) return [];
+-  return fs.readdirSync(TEMPLATES_ROOT, { withFileTypes: true })
+-    .filter(e => e.isDirectory())
+-    .map(e => e.name);
+-}
+-
+-
+-/**
+- * Clean old generated zips (older than maxAge ms)
+- */
+-export function cleanOldBuilds(maxAge = 24 * 60 * 60 * 1000) {
+-  if (!fs.existsSync(OUTPUT_DIR)) return 0;
+-  let cleaned = 0;
+-  const now = Date.now();
+-  
+-  for (const file of fs.readdirSync(OUTPUT_DIR)) {
+-    const filePath = path.join(OUTPUT_DIR, file);
+-    const stat = fs.statSync(filePath);
+-    if (now - stat.mtimeMs > maxAge) {
+-      fs.rmSync(filePath, { recursive: true, force: true });
+-      cleaned++;
+-    }
+-  }
+-  return cleaned;
+-}
++export * from './factory/generator.js';
+diff --git a/frontend/index.html b/frontend/index.html
+index f126e8c..3f5b55c 100644
+--- a/frontend/index.html
++++ b/frontend/index.html
+@@ -7,11 +7,12 @@
+     <meta name="theme-color" content="#f97316" />
+     <meta name="apple-mobile-web-app-capable" content="yes" />
+     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
++    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
++    <link rel="manifest" href="/manifest.json" />
++    <link rel="apple-touch-icon" href="/apple-touch-icon (1).png" />
+     <title>BuildPro CRM</title>
      
-     originalContractSum: Number(sov.contractAmount),
--    netChangeByChangeOrders: 0, // TODO: link to change orders
--    contractSumToDate: Number(sov.contractAmount),
-+    netChangeByChangeOrders,
-+    contractSumToDate,
+-    <!-- Preconnect to API -->
+-    <link rel="preconnect" href="http://localhost:3001" crossorigin />
++    <!-- Preconnect to API (URL configured via VITE_API_URL at build time) -->
      
-     totalCompletedAndStored: previousGross + Number(draw.grossAmount),
-     retainagePercent: Number(sov.retainagePercent),
-@@ -431,7 +445,7 @@ export async function generateG702Data(drawId, companyId) {
-     lessPreviousCertificates: previousNet,
-     currentPaymentDue: Number(draw.netAmount),
-     
--    balanceToFinish: Number(sov.contractAmount) - (previousGross + Number(draw.grossAmount)),
-+    balanceToFinish: contractSumToDate - (previousGross + Number(draw.grossAmount)),
-   };
- }
+     <!-- System font stack for faster loading -->
+     <style>
+diff --git a/frontend/src/App.jsx b/frontend/src/App.jsx
+index 90e32d8..41cb55b 100644
+--- a/frontend/src/App.jsx
++++ b/frontend/src/App.jsx
+@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
+ import { ToastProvider } from './contexts/ToastContext';
+ import { SocketProvider } from './contexts/SocketContext';
+ import { PermissionsProvider } from './contexts/PermissionsContext';
++import { PWAProvider } from './contexts/PWAContext';
+ import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute';
+ import ErrorBoundary from './components/common/ErrorBoundary';
  
-@@ -478,7 +492,7 @@ export async function generateG703Data(drawId, companyId) {
-       scheduledValue,
-       previousWork,
-       thisPeriod,
--      materialsStored: 0, // TODO: support materials presently stored
-+      materialsStored: Number(currentItem?.materialsStored || 0),
-       totalCompleted,
-       percentComplete: Math.round(percentComplete * 10) / 10,
-       balanceToFinish,
-diff --git a/backend/src/services/email.js b/backend/src/services/email.js
-index b58d14a..a1f2f83 100644
---- a/backend/src/services/email.js
-+++ b/backend/src/services/email.js
-@@ -419,6 +419,57 @@ const templates = {
-     `,
-     text: `Hi ${data.contactName}, access your customer portal for ${data.companyName}: ${data.portalUrl}`,
-   }),
+@@ -107,6 +108,7 @@ function App() {
+         <AuthProvider>
+           <PermissionsProvider>
+             <ToastProvider>
++              <PWAProvider>
+               <SocketProvider>
+                 <Suspense fallback={<PageLoader />}>
+                   <Routes>
+@@ -193,6 +195,7 @@ function App() {
+                   </Routes>
+                 </Suspense>
+               </SocketProvider>
++              </PWAProvider>
+             </ToastProvider>
+           </PermissionsProvider>
+         </AuthProvider>
+diff --git a/frontend/src/components/builder/FactoryWizard.jsx b/frontend/src/components/builder/FactoryWizard.jsx
+index 1da6b23..1122b09 100644
+--- a/frontend/src/components/builder/FactoryWizard.jsx
++++ b/frontend/src/components/builder/FactoryWizard.jsx
+@@ -6,7 +6,7 @@ import {
+ } from 'lucide-react';
+ import api from '../../services/api';
+ 
+-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
++import { API_BASE_URL as API_BASE } from '../../config/api.js';
+ 
+ // ─── PRESETS ───────────────────────────────────────────────────────
+ 
+diff --git a/frontend/src/components/common/ExportButton.jsx b/frontend/src/components/common/ExportButton.jsx
+index ca2fae8..de14da6 100644
+--- a/frontend/src/components/common/ExportButton.jsx
++++ b/frontend/src/components/common/ExportButton.jsx
+@@ -2,7 +2,7 @@ import { useState } from 'react';
+ import { Download, FileSpreadsheet, FileText, ChevronDown, Loader2 } from 'lucide-react';
+ import api from '../../services/api';
+ 
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
++import { API_URL } from '../../config/api.js';
+ 
+ /**
+  * Export Button Component
+diff --git a/frontend/src/components/common/PhotoGallery.jsx b/frontend/src/components/common/PhotoGallery.jsx
+index c65154e..a7c3fda 100644
+--- a/frontend/src/components/common/PhotoGallery.jsx
++++ b/frontend/src/components/common/PhotoGallery.jsx
+@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
+ import { Camera, Upload, X, ZoomIn, Trash2, Edit2, ChevronLeft, ChevronRight, Loader2, Image } from 'lucide-react';
+ import api from '../../services/api';
+ 
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
++import { API_URL } from '../../config/api.js';
+ 
+ const CATEGORIES = [
+   { value: 'before', label: 'Before', color: 'bg-blue-100 text-blue-700' },
+diff --git a/frontend/src/components/portal/PortalInvoices.jsx b/frontend/src/components/portal/PortalInvoices.jsx
+index 2a14fdc..3b81dcd 100644
+--- a/frontend/src/components/portal/PortalInvoices.jsx
++++ b/frontend/src/components/portal/PortalInvoices.jsx
+@@ -4,7 +4,7 @@ import { Receipt, Download, AlertCircle, CheckCircle, Clock, Loader2, CreditCard
+ import { usePortal } from '../../contexts/PortalContext';
+ import { PaymentModal } from '../payments/PaymentForm';
+ 
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
++import { API_URL } from '../../config/api.js';
+ 
+ const STATUS_STYLES = {
+   draft: 'bg-gray-100 text-gray-700',
+diff --git a/frontend/src/config/api.js b/frontend/src/config/api.js
+new file mode 100644
+index 0000000..7b6075a
+--- /dev/null
++++ b/frontend/src/config/api.js
+@@ -0,0 +1,11 @@
++/**
++ * Central API configuration
++ * All components must import from here — never hardcode localhost URLs.
++ *
++ * Set VITE_API_URL in .env (or .env.production) to point at your backend.
++ */
 +
-+  // ============ BOOKING ============
-+  bookingConfirmation: (data) => ({
-+    subject: `Booking Confirmed — ${data.serviceName} on ${data.scheduledDate}`,
-+    html: `
-+      <!DOCTYPE html><html><head><style>${baseStyles}</style></head>
-+      <body><div class="container">
-+        <div class="header"><h1 style="margin:0;">${data.companyName}</h1></div>
-+        <div class="content">
-+          <h2>Your Appointment is Confirmed!</h2>
-+          <p>Hi ${data.customerName},</p>
-+          <p>We've received your booking and look forward to seeing you.</p>
-+          <div class="highlight">
-+            <p><strong>Service:</strong> ${data.serviceName}</p>
-+            <p><strong>Date:</strong> ${data.scheduledDate}</p>
-+            <p><strong>Time:</strong> ${data.scheduledTime}</p>
-+            <p><strong>Confirmation Code:</strong> <span style="font-family:monospace;font-size:18px;letter-spacing:2px;">${data.confirmationCode}</span></p>
-+            ${data.notes ? `<p><strong>Notes:</strong> ${data.notes}</p>` : ''}
-+          </div>
-+          <p>If you need to reschedule or have questions, please contact us directly and reference your confirmation code.</p>
-+        </div>
-+        <div class="footer">${data.companyName}</div>
-+      </div></body></html>
-+    `,
-+    text: `Booking Confirmed!\n\nHi ${data.customerName},\n\nService: ${data.serviceName}\nDate: ${data.scheduledDate}\nTime: ${data.scheduledTime}\nConfirmation Code: ${data.confirmationCode}\n\nContact us to reschedule.`,
-+  }),
++export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
++export const API_URL = `${API_BASE_URL}/api`;
 +
-+  // ============ INVENTORY ============
-+  lowStock: (data) => ({
-+    subject: `⚠️ Low Stock Alert: ${data.itemName}`,
-+    html: `
-+      <!DOCTYPE html><html><head><style>${baseStyles}</style></head>
-+      <body><div class="container">
-+        <div class="header"><h1 style="margin:0;">${data.companyName}</h1></div>
-+        <div class="content">
-+          <h2>⚠️ Low Stock Alert</h2>
-+          <p>An inventory item has dropped to or below its reorder point.</p>
-+          <div class="highlight">
-+            <p><strong>Item:</strong> ${data.itemName}</p>
-+            ${data.sku ? `<p><strong>SKU:</strong> ${data.sku}</p>` : ''}
-+            <p><strong>Current Quantity:</strong> <span style="color:#ef4444;font-weight:bold;">${data.currentQuantity} ${data.unit || 'units'}</span></p>
-+            <p><strong>Reorder Point:</strong> ${data.reorderPoint} ${data.unit || 'units'}</p>
-+            ${data.reorderQuantity ? `<p><strong>Suggested Reorder Qty:</strong> ${data.reorderQuantity}</p>` : ''}
-+          </div>
-+          <p>Please review your inventory and place a reorder as needed.</p>
-+        </div>
-+        <div class="footer">${data.companyName}</div>
-+      </div></body></html>
-+    `,
-+    text: `Low Stock Alert: ${data.itemName}\n\nCurrent stock: ${data.currentQuantity} ${data.unit || 'units'}\nReorder point: ${data.reorderPoint}\n\nPlease reorder soon.`,
-+  }),
- };
++export default API_BASE_URL;
+diff --git a/frontend/src/contexts/PortalContext.jsx b/frontend/src/contexts/PortalContext.jsx
+index 01f5938..2a41d2b 100644
+--- a/frontend/src/contexts/PortalContext.jsx
++++ b/frontend/src/contexts/PortalContext.jsx
+@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
  
- // ============================================
-diff --git a/backend/src/services/inventory.js b/backend/src/services/inventory.js
-index 576abf3..89c2393 100644
---- a/backend/src/services/inventory.js
-+++ b/backend/src/services/inventory.js
-@@ -16,6 +16,7 @@
-  */
+ const PortalContext = createContext(null);
  
- import { PrismaClient } from '@prisma/client';
-+import emailService from './email.js';
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
++import { API_URL } from '../config/api.js';
  
- const prisma = new PrismaClient();
+ export function PortalProvider({ children }) {
+   const { token } = useParams();
+diff --git a/frontend/src/contexts/SocketContext.jsx b/frontend/src/contexts/SocketContext.jsx
+index 0490b25..c0218b0 100644
+--- a/frontend/src/contexts/SocketContext.jsx
++++ b/frontend/src/contexts/SocketContext.jsx
+@@ -6,7 +6,7 @@ import api from '../services/api';
  
-@@ -295,9 +296,26 @@ export async function adjustStock(companyId, {
-   });
+ const SocketContext = createContext(null);
  
-   // Check for low stock alert
--  const item = await prisma.inventoryItem.findUnique({ where: { id: itemId } });
-+  const item = await prisma.inventoryItem.findUnique({
-+    where: { id: itemId },
-+    include: { company: { select: { name: true, email: true } } },
-+  });
-   if (item && newQuantity <= item.reorderPoint && newQuantity > 0) {
--    // TODO: Send low stock notification
-+    try {
-+      if (item.company?.email) {
-+        await emailService.send(item.company.email, 'lowStock', {
-+          companyName: item.company.name || 'BuildPro',
-+          itemName: item.name,
-+          sku: item.sku,
-+          currentQuantity: newQuantity,
-+          reorderPoint: item.reorderPoint,
-+          reorderQuantity: item.reorderQuantity,
-+          unit: item.unit,
-+        });
-+      }
-+    } catch (emailErr) {
-+      console.error('Low stock notification failed:', emailErr.message);
-+    }
-   }
+-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
++import { API_BASE_URL as SOCKET_URL } from '../config/api.js';
  
-   return updated;
-diff --git a/backend/src/services/stripe.js b/backend/src/services/stripe.js
-index 075908d..1b3fa6e 100644
---- a/backend/src/services/stripe.js
-+++ b/backend/src/services/stripe.js
-@@ -10,6 +10,7 @@
+ export function SocketProvider({ children }) {
+   const { isAuthenticated } = useAuth();
+diff --git a/frontend/src/pages/BuildsPage.jsx b/frontend/src/pages/BuildsPage.jsx
+index 48edcbf..77ab71f 100644
+--- a/frontend/src/pages/BuildsPage.jsx
++++ b/frontend/src/pages/BuildsPage.jsx
+@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
+ import { Download, Package, Plus, Trash2, Rocket } from 'lucide-react';
+ import api from '../services/api';
  
- import Stripe from 'stripe';
- import { PrismaClient } from '@prisma/client';
-+import emailService from './email.js';
+-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
++import { API_BASE_URL as API_BASE } from '../config/api.js';
  
- const prisma = new PrismaClient();
+ export default function BuildsPage() {
+   const [builds, setBuilds] = useState([]);
+diff --git a/frontend/src/pages/CustomerDetailPage.jsx b/frontend/src/pages/CustomerDetailPage.jsx
+index e3931d3..20e27ce 100644
+--- a/frontend/src/pages/CustomerDetailPage.jsx
++++ b/frontend/src/pages/CustomerDetailPage.jsx
+@@ -8,7 +8,7 @@ import {
+ } from 'lucide-react';
+ import api from '../services/api';
  
-@@ -288,8 +289,23 @@ async function handlePaymentSuccess(paymentIntent) {
-     },
-   });
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
++import { API_URL } from '../config/api.js';
  
--  // TODO: Send payment confirmation email
--  // await emailService.sendPaymentReceived(invoice.contact.email, {...});
-+  // Send payment confirmation email
-+  if (invoice.contact?.email) {
-+    try {
-+      await emailService.sendPaymentReceived(invoice.contact.email, {
-+        contactName: invoice.contact.name,
-+        companyName: invoice.company?.name || 'Your Service Provider',
-+        invoiceNumber: invoice.number,
-+        amount: `$${amount.toFixed(2)}`,
-+        invoiceTotal: `$${Number(invoice.total).toFixed(2)}`,
-+        balance: `$${Math.max(0, newBalance).toFixed(2)}`,
-+        status: newStatus,
-+        paidAt: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-+      });
-+    } catch (emailErr) {
-+      console.error('Payment confirmation email failed:', emailErr.message);
-+    }
-+  }
+ export default function CustomerDetailPage() {
+   const { id } = useParams();
+diff --git a/frontend/src/pages/CustomersPage.jsx b/frontend/src/pages/CustomersPage.jsx
+index ac6ef25..b9ee93e 100644
+--- a/frontend/src/pages/CustomersPage.jsx
++++ b/frontend/src/pages/CustomersPage.jsx
+@@ -7,7 +7,7 @@ import {
+ } from 'lucide-react';
+ import api from '../services/api';
  
-   return { 
-     handled: true, 
-diff --git a/backend/src/services/wisetack.js b/backend/src/services/wisetack.js
-index fb673c7..03f80bb 100644
---- a/backend/src/services/wisetack.js
-+++ b/backend/src/services/wisetack.js
-@@ -12,6 +12,7 @@
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
++import { API_URL } from '../config/api.js';
  
- import { PrismaClient } from '@prisma/client';
- import crypto from 'crypto';
-+import emailService from './email.js';
+ export default function CustomersPage() {
+   const navigate = useNavigate();
+diff --git a/frontend/src/pages/OperatorDashboard.jsx b/frontend/src/pages/OperatorDashboard.jsx
+index bc2bf92..74ac3aa 100644
+--- a/frontend/src/pages/OperatorDashboard.jsx
++++ b/frontend/src/pages/OperatorDashboard.jsx
+@@ -6,7 +6,7 @@ import {
+ } from 'lucide-react';
+ import api from '../services/api';
  
- const prisma = new PrismaClient();
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
++import { API_BASE_URL as API_URL } from '../config/api.js';
  
-@@ -252,8 +253,22 @@ export async function processWebhook(payload, signature) {
-         },
-       });
+ export default function OperatorDashboard() {
+   const navigate = useNavigate();
+diff --git a/frontend/src/pages/SettingsPage.jsx b/frontend/src/pages/SettingsPage.jsx
+index b88dda9..18e6e33 100644
+--- a/frontend/src/pages/SettingsPage.jsx
++++ b/frontend/src/pages/SettingsPage.jsx
+@@ -5,7 +5,7 @@ import api from '../services/api';
+ import { Building2, User, Lock, Users, CreditCard, Trash2 } from 'lucide-react';
+ import { Input } from '../components/ui/Input';
  
--      // TODO: Send notification email
--      // TODO: Trigger webhook to company's systems
-+      // Send approval notification email to customer
-+      if (app.contact?.email) {
-+        try {
-+          await emailService.send(app.contact.email, 'bookingConfirmation', {
-+            customerName: app.contact.name,
-+            companyName: app.company?.name || 'Your Service Provider',
-+            serviceName: 'Financing Application',
-+            scheduledDate: 'N/A',
-+            scheduledTime: '',
-+            confirmationCode: `Approved – $${(data.approved_amount / 100).toFixed(2)} at ${data.apr}% APR`,
-+            notes: `Your financing application has been approved! Monthly payment: $${(data.monthly_payment / 100).toFixed(2)} for ${data.term_months} months.`,
-+          });
-+        } catch (emailErr) {
-+          console.error('Wisetack approval email failed:', emailErr.message);
-+        }
-+      }
-       break;
+-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
++import { API_BASE_URL as API_BASE } from '../config/api.js';
  
-     case 'application.declined':
-diff --git a/frontend/src/components/features/PlaceholderPages.jsx b/frontend/src/components/features/PlaceholderPages.jsx
-index 70f7541..c795e59 100644
---- a/frontend/src/components/features/PlaceholderPages.jsx
-+++ b/frontend/src/components/features/PlaceholderPages.jsx
-@@ -1,9 +1,10 @@
- // Remaining Pages - Financials, Advanced, Settings
--import React, { useState } from 'react';
-+import React, { useState, useEffect } from 'react';
- import { useOutletContext } from 'react-router-dom';
- import { Card, CardHeader, CardBody, Button, Input, Tabs, TabsList, TabsTrigger, TabsContent } from '../ui';
--import { PieChart, Sparkles, DollarSign, TrendingUp, BarChart3, Users, FileText, Key, Globe, Zap } from 'lucide-react';
-+import { PieChart, Sparkles, DollarSign, TrendingUp, BarChart3, Users, FileText, Key, Globe, Zap, RefreshCw, AlertCircle } from 'lucide-react';
- import { useCRMDataStore } from '../../stores/builderStore';
-+import api from '../../services/api';
+ export default function SettingsPage() {
+   const { user, company, updateCompany } = useAuth();
+diff --git a/frontend/src/pages/public/SelfHostedPurchasePage.jsx b/frontend/src/pages/public/SelfHostedPurchasePage.jsx
+index 7789c16..503c16f 100644
+--- a/frontend/src/pages/public/SelfHostedPurchasePage.jsx
++++ b/frontend/src/pages/public/SelfHostedPurchasePage.jsx
+@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
+ import { Link } from 'react-router-dom';
+ import { Building, Check, Server, Download, Shield, Loader2, ArrowRight } from 'lucide-react';
  
- // FINANCIALS PAGE - displays calculated data from invoices/expenses
- export function FinancialsPage() {
-@@ -48,13 +49,162 @@ export function FinancialsPage() {
-             </div>
-           </CardBody></Card>
-         </TabsContent>
--        <TabsContent value="job-costing"><Card><CardBody className="py-12 text-center text-slate-400">Detailed job costing breakdown by labor, materials, and subcontractors. Data pulled from time entries and expenses.</CardBody></Card></TabsContent>
--        <TabsContent value="reports"><Card><CardBody className="py-12 text-center text-slate-400">Generate P&L, cash flow, and aging reports from your financial data.</CardBody></Card></TabsContent>
-+        <TabsContent value="job-costing"><JobCostingTab primaryColor={primaryColor} /></TabsContent>
-+        <TabsContent value="reports"><ReportsTab primaryColor={primaryColor} /></TabsContent>
-       </Tabs>
-     </div>
-   );
- }
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
++import { API_BASE_URL as API_URL } from '../../config/api.js';
  
-+// JOB COSTING TAB
-+function JobCostingTab({ primaryColor }) {
-+  const [report, setReport] = useState(null);
-+  const [loading, setLoading] = useState(true);
-+  const [error, setError] = useState(null);
-+
-+  useEffect(() => {
-+    setLoading(true);
-+    api.jobCosting.report({ limit: 20 })
-+      .then(data => { setReport(data); setError(null); })
-+      .catch(err => setError(err.message || 'Failed to load job costing data'))
-+      .finally(() => setLoading(false));
-+  }, []);
-+
-+  if (loading) return <Card><CardBody className="py-12 text-center text-slate-400">Loading job costing data…</CardBody></Card>;
-+  if (error) return (
-+    <Card><CardBody className="py-8">
-+      <div className="flex items-center gap-3 text-red-400"><AlertCircle className="w-5 h-5" /><span>{error}</span></div>
-+    </CardBody></Card>
-+  );
-+
-+  const jobs = report?.jobs || [];
-+  const summary = report?.summary || {};
-+
-+  return (
-+    <div className="space-y-4">
-+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-+        {[
-+          { label: 'Total Revenue', value: `$${Number(summary.totalRevenue || 0).toLocaleString()}`, color: 'text-emerald-400' },
-+          { label: 'Total Cost', value: `$${Number(summary.totalCost || 0).toLocaleString()}`, color: 'text-red-400' },
-+          { label: 'Avg Margin', value: `${Number(summary.avgMarginPercent || 0).toFixed(1)}%`, color: 'text-blue-400' },
-+        ].map((s, i) => (
-+          <Card key={i} className="p-4">
-+            <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
-+            <p className="text-sm text-slate-400">{s.label}</p>
-+          </Card>
-+        ))}
-+      </div>
-+      <Card>
-+        <CardHeader title="Job Cost Breakdown" />
-+        <CardBody>
-+          {jobs.length === 0 ? (
-+            <p className="text-slate-500 text-center py-8">No completed jobs to analyze yet</p>
-+          ) : (
-+            <div className="space-y-3">
-+              {jobs.map(job => {
-+                const margin = job.revenue > 0 ? ((job.revenue - job.totalCost) / job.revenue * 100).toFixed(1) : 0;
-+                const isProfit = job.revenue >= job.totalCost;
-+                return (
-+                  <div key={job.id} className="p-4 bg-slate-800/50 rounded-lg">
-+                    <div className="flex justify-between mb-2">
-+                      <span className="font-medium text-white">{job.title}</span>
-+                      <span className={isProfit ? 'text-emerald-400' : 'text-red-400'}>{margin}% margin</span>
-+                    </div>
-+                    <div className="flex gap-4 text-sm text-slate-400">
-+                      <span>Revenue: ${Number(job.revenue || 0).toLocaleString()}</span>
-+                      <span>Labor: ${Number(job.laborCost || 0).toLocaleString()}</span>
-+                      <span>Materials: ${Number(job.materialCost || 0).toLocaleString()}</span>
-+                    </div>
-+                    <div className="h-1.5 bg-slate-700 rounded-full mt-2">
-+                      <div className="h-full rounded-full" style={{ width: `${Math.min(100, (job.totalCost / job.revenue) * 100)}%`, backgroundColor: isProfit ? primaryColor : '#ef4444' }} />
-+                    </div>
-+                  </div>
-+                );
-+              })}
-+            </div>
-+          )}
-+        </CardBody>
-+      </Card>
-+    </div>
-+  );
-+}
-+
-+// REPORTS TAB
-+function ReportsTab({ primaryColor }) {
-+  const [reportData, setReportData] = useState(null);
-+  const [loading, setLoading] = useState(true);
-+  const [error, setError] = useState(null);
-+  const [dateRange, setDateRange] = useState('month');
-+
-+  const load = () => {
-+    setLoading(true);
-+    const now = new Date();
-+    const startDate = dateRange === 'month'
-+      ? new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-+      : dateRange === 'quarter'
-+        ? new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1).toISOString()
-+        : new Date(now.getFullYear(), 0, 1).toISOString();
-+
-+    api.reports.summary({ startDate, endDate: now.toISOString() })
-+      .then(data => { setReportData(data); setError(null); })
-+      .catch(err => setError(err.message || 'Failed to load reports'))
-+      .finally(() => setLoading(false));
-+  };
-+
-+  useEffect(() => { load(); }, [dateRange]);
-+
-+  return (
-+    <div className="space-y-4">
-+      <div className="flex items-center justify-between">
-+        <div className="flex gap-2">
-+          {['month', 'quarter', 'year'].map(r => (
-+            <button key={r} onClick={() => setDateRange(r)} className={`px-3 py-1.5 rounded-lg text-sm capitalize transition-colors ${dateRange === r ? 'text-white' : 'text-slate-400 hover:text-white'}`} style={dateRange === r ? { backgroundColor: primaryColor } : {}}>
-+              This {r}
-+            </button>
-+          ))}
-+        </div>
-+        <button onClick={load} className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white">
-+          <RefreshCw className="w-4 h-4" /> Refresh
-+        </button>
-+      </div>
-+
-+      {loading && <Card><CardBody className="py-12 text-center text-slate-400">Loading report…</CardBody></Card>}
-+      {error && <Card><CardBody className="py-8"><div className="flex items-center gap-3 text-red-400"><AlertCircle className="w-5 h-5" /><span>{error}</span></div></CardBody></Card>}
-+      {!loading && !error && reportData && (
-+        <>
-+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-+            {[
-+              { label: 'Revenue', value: `$${Number(reportData.revenue || 0).toLocaleString()}`, sub: `${reportData.invoiceCount || 0} invoices`, color: 'text-emerald-400' },
-+              { label: 'Collected', value: `$${Number(reportData.collected || 0).toLocaleString()}`, sub: 'payments received', color: 'text-blue-400' },
-+              { label: 'Outstanding', value: `$${Number(reportData.outstanding || 0).toLocaleString()}`, sub: 'unpaid invoices', color: 'text-yellow-400' },
-+              { label: 'Expenses', value: `$${Number(reportData.expenses || 0).toLocaleString()}`, sub: `${reportData.expenseCount || 0} entries`, color: 'text-red-400' },
-+            ].map((s, i) => (
-+              <Card key={i} className="p-4">
-+                <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
-+                <p className="text-sm font-medium text-white">{s.label}</p>
-+                <p className="text-xs text-slate-400">{s.sub}</p>
-+              </Card>
-+            ))}
-+          </div>
-+          <Card>
-+            <CardHeader title="Job Status Breakdown" />
-+            <CardBody>
-+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-+                {Object.entries(reportData.jobsByStatus || {}).map(([status, count]) => (
-+                  <div key={status} className="p-3 bg-slate-800/50 rounded-lg text-center">
-+                    <p className="text-2xl font-bold text-white">{count}</p>
-+                    <p className="text-sm text-slate-400 capitalize">{status.replace(/_/g, ' ')}</p>
-+                  </div>
-+                ))}
-+              </div>
-+            </CardBody>
-+          </Card>
-+        </>
-+      )}
-+    </div>
-+  );
-+}
-+
- // ADVANCED PAGE - feature showcase
- export function AdvancedPage() {
-   const { instance } = useOutletContext();
+ export default function SelfHostedPurchasePage() {
+   const [licenses, setLicenses] = useState([]);
+diff --git a/frontend/src/pages/public/SignupPage.jsx b/frontend/src/pages/public/SignupPage.jsx
+index de958f1..5c1cba0 100644
+--- a/frontend/src/pages/public/SignupPage.jsx
++++ b/frontend/src/pages/public/SignupPage.jsx
+@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+ import { Building, User, CreditCard, Check, ArrowLeft, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
+ import api from '../../services/api.js';
+ 
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
++import { API_BASE_URL as API_URL } from '../../config/api.js';
+ 
+ // Plan data (matches pricing config)
+ const PLANS = {
+diff --git a/frontend/src/pages/public/SignupSuccessPage.jsx b/frontend/src/pages/public/SignupSuccessPage.jsx
+index 5127e05..8141245 100644
+--- a/frontend/src/pages/public/SignupSuccessPage.jsx
++++ b/frontend/src/pages/public/SignupSuccessPage.jsx
+@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
+ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+ import { Building, Check, Loader2 } from 'lucide-react';
+ 
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
++import { API_BASE_URL as API_URL } from '../../config/api.js';
+ 
+ export default function SignupSuccessPage() {
+   const navigate = useNavigate();
+diff --git a/frontend/src/pages/settings/BillingSettingsPage.jsx b/frontend/src/pages/settings/BillingSettingsPage.jsx
+index 7f88d61..a351dbe 100644
+--- a/frontend/src/pages/settings/BillingSettingsPage.jsx
++++ b/frontend/src/pages/settings/BillingSettingsPage.jsx
+@@ -5,7 +5,7 @@ import {
+ } from 'lucide-react';
+ import api from '../../services/api';
+ 
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
++import { API_BASE_URL as API_URL } from '../../config/api.js';
+ 
+ const PLANS = {
+   starter: { id: 'starter', name: 'Starter', price: 49, priceAnnual: 39, users: 2 },
+diff --git a/frontend/src/pages/settings/IntegrationsPage.jsx b/frontend/src/pages/settings/IntegrationsPage.jsx
+index f323f03..7698eae 100644
+--- a/frontend/src/pages/settings/IntegrationsPage.jsx
++++ b/frontend/src/pages/settings/IntegrationsPage.jsx
+@@ -5,7 +5,7 @@ import {
+ } from 'lucide-react';
+ import api from '../../services/api';
+ 
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
++import { API_BASE_URL as API_URL } from '../../config/api.js';
+ 
+ export default function IntegrationsPage() {
+   const [loading, setLoading] = useState(true);
 diff --git a/frontend/src/services/api.js b/frontend/src/services/api.js
-index 065315e..6d79f9c 100644
+index dac0861..4ef84b1 100644
 --- a/frontend/src/services/api.js
 +++ b/frontend/src/services/api.js
-@@ -324,6 +324,21 @@ class ApiClient {
-     stats: () => this.get('/api/dashboard/stats'),
-     recentActivity: () => this.get('/api/dashboard/recent-activity'),
-   };
-+
-+  // Job Costing
-+  jobCosting = {
-+    forJob: (jobId) => this.get(`/api/job-costing/job/${jobId}`),
-+    report: (params) => this.get('/api/job-costing/report', params),
-+    trends: (params) => this.get('/api/job-costing/trends', params),
-+  };
-+
-+  // Reports
-+  reports = {
-+    summary: (params) => this.get('/api/reports/summary', params),
-+    revenue: (params) => this.get('/api/reports/revenue', params),
-+    expenses: (params) => this.get('/api/reports/expenses', params),
-+    profitability: (params) => this.get('/api/reports/profitability', params),
-+  };
- }
+@@ -1,4 +1,5 @@
+-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
++import { API_BASE_URL } from '../config/api.js';
++const API_URL = API_BASE_URL;
  
- export const api = new ApiClient();
+ class ApiClient {
+   constructor() {
 -- 
 2.43.0
 

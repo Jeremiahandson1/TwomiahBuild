@@ -5,7 +5,7 @@ import api from '../services/api';
 import { Building2, User, Lock, Users, CreditCard, Trash2 } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { API_BASE_URL as API_BASE } from '../config/api.js';
 
 export default function SettingsPage() {
   const { user, company, updateCompany } = useAuth();

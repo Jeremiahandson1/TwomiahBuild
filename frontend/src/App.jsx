@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { SocketProvider } from './contexts/SocketContext';
 import { PermissionsProvider } from './contexts/PermissionsContext';
+import { PWAProvider } from './contexts/PWAContext';
 import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
@@ -107,6 +108,7 @@ function App() {
         <AuthProvider>
           <PermissionsProvider>
             <ToastProvider>
+              <PWAProvider>
               <SocketProvider>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
@@ -193,6 +195,7 @@ function App() {
                   </Routes>
                 </Suspense>
               </SocketProvider>
+              </PWAProvider>
             </ToastProvider>
           </PermissionsProvider>
         </AuthProvider>

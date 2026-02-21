@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Download, FileSpreadsheet, FileText, ChevronDown, Loader2 } from 'lucide-react';
 import api from '../../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { API_URL } from '../../config/api.js';
 
 /**
  * Export Button Component

@@ -70,6 +70,7 @@ router.post('/signup', async (req, res, next) => {
     });
     
     const data = schema.parse(req.body);
+    data.email = data.email.toLowerCase().trim();
 
     // Check if email already exists
     const existing = await prisma.user.findFirst({ where: { email: data.email } });
@@ -214,6 +215,7 @@ router.post('/register', async (req, res, next) => {
       phone: z.string().optional(),
     });
     const data = schema.parse(req.body);
+    data.email = data.email.toLowerCase().trim();
 
     const existing = await prisma.user.findFirst({ where: { email: data.email } });
     if (existing) return res.status(409).json({ error: 'Email already registered' });
@@ -262,6 +264,7 @@ router.post('/login', async (req, res, next) => {
   try {
     const schema = z.object({ email: z.string().email(), password: z.string() });
     const data = schema.parse(req.body);
+    data.email = data.email.toLowerCase().trim();
 
     const user = await prisma.user.findFirst({ where: { email: data.email }, include: { company: true } });
     if (!user) return res.status(401).json({ error: 'Invalid email or password' });
@@ -381,7 +384,8 @@ router.put('/password', authenticate, async (req, res, next) => {
 // Forgot password
 router.post('/forgot-password', async (req, res, next) => {
   try {
-    const { email } = req.body;
+    const { email: rawEmail } = req.body;
+    const email = (rawEmail || '').toLowerCase().trim();
     const user = await prisma.user.findFirst({ where: { email } });
     
     if (user) {

@@ -6,7 +6,7 @@ import api from '../services/api';
 
 const SocketContext = createContext(null);
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { API_BASE_URL as SOCKET_URL } from '../config/api.js';
 
 export function SocketProvider({ children }) {
   const { isAuthenticated } = useAuth();

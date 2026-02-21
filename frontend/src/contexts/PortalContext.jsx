@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 
 const PortalContext = createContext(null);
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { API_URL } from '../config/api.js';
 
 export function PortalProvider({ children }) {
   const { token } = useParams();

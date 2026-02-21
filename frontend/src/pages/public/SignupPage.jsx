@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Building, User, CreditCard, Check, ArrowLeft, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import api from '../../services/api.js';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { API_BASE_URL as API_URL } from '../../config/api.js';
 
 // Plan data (matches pricing config)
 const PLANS = {

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { API_BASE_URL as API_URL } from '../config/api.js';
 
 export default function OperatorDashboard() {
   const navigate = useNavigate();
