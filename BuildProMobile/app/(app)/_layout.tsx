@@ -51,7 +51,7 @@ export default function AppLayout() {
           name="time/index"
           options={{
             title: 'Time',
-            tabBarIcon: ({ color, size }) => <Ionicons name="clock" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="time-outline" size={size} color={color} />,
           }}
         />
         <Tabs.Screen

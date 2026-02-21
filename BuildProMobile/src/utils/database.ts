@@ -30,7 +30,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   }
 
   try {
-    db = await SQLite.openDatabaseAsync('buildpro.db');
+    db = await SQLite.openDatabaseAsync('buildpro_v2.db');
     await initializeSchema(db);
   } catch (err: any) {
     dbUnavailable = true;
