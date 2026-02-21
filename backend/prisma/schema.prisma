@@ -87,6 +87,7 @@ model Company {
   // Pricebook
   pricebookCategories PricebookCategory[]
   pricebookItems      PricebookItem[]
+  pricebookRelations  PricebookRelation[]
 
   // Reviews
   reviewRequests ReviewRequest[]
@@ -1318,11 +1319,33 @@ model PricebookItem {
   inventoryItemId String?
   inventoryItem   InventoryItem?     @relation(fields: [inventoryItemId], references: [id])
 
+  relationsAsSource PricebookRelation[] @relation("RelationSource")
+  relationsAsTarget PricebookRelation[] @relation("RelationTarget")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@index([categoryId])
+}
+
+// AI-generated pairings: "when X is on a quote, suggest Y"
+model PricebookRelation {
+  id       String @id @default(cuid())
+  strength Int    @default(50)
+
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  sourceItemId String
+  sourceItem   PricebookItem @relation("RelationSource", fields: [sourceItemId], references: [id], onDelete: Cascade)
+  targetItemId String
+  targetItem   PricebookItem @relation("RelationTarget", fields: [targetItemId], references: [id], onDelete: Cascade)
+
+  reason  String?
+  builtAt DateTime @default(now())
+
+  @@unique([companyId, sourceItemId, targetItemId])
+  @@index([companyId, sourceItemId])
 }
 
 // ==================== REVIEWS ====================

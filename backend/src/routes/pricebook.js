@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
 import pricebook from '../services/pricebook.js';
+import * as smartPricebook from '../services/smartPricebook.js';
+import { prisma } from '../config/prisma.js';
 
 const router = Router();
 router.use(authenticate);
@@ -237,6 +239,106 @@ router.get('/calculate-price', async (req, res, next) => {
       targetMargin: parseFloat(targetMargin),
       suggestedPrice: Math.round(suggestedPrice * 100) / 100,
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================
+// SMART PRICEBOOK (AI)
+// ============================================
+
+// GET /pricebook/smart/trades — list supported trades for Smart Start wizard
+router.get('/smart/trades', (req, res) => {
+  res.json(smartPricebook.SUPPORTED_TRADES);
+});
+
+// POST /pricebook/smart/start — generate full pricebook from scratch
+// Body: { trade, state, targetMargin }
+router.post('/smart/start', requirePermission('pricebook:create'), async (req, res, next) => {
+  try {
+    const { trade, state, targetMargin } = req.body;
+
+    if (!trade || !state) {
+      return res.status(400).json({ error: 'trade and state are required' });
+    }
+
+    // Don't overwrite an existing pricebook without explicit confirmation
+    const existingCount = await prisma.pricebookItem.count({
+      where: { companyId: req.user.companyId, active: true },
+    });
+
+    if (existingCount > 0 && !req.body.confirmOverwrite) {
+      return res.status(409).json({
+        error: 'Pricebook already has items',
+        existingCount,
+        message: 'Send confirmOverwrite: true to proceed',
+      });
+    }
+
+    const result = await smartPricebook.smartStart(req.user.companyId, {
+      trade,
+      state,
+      targetMargin: targetMargin ? parseInt(targetMargin) : 45,
+    });
+
+    // Build upsell cache in background — don't block response
+    smartPricebook.buildUpsellCache(req.user.companyId).catch(err =>
+      console.error('[Factory] Upsell cache build failed:', err)
+    );
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /pricebook/smart/price-check — scan pricebook for underpriced items
+router.get('/smart/price-check', async (req, res, next) => {
+  try {
+    const results = await smartPricebook.priceCheck(req.user.companyId);
+    res.json({ count: results.length, items: results });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /pricebook/smart/upsells — get upsell suggestions from cache (no AI call)
+// Body: { itemIds: ['id1', 'id2', ...] }
+router.post('/smart/upsells', async (req, res, next) => {
+  try {
+    const { itemIds } = req.body;
+
+    if (!Array.isArray(itemIds) || itemIds.length === 0) {
+      return res.status(400).json({ error: 'itemIds array is required' });
+    }
+
+    const recommendations = await smartPricebook.getUpsellRecommendations(
+      req.user.companyId,
+      itemIds
+    );
+
+    // If cache was empty, kick off a background build
+    if (recommendations.length === 0) {
+      const stale = await smartPricebook.upsellCacheStale(req.user.companyId);
+      if (stale) {
+        smartPricebook.buildUpsellCache(req.user.companyId).catch(err =>
+          console.error('[Upsell] Background cache build failed:', err)
+        );
+      }
+    }
+
+    res.json({ recommendations });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /pricebook/smart/build-upsell-cache — manually trigger cache rebuild
+router.post('/smart/build-upsell-cache', requirePermission('pricebook:update'), async (req, res, next) => {
+  try {
+    const result = await smartPricebook.buildUpsellCache(req.user.companyId);
+    res.json(result);
   } catch (error) {
     next(error);
   }
