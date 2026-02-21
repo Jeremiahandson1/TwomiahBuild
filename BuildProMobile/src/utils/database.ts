@@ -112,11 +112,34 @@ const MIGRATIONS: { version: number; sql: string[] }[] = [
       )`,
     ],
   },
-  // Future migrations go here, e.g.:
-  // {
-  //   version: 2,
-  //   sql: [`ALTER TABLE jobs ADD COLUMN priority TEXT DEFAULT 'normal'`],
-  // },
+  {
+    // Add missing columns to tables that existed before migration system was introduced
+    version: 2,
+    sql: [
+      // time_entries missing columns
+      `ALTER TABLE time_entries ADD COLUMN duration INTEGER`,
+      `ALTER TABLE time_entries ADD COLUMN status TEXT NOT NULL DEFAULT 'active'`,
+      `ALTER TABLE time_entries ADD COLUMN synced INTEGER NOT NULL DEFAULT 0`,
+      // daily_logs missing columns
+      `ALTER TABLE daily_logs ADD COLUMN user_id TEXT NOT NULL DEFAULT 'local'`,
+      `ALTER TABLE daily_logs ADD COLUMN temperature TEXT`,
+      `ALTER TABLE daily_logs ADD COLUMN workers_on_site INTEGER DEFAULT 0`,
+      `ALTER TABLE daily_logs ADD COLUMN synced INTEGER NOT NULL DEFAULT 0`,
+      // photos missing columns
+      `ALTER TABLE photos ADD COLUMN user_id TEXT NOT NULL DEFAULT 'local'`,
+      `ALTER TABLE photos ADD COLUMN local_uri TEXT NOT NULL DEFAULT ''`,
+      `ALTER TABLE photos ADD COLUMN upload_progress INTEGER NOT NULL DEFAULT 0`,
+      `ALTER TABLE photos ADD COLUMN synced INTEGER NOT NULL DEFAULT 0`,
+      `ALTER TABLE photos ADD COLUMN latitude REAL`,
+      `ALTER TABLE photos ADD COLUMN longitude REAL`,
+      `ALTER TABLE photos ADD COLUMN taken_at TEXT NOT NULL DEFAULT (datetime('now'))`,
+      // jobs missing columns
+      `ALTER TABLE jobs ADD COLUMN number TEXT`,
+      `ALTER TABLE jobs ADD COLUMN contact_name TEXT`,
+      `ALTER TABLE jobs ADD COLUMN start_date TEXT`,
+      `ALTER TABLE jobs ADD COLUMN description TEXT`,
+    ],
+  },
 ];
 
 async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
@@ -138,7 +161,12 @@ async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
     console.log(`[DB] Running migration v${migration.version}`);
     await database.withTransactionAsync(async () => {
       for (const sql of migration.sql) {
-        await database.runAsync(sql);
+        try {
+          await database.runAsync(sql);
+        } catch (e: any) {
+          // Ignore "duplicate column" errors — column already exists, that's fine
+          if (!e.message?.includes('duplicate column')) throw e;
+        }
       }
       await database.runAsync(
         `INSERT INTO schema_migrations (version) VALUES (?)`,
