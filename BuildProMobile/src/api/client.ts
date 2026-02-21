@@ -12,7 +12,7 @@ import NetInfo from '@react-native-community/netinfo';
 import * as SecureStore from 'expo-secure-store';
 import { enqueueSync } from '../utils/database';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://api.buildpro.io';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://buildpro-api-y5e1.onrender.com';
 const TOKEN_KEY = 'buildpro_auth_token';
 const REFRESH_TOKEN_KEY = 'buildpro_refresh_token';
 
