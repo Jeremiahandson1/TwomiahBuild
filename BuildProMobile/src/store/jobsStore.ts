@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getDatabase } from '../utils/database';
+import { getDatabaseSafe as getDatabase } from '../utils/database';
 import api from '../api/client';
 
 export interface Job {
@@ -30,7 +30,9 @@ export const useJobsStore = create<JobsState>((set) => ({
 
   fetchJobs: async () => {
     set({ loading: true, error: null });
-    const db = await getDatabase();
+    const db = await getDatabaseSafe();
+
+    if (!db) return;
 
     // 1. Load from local cache immediately (fast)
     const cached = await db.getAllAsync<Job>(

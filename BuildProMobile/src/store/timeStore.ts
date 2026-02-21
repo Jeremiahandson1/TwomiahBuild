@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getDatabase, enqueueSync } from '../utils/database';
+import { getDatabaseSafe as getDatabase, enqueueSync } from '../utils/database';
 import api from '../api/client';
 import * as Location from 'expo-location';
 import { v4 as uuid } from 'uuid';
@@ -35,7 +35,8 @@ export const useTimeStore = create<TimeState>((set, get) => ({
   loading: false,
 
   loadActiveEntry: async () => {
-    const db = await getDatabase();
+    const db = await getDatabaseSafe();
+    if (!db) return;
     const active = await db.getFirstAsync<TimeEntry>(
       `SELECT id, server_id as serverId, job_id as jobId, clock_in as clockIn,
               notes, latitude, longitude, status, synced
@@ -45,7 +46,8 @@ export const useTimeStore = create<TimeState>((set, get) => ({
   },
 
   clockIn: async (jobId?: string) => {
-    const db = await getDatabase();
+    const db = await getDatabaseSafe();
+    if (!db) return;
     const localId = uuid();
     const now = new Date().toISOString();
 
@@ -94,7 +96,8 @@ export const useTimeStore = create<TimeState>((set, get) => ({
     const { activeEntry } = get();
     if (!activeEntry) return;
 
-    const db = await getDatabase();
+    const db = await getDatabaseSafe();
+    if (!db) return;
     const now = new Date().toISOString();
     const duration = Math.floor((new Date(now).getTime() - new Date(activeEntry.clockIn).getTime()) / 1000);
 
@@ -129,7 +132,8 @@ export const useTimeStore = create<TimeState>((set, get) => ({
   },
 
   fetchEntries: async () => {
-    const db = await getDatabase();
+    const db = await getDatabaseSafe();
+    if (!db) return;
     const entries = await db.getAllAsync<TimeEntry>(
       `SELECT te.id, te.server_id as serverId, te.job_id as jobId,
               j.name as jobName, te.clock_in as clockIn, te.clock_out as clockOut,

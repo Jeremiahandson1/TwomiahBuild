@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getDatabase, enqueueSync } from '../utils/database';
+import { getDatabaseSafe as getDatabase, enqueueSync } from '../utils/database';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { v4 as uuid } from 'uuid';
@@ -59,7 +59,8 @@ export const usePhotosStore = create<PhotosState>((set, get) => ({
   },
 
   fetchPhotos: async (jobId) => {
-    const db = await getDatabase();
+    const db = await getDatabaseSafe();
+    if (!db) return;
     const photos = await db.getAllAsync<Photo>(
       `SELECT id, server_id as serverId, job_id as jobId, local_uri as localUri,
               caption, latitude, longitude, taken_at as takenAt, synced, upload_progress as uploadProgress
@@ -70,14 +71,16 @@ export const usePhotosStore = create<PhotosState>((set, get) => ({
   },
 
   deletePhoto: async (id) => {
-    const db = await getDatabase();
+    const db = await getDatabaseSafe();
+    if (!db) return;
     await db.runAsync(`DELETE FROM photos WHERE id = ?`, [id]);
     set((state) => ({ photos: state.photos.filter((p) => p.id !== id) }));
   },
 }));
 
 async function savePhoto(jobId: string, localUri: string, caption?: string): Promise<Photo> {
-  const db = await getDatabase();
+  const db = await getDatabaseSafe();
+  if (!db) return;
   const id = uuid();
   const now = new Date().toISOString();
 
