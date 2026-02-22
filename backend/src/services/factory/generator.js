@@ -18,6 +18,7 @@ import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import archiver from 'archiver';
 import bcrypt from 'bcryptjs';
+import factoryStorage from './storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -113,7 +114,10 @@ export async function generate(config) {
     // 4. Clean up workspace (keep zip)
     fs.rmSync(workDir, { recursive: true, force: true });
 
-    return { zipPath, zipName, buildId, slug };
+    // 5. Upload to S3/R2 for persistent storage (no-op if local)
+    const { storageKey, storageType } = await factoryStorage.uploadZip(zipPath, zipName);
+
+    return { zipPath: storageKey, zipName, buildId, slug, storageType };
 
   } catch (err) {
     // Clean up on failure

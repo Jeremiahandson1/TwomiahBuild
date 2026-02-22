@@ -14,6 +14,7 @@ import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import { fileURLToPath } from 'url';
 import { generate, listTemplates, cleanOldBuilds } from '../services/factory/generator.js';
+import factoryStorage from '../services/factory/storage.js';
 import factoryStripe from '../services/factory/stripe.js';
 import deployService from '../services/factory/deploy.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
@@ -139,6 +140,7 @@ router.post('/generate', async (req, res) => {
           buildId: result.buildId,
           zipPath: result.zipPath,
           zipName: result.zipName,
+          storageType: result.storageType || 'local',
         }
       });
     } catch (dbErr) {
@@ -165,12 +167,13 @@ router.post('/generate', async (req, res) => {
 
 /**
  * GET /api/factory/download/:buildId/:filename
- * Supports cookie auth and ?token= query param for direct browser downloads
+ * Supports cookie auth and ?token= query param for direct browser downloads.
+ * Streams from S3/R2 in production, local disk in dev.
  */
 router.get('/download/:buildId/:filename', async (req, res) => {
   const { buildId, filename } = req.params;
 
-  // Sanitize — allow uppercase and underscores in filename
+  // Sanitize
   if (!/^[a-f0-9-]+$/.test(buildId) || !/^[a-zA-Z0-9_-]+\.zip$/.test(filename)) {
     return res.status(400).json({ error: 'Invalid download parameters' });
   }
@@ -194,20 +197,11 @@ router.get('/download/:buildId/:filename', async (req, res) => {
   });
 
   if (!build || !build.zipPath) {
-    return res.status(404).json({ error: 'Build not found. It may have expired.' });
+    return res.status(404).json({ error: 'Build not found.' });
   }
 
-  const zipPath = build.zipPath;
-
-  if (!fs.existsSync(zipPath)) {
-    return res.status(404).json({ error: 'Build file not found. It may have expired.' });
-  }
-
-  res.download(zipPath, filename, (err) => {
-    if (err && !res.headersSent) {
-      res.status(500).json({ error: 'Download failed' });
-    }
-  });
+  const storageType = build.storageType || 'local';
+  await factoryStorage.streamZipToResponse(build.zipPath, storageType, filename, res);
 });
 
 

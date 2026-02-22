@@ -2439,10 +2439,11 @@ model FactoryBuild {
   config      Json?
 
   // Output
-  zipPath  String?
-  zipName  String?
-  buildId  String @unique
-  fileSize Int?
+  zipPath     String?
+  zipName     String?
+  buildId     String @unique
+  fileSize    Int?
+  storageType String @default("local") // 'local' or 's3'
 
   status String @default("complete") // generating, complete, failed
 
