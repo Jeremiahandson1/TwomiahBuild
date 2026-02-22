@@ -426,7 +426,6 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
           envVars: [
             { key: 'VITE_API_URL', value: `${backendUrl}/api` },
           ],
-          region,
         });
 
         results.steps.push({ step: 'render_frontend', status: 'ok', serviceId: frontend.service?.id });
