@@ -423,7 +423,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
           buildCommand: 'npm install && npm run build',
           publishPath: 'dist',
           envVars: [
-            { key: 'VITE_API_URL', value: `${backendUrl}/api` },
+            { key: 'VITE_API_URL', value: backendUrl },
           ],
         });
 
