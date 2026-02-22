@@ -6,7 +6,7 @@
     "features": ["contacts", "jobs", "quotes", "invoices", "scheduling", "team", "dashboard"],
     "backend": {
       "routes": ["auth.js", "contacts.js", "jobs.js", "quotes.js", "invoices.js", "time.js", "team.js", "company.js", "dashboard.js"],
-      "services": ["email.js", "fileUpload.js", "logger.js", "socket.js", "pdf.js"],
+      "services": ["audit.js", "email.js", "fileUpload.js", "logger.js", "socket.js", "pdf.js"],
       "middleware": ["auth.js", "featureGate.js", "permissions.js", "security.js"]
     },
     "frontend": {
