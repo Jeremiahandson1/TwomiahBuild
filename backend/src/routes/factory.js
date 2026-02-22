@@ -744,6 +744,7 @@ router.post('/customers/:id/deploy', async (req, res) => {
     }
 
     // Check zip exists — if not, regenerate it
+    let zipPath = latestBuild.zipPath;
     const { existsSync } = await import('fs');
     if (true) { // always regenerate for deploy to ensure latest template
       logger.info(`[Deploy] Zip not on disk, regenerating for ${customer.slug}...`);
