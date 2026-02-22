@@ -14,8 +14,6 @@ import { SkipLink, RouteAnnouncer } from '../common/Accessibility';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import { useFeatureNavigation, FeatureProvider } from '../FeatureGate';
 
-// Nav item definitions — `feature` maps to a feature ID in features.js
-// Items with no `feature` are always visible (core/admin)
 const ALL_NAV_ITEMS = [
   { to: '/',              icon: Home,          label: 'Dashboard',     exact: true },
   { to: '/contacts',      icon: Users,         label: 'Contacts',      feature: 'contact_database' },
@@ -59,16 +57,6 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Filter nav to only show features the company has enabled.
-  // If enabledFeatures is null/empty (demo or fresh account), show everything.
-  const enabledFeatures = company?.enabledFeatures;
-  const navItemsWithFeatureContext = ALL_NAV_ITEMS.map(item => ({
-    ...item,
-    // If company has no feature list yet, treat all features as enabled
-    feature: (!enabledFeatures || enabledFeatures.length === 0) ? undefined : item.feature,
-  }));
-  const navItems = useFeatureNavigation(navItemsWithFeatureContext);
-
   // Close sidebar on route change (mobile)
   useEffect(() => {
     if (isMobile) setSidebarOpen(false);
@@ -97,14 +85,22 @@ export default function AppLayout() {
     navigate('/login');
   };
 
+  // Filter nav based on company's enabled features.
+  // If no feature list yet (demo/fresh), show everything.
+  const navItems = useFeatureNavigation(
+    company?.enabledFeatures?.length
+      ? ALL_NAV_ITEMS
+      : ALL_NAV_ITEMS.map(item => ({ ...item, feature: undefined }))
+  );
+
   return (
     <FeatureProvider features={company?.enabledFeatures || []}>
-    <div className="min-h-screen bg-gray-50">
-      {/* Skip Link */}
-      <SkipLink />
-      
-      {/* Route Announcer */}
-      <RouteAnnouncer />
+      <div className="min-h-screen bg-gray-50">
+        {/* Skip Link */}
+        <SkipLink />
+        
+        {/* Route Announcer */}
+        <RouteAnnouncer />
 
       {/* Mobile Overlay */}
       {sidebarOpen && isMobile && (
@@ -302,6 +298,7 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+    </div>
     </FeatureProvider>
   );
 }
