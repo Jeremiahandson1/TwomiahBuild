@@ -145,22 +145,9 @@ function Nav() {
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 68 }}>
         {/* Logo */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <svg width="32" height="36" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 38 C12 38 2 30 4 18 C6 8 12 4 12 4 C12 4 10 14 16 18 C16 18 14 10 22 2 C22 2 20 16 26 20 C30 23 28 32 24 36 C22 38 20 40 24 40 Z" fill="url(#navFlame1)"/>
-            <path d="M22 38 C22 38 30 33 28 24 C27 18 22 15 22 15 C22 15 24 22 20 26 C20 26 26 18 22 10 C22 10 30 20 28 28 C27 33 25 37 28 40 Z" fill="url(#navFlame2)" opacity="0.85"/>
-            <defs>
-              <linearGradient id="navFlame1" x1="0" y1="40" x2="10" y2="0" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#FF3D00"/>
-                <stop offset="100%" stopColor="#FFAB00"/>
-              </linearGradient>
-              <linearGradient id="navFlame2" x1="0" y1="40" x2="10" y2="0" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#FF6D00"/>
-                <stop offset="100%" stopColor="#FFD600"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span style={{ fontSize: 20, fontWeight: 800, color: 'white', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.02em' }}>
-            TWOMIAH <span style={{ color: '#f97316' }}>BUILD</span>
+          <TwomiahFlameIcon size={36} />
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, letterSpacing: '0.1em', background: 'linear-gradient(135deg, #fff 0%, #FFD0B0 60%, #FF6D00 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', lineHeight: 1 }}>
+            TWOMIAH <span style={{ color: '#FF6D00', WebkitTextFillColor: '#FF6D00', background: 'none' }}>BUILD</span>
           </span>
         </Link>
 
@@ -218,6 +205,22 @@ function Nav() {
   );
 }
 
+const TwomiahFlameIcon = ({ size = 40 }) => (
+  <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="hf1" x1="0" y1="120" x2="120" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#FFAB00"/>
+        <stop offset="50%" stopColor="#FF6D00"/>
+        <stop offset="100%" stopColor="#FF3D00"/>
+      </linearGradient>
+      <filter id="hglow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <path d="M42 96 L20 48 L42 60 L52 24 L62 52 L75 40 L60 96 Z" fill="url(#hf1)" opacity="0.65"/>
+    <path d="M78 96 L56 44 L68 58 L78 18 L88 50 L104 36 L96 96 Z" fill="url(#hf1)" filter="url(#hglow)"/>
+    <rect x="16" y="96" width="88" height="3" rx="1.5" fill="url(#hf1)" opacity="0.5"/>
+  </svg>
+);
+
 function Hero() {
   const words = ['Roofing', 'HVAC', 'Plumbing', 'Electrical', 'Contracting'];
   const [wordIdx, setWordIdx] = useState(0);
@@ -233,164 +236,228 @@ function Hero() {
 
   return (
     <section style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center',
-      background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(249,115,22,0.18) 0%, transparent 70%), #030712',
-      position: 'relative', overflow: 'hidden', paddingTop: 100, overflowX: 'hidden',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      background: '#0D0D0D',
+      position: 'relative',
+      overflow: 'hidden',
+      paddingTop: 68,
     }}>
-      {/* Grid overlay */}
+      {/* Bottom fire glow */}
       <div style={{
-        position: 'absolute', inset: 0, opacity: 0.04,
-        backgroundImage: 'linear-gradient(rgba(249,115,22,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.5) 1px, transparent 1px)',
-        backgroundSize: '60px 60px',
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse 80% 50% at 50% 100%, rgba(255,61,0,0.15) 0%, transparent 70%)',
       }} />
 
-      {/* Glow orbs */}
-      <div style={{ position: 'absolute', top: '20%', left: '10%', width: 400, height: 400, background: 'radial-gradient(circle, rgba(249,115,22,0.12), transparent 70%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: 300, height: 300, background: 'radial-gradient(circle, rgba(249,115,22,0.08), transparent 70%)', pointerEvents: 'none' }} />
+      {/* Ghost watermark */}
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: 'clamp(100px, 22vw, 260px)',
+        color: 'rgba(255,255,255,0.022)',
+        letterSpacing: '0.08em',
+        whiteSpace: 'nowrap',
+        pointerEvents: 'none',
+        userSelect: 'none',
+        zIndex: 0,
+      }}>TWOMIAH</div>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 24px', position: 'relative', zIndex: 1, width: '100%', display: 'flex', alignItems: 'center', gap: 48 }}>
+      <div style={{
+        maxWidth: 1200, margin: '0 auto', padding: '80px 32px',
+        position: 'relative', zIndex: 1, width: '100%',
+        display: 'flex', alignItems: 'center', gap: 64,
+      }}>
+
+        {/* ── LEFT COLUMN ── */}
         <div style={{ flex: '1 1 0', minWidth: 0 }}>
-          {/* Badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: 100, padding: '6px 14px', marginBottom: 32 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f97316', display: 'inline-block', animation: 'pulse 2s infinite' }} />
-            <span style={{ color: '#fb923c', fontSize: 13, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Now with Auto-Deploy Factory</span>
+
+          {/* Section label */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 10,
+            marginBottom: 36,
+          }}>
+            <span style={{ width: 32, height: 2, background: '#FF6D00', display: 'inline-block' }} />
+            <span style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.35em',
+              textTransform: 'uppercase', color: '#FF6D00',
+              fontFamily: "'Barlow', sans-serif",
+            }}>Now with Auto-Deploy Factory</span>
           </div>
 
-          {/* Headline */}
+          {/* Headline — Bebas Neue */}
           <h1 style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontSize: 'clamp(52px, 8vw, 88px)',
-            fontWeight: 800, lineHeight: 1.0, color: 'white', marginBottom: 8,
-            letterSpacing: '-0.02em',
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: 'clamp(56px, 7.5vw, 96px)',
+            lineHeight: 0.95,
+            letterSpacing: '0.04em',
+            color: 'white',
+            marginBottom: 0,
           }}>
-            THE OPERATING SYSTEM
+            THE OPERATING<br />SYSTEM
           </h1>
           <h1 style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontSize: 'clamp(52px, 8vw, 88px)',
-            fontWeight: 800, lineHeight: 1.0, marginBottom: 8,
-            letterSpacing: '-0.02em',
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: 'clamp(56px, 7.5vw, 96px)',
+            lineHeight: 0.95,
+            letterSpacing: '0.04em',
+            marginBottom: 0,
           }}>
-            <span style={{ color: '#f97316' }}>FOR</span>{' '}
+            <span style={{ color: '#FF6D00' }}>FOR </span>
             <span style={{
-              color: '#f97316',
+              background: 'linear-gradient(135deg, #FFAB00, #FF3D00)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
               transition: 'opacity 0.3s ease',
               opacity: fade ? 1 : 0,
               display: 'inline-block',
             }}>{words[wordIdx].toUpperCase()}</span>
           </h1>
           <h1 style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontSize: 'clamp(52px, 8vw, 88px)',
-            fontWeight: 800, lineHeight: 1.0, color: 'white', marginBottom: 28,
-            letterSpacing: '-0.02em',
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: 'clamp(56px, 7.5vw, 96px)',
+            lineHeight: 0.95,
+            letterSpacing: '0.04em',
+            color: 'white',
+            marginBottom: 32,
           }}>
             BUSINESSES.
           </h1>
 
-          <p style={{ color: '#94a3b8', fontSize: 'clamp(16px, 2vw, 20px)', lineHeight: 1.7, marginBottom: 44, maxWidth: 560 }}>
-            CRM, scheduling, invoicing, QuickBooks sync, GPS tracking, and a customer portal — 
+          <p style={{
+            fontFamily: "'Barlow', sans-serif",
+            fontWeight: 500,
+            color: '#888',
+            fontSize: 18,
+            lineHeight: 1.7,
+            marginBottom: 44,
+            maxWidth: 520,
+          }}>
+            CRM, scheduling, invoicing, QuickBooks sync, GPS tracking, and a customer portal —
             all in one platform built for the trades. Replace 5 apps with one.
           </p>
 
           {/* CTAs */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 52 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 44 }}>
             <Link to="/signup" style={{
-              background: 'linear-gradient(135deg, #f97316, #ea580c)',
-              color: 'white', textDecoration: 'none', fontSize: 16, fontWeight: 700,
-              padding: '14px 28px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8,
-              boxShadow: '0 8px 30px rgba(249,115,22,0.4)',
+              background: 'linear-gradient(135deg, #FF6D00, #FF3D00)',
+              color: 'white', textDecoration: 'none',
+              fontFamily: "'Barlow', sans-serif",
+              fontSize: 15, fontWeight: 700,
+              padding: '15px 32px', borderRadius: 6,
+              display: 'flex', alignItems: 'center', gap: 8,
+              boxShadow: '0 8px 32px rgba(255,61,0,0.35)',
+              letterSpacing: '0.03em',
               transition: 'transform 0.2s, box-shadow 0.2s',
             }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(249,115,22,0.5)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(249,115,22,0.4)'; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 14px 40px rgba(255,61,0,0.5)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(255,61,0,0.35)'; }}
             >
-              Start Free 14-Day Trial <ArrowRight size={18} />
+              Start Free 14-Day Trial <ArrowRight size={17} />
             </Link>
             <a href="#demo" style={{
-              color: 'white', textDecoration: 'none', fontSize: 16, fontWeight: 600,
-              padding: '14px 28px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8,
-              border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.04)',
-              transition: 'background 0.2s',
+              color: '#aaa', textDecoration: 'none',
+              fontFamily: "'Barlow', sans-serif",
+              fontSize: 15, fontWeight: 600,
+              padding: '15px 28px', borderRadius: 6,
+              display: 'flex', alignItems: 'center', gap: 8,
+              border: '1px solid rgba(255,255,255,0.12)',
+              background: 'rgba(255,255,255,0.03)',
+              transition: 'color 0.2s, border-color 0.2s',
             }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+              onMouseEnter={e => { e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = 'rgba(255,109,0,0.4)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#aaa'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}
             >
-              <Play size={16} fill="currentColor" /> Watch Demo
+              <Play size={15} fill="currentColor" /> Watch Demo
             </a>
           </div>
 
           {/* Trust signals */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
             {['No credit card required', '14-day free trial', 'Cancel anytime'].map(t => (
-              <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#64748b', fontSize: 14 }}>
-                <CheckCircle2 size={15} color="#f97316" />
+              <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#555', fontSize: 13, fontFamily: "'Barlow', sans-serif" }}>
+                <CheckCircle2 size={14} color="#FF6D00" />
                 <span>{t}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Dashboard preview card */}
-        <div style={{
-          flex: '0 0 420px', maxWidth: 420,
-          background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(249,115,22,0.2)',
-          borderRadius: 16, padding: 24,
-          boxShadow: '0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(249,115,22,0.1)',
-          backdropFilter: 'blur(20px)',
-        }} className="hide-mobile">
-          {/* Fake dashboard */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, alignItems: 'center' }}>
-            <span style={{ color: '#f97316', fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Dashboard Overview</span>
-            <span style={{ color: '#475569', fontSize: 11 }}>Feb 2026</span>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-            {[
-              { label: 'Open Jobs', val: '24', delta: '+3', up: true },
-              { label: 'Revenue MTD', val: '$84,200', delta: '+18%', up: true },
-              { label: 'Unpaid Invoices', val: '$12,450', delta: '-4%', up: false },
-              { label: 'Crew Active', val: '8 / 11', delta: '73%', up: true },
-            ].map(s => (
-              <div key={s.label} style={{ background: 'rgba(249,115,22,0.06)', border: '1px solid rgba(249,115,22,0.12)', borderRadius: 10, padding: 14 }}>
-                <div style={{ color: '#64748b', fontSize: 11, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
-                <div style={{ color: 'white', fontSize: 20, fontWeight: 700, marginBottom: 4 }}>{s.val}</div>
-                <div style={{ color: s.up ? '#22c55e' : '#ef4444', fontSize: 11, fontWeight: 600 }}>{s.delta} this month</div>
+        {/* ── RIGHT COLUMN — Dashboard Card ── */}
+        <div style={{ flex: '0 0 400px', maxWidth: 400 }} className="hide-mobile">
+          <div style={{
+            background: '#1A1A1A',
+            border: '1px solid rgba(255,109,0,0.2)',
+            borderRadius: 12,
+            padding: 20,
+            boxShadow: '0 32px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,61,0,0.08)',
+            overflow: 'hidden',
+          }}>
+            {/* Card header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ color: '#FF6D00', fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: "'Barlow', sans-serif" }}>Dashboard Overview</span>
+              <span style={{ color: '#444', fontSize: 11, fontFamily: "'Barlow', sans-serif" }}>Feb 2026</span>
+            </div>
+
+            {/* Stats grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+              {[
+                { label: 'Open Jobs', val: '24', delta: '+3 this month', up: true },
+                { label: 'Revenue MTD', val: '$84,200', delta: '+18% this month', up: true },
+                { label: 'Unpaid Invoices', val: '$12,450', delta: '-4% this month', up: false },
+                { label: 'Crew Active', val: '8 / 11', delta: '73% this month', up: true },
+              ].map(s => (
+                <div key={s.label} style={{ background: 'rgba(255,109,0,0.05)', border: '1px solid rgba(255,109,0,0.1)', borderRadius: 8, padding: 12 }}>
+                  <div style={{ color: '#555', fontSize: 10, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'Barlow', sans-serif" }}>{s.label}</div>
+                  <div style={{ color: 'white', fontSize: 18, fontWeight: 700, marginBottom: 3, fontFamily: "'Barlow Condensed', sans-serif" }}>{s.val}</div>
+                  <div style={{ color: s.up ? '#22c55e' : '#ef4444', fontSize: 10, fontWeight: 600, fontFamily: "'Barlow', sans-serif" }}>{s.delta}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Chart */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ color: '#444', fontSize: 10, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Barlow', sans-serif" }}>Revenue — Last 7 Days</div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, height: 44 }}>
+                {[35, 55, 45, 70, 60, 85, 100].map((h, i) => (
+                  <div key={i} style={{
+                    flex: 1, height: `${h}%`, borderRadius: 3,
+                    background: i === 6
+                      ? 'linear-gradient(to top, #FF3D00, #FFAB00)'
+                      : 'rgba(255,109,0,0.18)',
+                  }} />
+                ))}
               </div>
-            ))}
-          </div>
-          {/* Mini chart bars */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ color: '#64748b', fontSize: 11, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Revenue — Last 7 Days</div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 48 }}>
-              {[35, 55, 45, 70, 60, 85, 100].map((h, i) => (
-                <div key={i} style={{
-                  flex: 1, height: `${h}%`, borderRadius: 4,
-                  background: i === 6 ? 'linear-gradient(to top, #f97316, #fb923c)' : 'rgba(249,115,22,0.2)',
-                }} />
+            </div>
+
+            {/* Recent jobs */}
+            <div>
+              {[
+                { job: 'Roof Replacement', loc: 'Henderson', status: 'In Progress', dot: '#FF6D00' },
+                { job: 'HVAC Install', loc: 'Park District', status: 'Scheduled', dot: '#3b82f6' },
+                { job: 'Siding — 4102 Oakwood', loc: '', status: 'Invoiced', dot: '#22c55e' },
+              ].map(j => (
+                <div key={j.job} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div style={{ overflow: 'hidden' }}>
+                    <div style={{ color: '#ccc', fontSize: 11, fontFamily: "'Barlow', sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{j.job}{j.loc ? ` — ${j.loc}` : ''}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#555', fontFamily: "'Barlow', sans-serif", flexShrink: 0, marginLeft: 8 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: j.dot, display: 'inline-block', flexShrink: 0 }} />
+                    {j.status}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
-          {/* Recent jobs */}
-          {[
-            { job: 'Roof Replacement — Henderson', status: 'In Progress', dot: '#f97316' },
-            { job: 'HVAC Install — Park District', status: 'Scheduled', dot: '#3b82f6' },
-            { job: 'Siding — 4102 Oakwood', status: 'Invoiced', dot: '#22c55e' },
-          ].map(j => (
-            <div key={j.job} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-              <span style={{ color: '#cbd5e1', fontSize: 12 }}>{j.job}</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#64748b' }}>
-                <span style={{ width: 5, height: 5, borderRadius: '50%', background: j.dot, display: 'inline-block' }} />
-                {j.status}
-              </span>
-            </div>
-          ))}
         </div>
       </div>
 
       {/* Scroll indicator */}
-      <a href="#stats" style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', color: '#475569', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, animation: 'bounce 2s infinite' }}>
-        <span style={{ fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Scroll</span>
-        <ChevronDown size={18} />
+      <a href="#stats" style={{ position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)', color: '#333', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, animation: 'bounce 2s infinite' }}>
+        <span style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: "'Barlow', sans-serif" }}>Scroll</span>
+        <ChevronDown size={16} />
       </a>
     </section>
   );
