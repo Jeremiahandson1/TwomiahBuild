@@ -145,11 +145,22 @@ function Nav() {
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 68 }}>
         {/* Logo */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg, #f97316, #ea580c)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Building2 size={20} color="white" strokeWidth={2.5} />
-          </div>
+          <svg width="32" height="36" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 38 C12 38 2 30 4 18 C6 8 12 4 12 4 C12 4 10 14 16 18 C16 18 14 10 22 2 C22 2 20 16 26 20 C30 23 28 32 24 36 C22 38 20 40 24 40 Z" fill="url(#navFlame1)"/>
+            <path d="M22 38 C22 38 30 33 28 24 C27 18 22 15 22 15 C22 15 24 22 20 26 C20 26 26 18 22 10 C22 10 30 20 28 28 C27 33 25 37 28 40 Z" fill="url(#navFlame2)" opacity="0.85"/>
+            <defs>
+              <linearGradient id="navFlame1" x1="0" y1="40" x2="10" y2="0" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#FF3D00"/>
+                <stop offset="100%" stopColor="#FFAB00"/>
+              </linearGradient>
+              <linearGradient id="navFlame2" x1="0" y1="40" x2="10" y2="0" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#FF6D00"/>
+                <stop offset="100%" stopColor="#FFD600"/>
+              </linearGradient>
+            </defs>
+          </svg>
           <span style={{ fontSize: 20, fontWeight: 800, color: 'white', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.02em' }}>
-            BUILD<span style={{ color: '#f97316' }}>PRO</span>
+            TWOMIAH <span style={{ color: '#f97316' }}>BUILD</span>
           </span>
         </Link>
 
@@ -610,11 +621,22 @@ function Footer() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 40, marginBottom: 48 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <div style={{ width: 30, height: 30, background: 'linear-gradient(135deg, #f97316, #ea580c)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Building2 size={16} color="white" />
-              </div>
+              <svg width="26" height="30" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 38 C12 38 2 30 4 18 C6 8 12 4 12 4 C12 4 10 14 16 18 C16 18 14 10 22 2 C22 2 20 16 26 20 C30 23 28 32 24 36 C22 38 20 40 24 40 Z" fill="url(#footFlame1)"/>
+                <path d="M22 38 C22 38 30 33 28 24 C27 18 22 15 22 15 C22 15 24 22 20 26 C20 26 26 18 22 10 C22 10 30 20 28 28 C27 33 25 37 28 40 Z" fill="url(#footFlame2)" opacity="0.85"/>
+                <defs>
+                  <linearGradient id="footFlame1" x1="0" y1="40" x2="10" y2="0" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#FF3D00"/>
+                    <stop offset="100%" stopColor="#FFAB00"/>
+                  </linearGradient>
+                  <linearGradient id="footFlame2" x1="0" y1="40" x2="10" y2="0" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#FF6D00"/>
+                    <stop offset="100%" stopColor="#FFD600"/>
+                  </linearGradient>
+                </defs>
+              </svg>
               <span style={{ fontSize: 16, fontWeight: 800, color: 'white', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.02em' }}>
-                BUILD<span style={{ color: '#f97316' }}>PRO</span>
+                TWOMIAH <span style={{ color: '#f97316' }}>BUILD</span>
               </span>
             </div>
             <p style={{ color: '#475569', fontSize: 13, lineHeight: 1.7 }}>The operating system for field service businesses.</p>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 60" width="320" height="60">
+  <defs>
+    <linearGradient id="flame1" x1="0%" y1="100%" x2="30%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF3D00"/>
+      <stop offset="100%" style="stop-color:#FFAB00"/>
+    </linearGradient>
+    <linearGradient id="flame2" x1="0%" y1="100%" x2="30%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6D00"/>
+      <stop offset="100%" style="stop-color:#FFD600"/>
+    </linearGradient>
+  </defs>
+  <!-- Flame 1 (larger, front) -->
+  <path d="M18 52 C18 52 6 42 8 28 C10 18 16 14 16 14 C16 14 14 22 20 26 C20 26 18 18 26 10 C26 10 24 24 30 28 C34 31 32 40 28 44 C26 46 24 50 28 52 Z" fill="url(#flame1)"/>
+  <!-- Flame 2 (smaller, behind) -->
+  <path d="M30 52 C30 52 38 46 36 36 C35 30 30 26 30 26 C30 26 32 32 28 36 C28 36 34 28 30 20 C30 20 38 30 36 38 C35 43 33 48 36 52 Z" fill="url(#flame2)" opacity="0.85"/>
+  <!-- Wordmark -->
+  <text x="52" y="43" font-family="'Bebas Neue', 'Arial Black', system-ui" font-size="34" font-weight="700" letter-spacing="1" fill="white">TWOMIAH</text>
+  <text x="52" y="57" font-family="'Bebas Neue', 'Arial Black', system-ui" font-size="14" font-weight="400" letter-spacing="3" fill="#FF6D00">BUILD</text>
+</svg>
