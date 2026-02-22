@@ -7,6 +7,7 @@ import { withCompany } from '../middleware/ownership.js';
 
 import { emitToCompany, EVENTS } from '../services/socket.js';
 import audit from '../services/audit.js';
+import leadNotification from '../services/leadNotification.js';
 
 const router = Router();
 router.use(authenticate);
@@ -79,6 +80,12 @@ router.post('/', requirePermission('contacts:create'), async (req, res, next) =>
     });
     emitToCompany(req.user.companyId, EVENTS.CONTACT_CREATED, contact);
     audit.log({ action: audit.ACTIONS.CREATE, entity: 'contact', entityId: contact.id, entityName: contact.name, req });
+
+    // Fire lead alert (non-blocking — never delays the API response)
+    if (data.type === 'lead' || !data.type) {
+      leadNotification.notifyNewLead(req.user.companyId, contact).catch(() => {});
+    }
+
     res.status(201).json(contact);
   } catch (error) { next(error); }
 });

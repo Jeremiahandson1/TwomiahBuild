@@ -16,10 +16,14 @@ interface QuickAction {
 }
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { label: 'Clock In', icon: 'play-circle', route: '/(app)/time/index', color: '#10b981' },
-  { label: 'View Jobs', icon: 'briefcase', route: '/(app)/jobs/index', color: '#2563eb' },
-  { label: 'Daily Log', icon: 'newspaper', route: '/(app)/daily-logs/index', color: '#f59e0b' },
-  { label: 'Take Photo', icon: 'camera', route: '/(app)/photos/index', color: '#8b5cf6' },
+  { label: 'Clock In',  icon: 'play-circle',     route: '/(app)/time/index',      color: '#10b981' },
+  { label: 'View Jobs', icon: 'briefcase',        route: '/(app)/jobs/index',      color: '#2563eb' },
+  { label: 'Schedule',  icon: 'calendar',         route: '/(app)/schedule/index',  color: '#f97316' },
+  { label: 'Contacts',  icon: 'people',           route: '/(app)/contacts/index',  color: '#8b5cf6' },
+  { label: 'Quotes',    icon: 'document-text',    route: '/(app)/quotes/index',    color: '#059669' },
+  { label: 'Invoices',  icon: 'cash',             route: '/(app)/invoices/index',  color: '#dc2626' },
+  { label: 'Projects',  icon: 'construct',        route: '/(app)/projects/index',  color: '#7c3aed' },
+  { label: 'Daily Log', icon: 'newspaper',        route: '/(app)/daily-logs/index', color: '#f59e0b' },
 ];
 
 export default function HomeScreen() {

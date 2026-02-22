@@ -111,6 +111,11 @@ model Company {
   emailCampaigns EmailCampaign[]
   automations    Automation[]
 
+  // Paid Ads
+  adAccounts  AdAccount[]
+  adCampaigns AdCampaign[]
+  adReports   AdReport[]
+
   // Call Tracking
   trackingNumbers TrackingNumber[]
   phoneCalls      PhoneCall[]
@@ -2241,6 +2246,125 @@ model AuditLog {
   @@index([createdAt])
 }
 
+
+// ─── PAID ADS ──────────────────────────────────────────────────────
+
+// One per platform per company — holds the connected ad account credentials
+model AdAccount {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  platform    String  // google | meta
+  accountId   String? // platform account ID (populated after API connection)
+  accountName String?
+  status      String  @default("pending") // pending | connected | error | disconnected
+
+  // Encrypted API tokens (stored after OAuth or manual entry)
+  accessToken  String?
+  refreshToken String?
+  tokenExpiry  DateTime?
+
+  // Agency-level: BuildPro manages this account on behalf of contractor
+  managerId    String? // Google MCC / Meta Business Manager ID
+  customerId   String? // Contractor's account ID within our MCC
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaigns AdCampaign[]
+
+  @@unique([companyId, platform])
+  @@index([companyId])
+}
+
+// Each contractor gets a campaign per platform per service type
+model AdCampaign {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  adAccountId String
+  adAccount   AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+
+  platform     String  // google | meta
+  campaignType String  // search | lsa | performance_max | lead_form | retargeting | visualizer
+  name         String
+  status       String  @default("draft") // draft | active | paused | ended | error
+
+  // Platform campaign ID (set after API creates the campaign)
+  platformCampaignId String?
+
+  // Budget
+  dailyBudget  Decimal? @db.Decimal(10, 2)
+  monthlyBudget Decimal? @db.Decimal(10, 2)
+  totalSpend    Decimal  @default(0) @db.Decimal(10, 2)
+
+  // Performance (synced from platform)
+  impressions Int     @default(0)
+  clicks      Int     @default(0)
+  leads       Int     @default(0)
+  costPerLead Decimal @default(0) @db.Decimal(10, 2)
+  ctr         Decimal @default(0) @db.Decimal(5, 4)
+
+  // Alert threshold — notify when CPL exceeds this
+  cplAlertThreshold Decimal? @db.Decimal(10, 2)
+  lastAlertSentAt   DateTime?
+
+  // Config (keywords, ad copy, targeting — JSON)
+  config Json @default("{}")
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reports AdReport[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([platform])
+}
+
+// Monthly performance snapshot — generated on the 1st, emailed to contractor
+model AdReport {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  campaignId String?
+  campaign   AdCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  reportType String   // monthly | weekly | alert
+  periodStart DateTime
+  periodEnd   DateTime
+
+  // Aggregated metrics
+  totalSpend   Decimal @default(0) @db.Decimal(10, 2)
+  totalLeads   Int     @default(0)
+  totalClicks  Int     @default(0)
+  costPerLead  Decimal @default(0) @db.Decimal(10, 2)
+  conversionRate Decimal @default(0) @db.Decimal(5, 4)
+
+  // Revenue attribution (from CRM — jobs created from leads in this period)
+  revenueAttributed Decimal @default(0) @db.Decimal(10, 2)
+  jobsAttributed    Int     @default(0)
+
+  // Raw data snapshot (full platform response stored for reference)
+  rawData Json @default("{}")
+
+  // Email delivery
+  sentAt      DateTime?
+  sentTo      String?
+  emailStatus String @default("pending") // pending | sent | failed
+
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+  @@index([reportType])
+  @@index([periodStart])
+}
 // ─── FACTORY TRACKING ──────────────────────────────────────────────
 
 model FactoryCustomer {

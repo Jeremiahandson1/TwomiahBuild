@@ -156,6 +156,92 @@ services:
       - key: VITE_STRIPE_PUBLISHABLE_KEY
         sync: false
 
+  # ── Cron Job: Ad Metrics Sync ─────────────────────────────────────────────
+  # Runs daily at 6am UTC. Pulls latest spend/leads/clicks from Google Ads
+  # and Meta Marketing API for all connected ad accounts.
+  - type: cron
+    name: buildpro-ad-metrics-sync
+    runtime: node
+    plan: starter
+    rootDir: backend
+    buildCommand: npm install
+    schedule: "0 6 * * *"
+    startCommand: >
+      node -e "
+        fetch(
+          process.env.API_URL + '/api/v1/ads/sync',
+          { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Cron-Secret': process.env.CRON_SECRET } }
+        )
+        .then(r => r.json())
+        .then(d => { console.log('Ad metrics synced:', d); process.exit(0); })
+        .catch(e => { console.error('Ad metrics sync failed:', e); process.exit(1); })
+      "
+    envVars:
+      - key: API_URL
+        sync: false
+      - key: CRON_SECRET
+        fromService:
+          name: buildpro-backend
+          type: web
+          property: CRON_SECRET
+
+  # ── Cron Job: Monthly Ad Reports ──────────────────────────────────────────
+  # Runs 1st of each month at 7am UTC. Generates and emails performance
+  # reports to every contractor with active ad campaigns.
+  - type: cron
+    name: buildpro-monthly-ad-reports
+    runtime: node
+    plan: starter
+    rootDir: backend
+    buildCommand: npm install
+    schedule: "0 7 1 * *"
+    startCommand: >
+      node -e "
+        fetch(
+          process.env.API_URL + '/api/v1/ads/process-monthly-reports',
+          { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Cron-Secret': process.env.CRON_SECRET } }
+        )
+        .then(r => r.json())
+        .then(d => { console.log('Monthly ad reports processed:', d); process.exit(0); })
+        .catch(e => { console.error('Monthly ad reports failed:', e); process.exit(1); })
+      "
+    envVars:
+      - key: API_URL
+        sync: false
+      - key: CRON_SECRET
+        fromService:
+          name: buildpro-backend
+          type: web
+          property: CRON_SECRET
+
+  # ── Cron Job: Drip Email Processing ───────────────────────────────────────
+  # Runs hourly. Sends drip sequence emails due based on enrollment + delay.
+  - type: cron
+    name: buildpro-drip-emails
+    runtime: node
+    plan: starter
+    rootDir: backend
+    buildCommand: npm install
+    schedule: "0 * * * *"
+    startCommand: >
+      node -e "
+        fetch(
+          process.env.API_URL + '/api/v1/marketing/sequences/process-due',
+          { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Cron-Secret': process.env.CRON_SECRET } }
+        )
+        .then(r => r.json())
+        .then(d => { console.log('Drip emails processed:', d); process.exit(0); })
+        .catch(e => { console.error('Drip email cron failed:', e); process.exit(1); })
+      "
+    envVars:
+      - key: API_URL
+        sync: false
+      - key: CRON_SECRET
+        fromService:
+          name: buildpro-backend
+          type: web
+          property: CRON_SECRET
+
 databases:
   - name: buildpro-db
     plan: starter

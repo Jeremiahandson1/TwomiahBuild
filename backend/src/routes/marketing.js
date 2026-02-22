@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
-import { requirePermission } from '../middleware/permissions.js';
+import { requirePermission, requireRole } from '../middleware/permissions.js';
 import marketing from '../services/marketing.js';
+import leadNotification from '../services/leadNotification.js';
 
 const router = Router();
 router.use(authenticate);
@@ -172,6 +173,39 @@ router.get('/unsubscribe/:recipientId/:contactId', async (req, res) => {
   } catch (error) {
     res.send('<html><body><h1>Error</h1><p>Could not process unsubscribe request.</p></body></html>');
   }
+});
+
+// ============================================
+// CRON ENDPOINTS (secured by X-Cron-Secret, no JWT)
+// ============================================
+
+router.post('/sequences/process-due', async (req, res, next) => {
+  try {
+    const cronSecret = req.headers['x-cron-secret'];
+    if (!process.env.CRON_SECRET || cronSecret !== process.env.CRON_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const results = await marketing.processDripEmails();
+    res.json({ processed: results?.length || 0, results });
+  } catch (error) { next(error); }
+});
+
+// ============================================
+// LEAD NOTIFICATION SETTINGS
+// ============================================
+
+router.get('/lead-notifications', async (req, res, next) => {
+  try {
+    const settings = await leadNotification.getLeadNotificationSettings(req.user.companyId);
+    res.json(settings);
+  } catch (error) { next(error); }
+});
+
+router.put('/lead-notifications', requireRole('admin', 'owner'), async (req, res, next) => {
+  try {
+    await leadNotification.updateLeadNotificationSettings(req.user.companyId, req.body);
+    res.json({ success: true });
+  } catch (error) { next(error); }
 });
 
 // ============================================

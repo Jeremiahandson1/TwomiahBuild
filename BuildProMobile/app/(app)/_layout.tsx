@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import { useSyncStore } from '../../src/store/syncStore';
 
+type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
 export default function AppLayout() {
   const { isAuthenticated, isLoading } = useAuthStore();
   const { pendingCount, isSyncing } = useSyncStore();
@@ -28,7 +30,7 @@ export default function AppLayout() {
         screenOptions={{
           headerShown: false,
           tabBarStyle: styles.tabBar,
-          tabBarActiveTintColor: '#2563eb',
+          tabBarActiveTintColor: '#f97316',
           tabBarInactiveTintColor: '#94a3b8',
           tabBarLabelStyle: styles.tabLabel,
         }}
@@ -62,19 +64,23 @@ export default function AppLayout() {
           }}
         />
         <Tabs.Screen
-          name="photos/index"
+          name="more"
           options={{
-            title: 'Photos',
-            tabBarIcon: ({ color, size }) => <Ionicons name="camera" size={size} color={color} />,
+            title: 'More',
+            tabBarIcon: ({ color, size }) => <Ionicons name="grid" size={size} color={color} />,
           }}
         />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: 'Profile',
-            tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
-          }}
-        />
+
+        {/* Hidden screens — accessible via More or deep links */}
+        <Tabs.Screen name="photos/index"      options={{ href: null }} />
+        <Tabs.Screen name="profile"           options={{ href: null }} />
+        <Tabs.Screen name="jobs/[id]"         options={{ href: null }} />
+        <Tabs.Screen name="jobs/tasks"        options={{ href: null }} />
+        <Tabs.Screen name="contacts/index"    options={{ href: null }} />
+        <Tabs.Screen name="quotes/index"      options={{ href: null }} />
+        <Tabs.Screen name="invoices/index"    options={{ href: null }} />
+        <Tabs.Screen name="projects/index"    options={{ href: null }} />
+        <Tabs.Screen name="schedule/index"    options={{ href: null }} />
       </Tabs>
     </>
   );

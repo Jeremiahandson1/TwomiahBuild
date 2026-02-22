@@ -7,6 +7,7 @@ import { requirePermission } from '../middleware/permissions.js';
 import { withCompany } from '../middleware/ownership.js';
 
 import { emitToCompany, EVENTS } from '../services/socket.js';
+import reviews from '../services/reviews.js';
 
 const router = Router();
 router.use(authenticate);
@@ -167,6 +168,12 @@ router.post('/:id/complete', requirePermission('jobs:update'), async (req, res, 
       data: { status: 'completed', completedAt: new Date() },
     });
     emitToCompany(req.user.companyId, EVENTS.JOB_STATUS_CHANGED, { id: job.id, status: 'completed' });
+
+    // Schedule review request automatically (non-blocking)
+    reviews.scheduleReviewRequest(job.id).catch(err =>
+      console.error('[Jobs] Review scheduling failed:', err.message)
+    );
+
     res.json(job);
   } catch (error) { next(error); }
 });
