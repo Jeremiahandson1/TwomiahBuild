@@ -274,7 +274,6 @@ async function createRenderStaticSite(config) {
       serviceDetails: {
         buildCommand,
         publishPath,
-        region,
       },
       envVars: envVars.map(ev => ({
         key: ev.key,
