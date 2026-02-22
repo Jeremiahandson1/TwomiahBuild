@@ -110,7 +110,7 @@ export default function SelfHostedPurchasePage() {
               <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
                 <Building className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900">BuildPro</span>
+              <span className="text-2xl font-bold text-gray-900">Twomiah Build</span>
             </Link>
             <Link to="/pricing" className="text-gray-600 hover:text-gray-900">
               ← Back to Pricing
@@ -123,7 +123,7 @@ export default function SelfHostedPurchasePage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Self-Hosted License</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Own BuildPro forever. Deploy on your own servers with full control over your data.
+            Own Twomiah Build forever. Deploy on your own servers with full control over your data.
           </p>
         </div>
 

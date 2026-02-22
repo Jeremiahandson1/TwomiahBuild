@@ -10,9 +10,9 @@
 import { prisma } from '../../config/prisma.js';
 import { sendTransactionalEmail } from '../email.js';
 
-const APP_URL  = process.env.FRONTEND_URL || 'https://app.buildpro.io';
-const FROM     = process.env.FROM_EMAIL   || 'reports@buildpro.io';
-const FROM_NAME = 'BuildPro Reports';
+const APP_URL  = process.env.FRONTEND_URL || 'https://app.twomiah-build.io';
+const FROM     = process.env.FROM_EMAIL   || 'reports@twomiah-build.io';
+const FROM_NAME = 'Twomiah Build Reports';
 
 // ─── Monthly report ───────────────────────────────────────────────────────────
 
@@ -179,7 +179,7 @@ export async function sendCPLAlert(campaign, currentCPL) {
 // ─── Admin dashboard aggregation ─────────────────────────────────────────────
 
 /**
- * Get all companies' campaign data for the BuildPro admin dashboard.
+ * Get all companies' campaign data for the Twomiah Build admin dashboard.
  * Shows every contractor's campaigns, spend, and leads at a glance.
  */
 export async function getAdminDashboard() {
@@ -379,7 +379,7 @@ async function sendMonthlyReportEmail(to, companyName, report, totals, campaigns
         <a href="${APP_URL}/marketing" style="display: inline-block; background: #f97316; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px;">
           View Full Dashboard →
         </a>
-        <p style="margin: 12px 0 0; font-size: 12px; color: #9ca3af;">Sent by BuildPro · You receive this because you have active ad campaigns.</p>
+        <p style="margin: 12px 0 0; font-size: 12px; color: #9ca3af;">Sent by Twomiah Build · You receive this because you have active ad campaigns.</p>
       </div>
     </div>
   `;

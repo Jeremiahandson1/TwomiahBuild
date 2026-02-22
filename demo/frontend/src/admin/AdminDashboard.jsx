@@ -63,7 +63,7 @@ function AdminDashboard() {
   };
 
   return (
-    <AdminLayout title="Dashboard" subtitle="Welcome to BuildPro Demo Co Admin">
+    <AdminLayout title="Dashboard" subtitle="Welcome to Twomiah Build Demo Co Admin">
       {/* Stats */}
       <div className="admin-section">
         <div className="stat-cards">

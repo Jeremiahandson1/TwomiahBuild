@@ -1,4 +1,4 @@
-# BuildPro — Render Blueprint
+# Twomiah Build — Render Blueprint
 # Defines the backend web service + two cron jobs.
 #
 # CRON JOBS (audit issues #19 & #20)
@@ -14,7 +14,7 @@
 services:
   # ── Backend Web Service ────────────────────────────────────────────────────
   - type: web
-    name: buildpro-backend
+    name: twomiah-build-backend
     runtime: node
     plan: starter   # NOTE: Starter = 512MB RAM. Large PDF generation (many line items) may OOM.
                     # Upgrade to Standard (2GB) if you see OOM crashes in production.
@@ -29,7 +29,7 @@ services:
         value: "20"
       - key: DATABASE_URL
         fromDatabase:
-          name: buildpro-db
+          name: twomiah-build-db
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
@@ -42,7 +42,7 @@ services:
       - key: STORAGE_BACKEND
         value: s3
       - key: FRONTEND_URL
-        sync: false   # e.g. https://app.buildpro.com
+        sync: false   # e.g. https://app.twomiah-build.com
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
@@ -66,7 +66,7 @@ services:
   # Runs daily at 8am UTC. Finds all recurring invoice schedules where
   # next_due_date <= today and generates invoices for them.
   - type: cron
-    name: buildpro-recurring-invoices
+    name: twomiah-build-recurring-invoices
     runtime: node
     plan: starter
     rootDir: backend
@@ -90,10 +90,10 @@ services:
       "
     envVars:
       - key: API_URL
-        sync: false   # e.g. https://buildpro-backend.onrender.com
+        sync: false   # e.g. https://twomiah-build-backend.onrender.com
       - key: CRON_SECRET
         fromService:
-          name: buildpro-backend
+          name: twomiah-build-backend
           type: web
           property: CRON_SECRET
 
@@ -101,7 +101,7 @@ services:
   # Runs daily at 9am UTC. Sends review request emails for jobs completed
   # N days ago (configurable via the reviews settings in the app).
   - type: cron
-    name: buildpro-scheduled-reviews
+    name: twomiah-build-scheduled-reviews
     runtime: node
     plan: starter
     rootDir: backend
@@ -125,16 +125,16 @@ services:
       "
     envVars:
       - key: API_URL
-        sync: false   # e.g. https://buildpro-backend.onrender.com
+        sync: false   # e.g. https://twomiah-build-backend.onrender.com
       - key: CRON_SECRET
         fromService:
-          name: buildpro-backend
+          name: twomiah-build-backend
           type: web
           property: CRON_SECRET
 
   # ── Frontend Static Site ─────────────────────────────────────────────────
   - type: web
-    name: buildpro-frontend
+    name: twomiah-build-frontend
     runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
@@ -152,7 +152,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        sync: false   # e.g. https://buildpro-backend.onrender.com
+        sync: false   # e.g. https://twomiah-build-backend.onrender.com
       - key: VITE_STRIPE_PUBLISHABLE_KEY
         sync: false
 
@@ -160,7 +160,7 @@ services:
   # Runs daily at 6am UTC. Pulls latest spend/leads/clicks from Google Ads
   # and Meta Marketing API for all connected ad accounts.
   - type: cron
-    name: buildpro-ad-metrics-sync
+    name: twomiah-build-ad-metrics-sync
     runtime: node
     plan: starter
     rootDir: backend
@@ -181,7 +181,7 @@ services:
         sync: false
       - key: CRON_SECRET
         fromService:
-          name: buildpro-backend
+          name: twomiah-build-backend
           type: web
           property: CRON_SECRET
 
@@ -189,7 +189,7 @@ services:
   # Runs 1st of each month at 7am UTC. Generates and emails performance
   # reports to every contractor with active ad campaigns.
   - type: cron
-    name: buildpro-monthly-ad-reports
+    name: twomiah-build-monthly-ad-reports
     runtime: node
     plan: starter
     rootDir: backend
@@ -210,14 +210,14 @@ services:
         sync: false
       - key: CRON_SECRET
         fromService:
-          name: buildpro-backend
+          name: twomiah-build-backend
           type: web
           property: CRON_SECRET
 
   # ── Cron Job: Drip Email Processing ───────────────────────────────────────
   # Runs hourly. Sends drip sequence emails due based on enrollment + delay.
   - type: cron
-    name: buildpro-drip-emails
+    name: twomiah-build-drip-emails
     runtime: node
     plan: starter
     rootDir: backend
@@ -238,10 +238,10 @@ services:
         sync: false
       - key: CRON_SECRET
         fromService:
-          name: buildpro-backend
+          name: twomiah-build-backend
           type: web
           property: CRON_SECRET
 
 databases:
-  - name: buildpro-db
+  - name: twomiah-build-db
     plan: starter

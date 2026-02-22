@@ -12,9 +12,9 @@ import NetInfo from '@react-native-community/netinfo';
 import * as SecureStore from 'expo-secure-store';
 import { enqueueSync } from '../utils/database';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://buildpro-api-y5e1.onrender.com';
-const TOKEN_KEY = 'buildpro_auth_token';
-const REFRESH_TOKEN_KEY = 'buildpro_refresh_token';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://twomiah-build-api-y5e1.onrender.com';
+const TOKEN_KEY = 'twomiah-build_auth_token';
+const REFRESH_TOKEN_KEY = 'twomiah-build_refresh_token';
 
 class ApiClient {
   private refreshPromise: Promise<boolean> | null = null;
@@ -23,7 +23,7 @@ class ApiClient {
     const token = await SecureStore.getItemAsync(TOKEN_KEY);
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'X-Client': 'buildpro-mobile',
+      'X-Client': 'twomiah-build-mobile',
     };
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -48,7 +48,7 @@ class ApiClient {
 
         const response = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Client': 'buildpro-mobile' },
+          headers: { 'Content-Type': 'application/json', 'X-Client': 'twomiah-build-mobile' },
           body: JSON.stringify({ refreshToken }),
         });
 
@@ -225,7 +225,7 @@ class ApiClient {
       method: 'POST',
       headers: {
         Authorization: token ? `Bearer ${token}` : '',
-        'X-Client': 'buildpro-mobile',
+        'X-Client': 'twomiah-build-mobile',
       },
       body: formData,
     });

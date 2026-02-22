@@ -1,7 +1,7 @@
 {
-  "name": "buildpro-demo-co-api",
+  "name": "twomiah-build-demo-co-api",
   "version": "1.0.0",
-  "description": "Backend API for BuildPro Demo Co with CMS",
+  "description": "Backend API for Twomiah Build Demo Co with CMS",
   "main": "server.js",
   "scripts": {
     "start": "node server-static.js",

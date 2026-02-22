@@ -327,7 +327,7 @@ function ServicePage() {
       <section className="service-cta">
         <div className="container">
           <h2>Ready to Start Your {pageData.title} Project?</h2>
-          <p>Contact BuildPro Demo Co today for a free estimate. We serve Austin and the surrounding Greater Austin Area area.</p>
+          <p>Contact Twomiah Build Demo Co today for a free estimate. We serve Austin and the surrounding Greater Austin Area area.</p>
           <div className="cta-buttons">
             <Link to="/#contact" className="btn btn-primary btn-lg">Get Free Estimate</Link>
             <a href="tel:5551234567" className="btn btn-outline-light btn-lg">Call (555) 123-4567</a>
@@ -356,12 +356,12 @@ function ServicePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "Service",
-        "name": `${pageData.title} - BuildPro Demo Co`,
+        "name": `${pageData.title} - Twomiah Build Demo Co`,
         "description": pageData.heroDescription || pageData.tagline,
         "provider": {
           "@type": "HomeAndConstructionBusiness",
-          "name": "BuildPro Demo Co",
-          "url": "https://buildpro-demo-site.onrender.com",
+          "name": "Twomiah Build Demo Co",
+          "url": "https://twomiah-build-demo-site.onrender.com",
           "telephone": "+15551234567",
           "areaServed": { "@type": "City", "name": "Austin, TX" }
         },

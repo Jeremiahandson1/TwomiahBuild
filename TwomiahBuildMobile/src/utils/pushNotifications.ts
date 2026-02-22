@@ -70,7 +70,7 @@ export async function registerForPushNotifications(): Promise<void> {
     await api.post('/api/v1/push/register', {
       token,
       platform: Platform.OS,
-      userAgent: `BuildPro/${Constants.expoConfig?.version ?? '1.0.0'}`,
+      userAgent: `Twomiah Build/${Constants.expoConfig?.version ?? '1.0.0'}`,
     });
     console.log('[Push] Registered:', token);
   } catch (err: any) {

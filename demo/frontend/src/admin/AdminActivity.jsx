@@ -34,7 +34,7 @@ function AdminActivity() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `buildpro-demo-co-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `twomiah-build-demo-co-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success('Export downloaded');

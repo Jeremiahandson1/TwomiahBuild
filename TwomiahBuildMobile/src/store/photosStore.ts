@@ -6,8 +6,8 @@ import * as Location from 'expo-location';
 import * as SecureStore from 'expo-secure-store';
 import { v4 as uuid } from 'uuid';
 
-const TOKEN_KEY = 'buildpro_auth_token';
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://buildpro-api-y5e1.onrender.com';
+const TOKEN_KEY = 'twomiah-build_auth_token';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://twomiah-build-api-y5e1.onrender.com';
 
 export interface Photo {
   id: string;

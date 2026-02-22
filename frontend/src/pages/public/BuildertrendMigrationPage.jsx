@@ -6,7 +6,7 @@ import { ArrowRight, Check, X, ChevronDown, Phone, Upload, Zap, Shield, Clock, D
 
 const PAIN_POINTS = [
   { bt: 'No bulk data export — ever', bp: 'One-click full ZIP export, always' },
-  { bt: '"Contact sales" for pricing', bp: 'Every price visible at buildpro.io/pricing' },
+  { bt: '"Contact sales" for pricing', bp: 'Every price visible at twomiah-build.io/pricing' },
   { bt: '$499–$999/mo with zero transparency', bp: 'Starts at $49/mo. Annual saves 20%.' },
   { bt: 'Locked into their ecosystem', bp: 'Your data is yours. Leave anytime.' },
   { bt: '6–12 month contracts', bp: 'Month-to-month. No contracts.' },
@@ -24,7 +24,7 @@ const MIGRATION_STEPS = [
   {
     number: '02',
     title: 'We import everything',
-    desc: 'Upload your CSVs to our migration tool. Our importer maps Buildertrend\'s field names directly to BuildPro — no manual reformatting. Preview before committing.',
+    desc: 'Upload your CSVs to our migration tool. Our importer maps Buildertrend\'s field names directly to Twomiah Build — no manual reformatting. Preview before committing.',
     icon: Upload,
     time: '~30 min',
   },
@@ -48,7 +48,7 @@ const PACKAGES = [
   {
     name: 'Self-Serve',
     price: 'Free',
-    priceNote: 'with any BuildPro plan',
+    priceNote: 'with any Twomiah Build plan',
     highlight: false,
     description: 'You run the migration yourself using our wizard.',
     includes: [
@@ -100,13 +100,13 @@ const PACKAGES = [
 
 const TESTIMONIALS = [
   {
-    quote: "We'd been on Buildertrend for four years. Moving sounded terrifying. BuildPro had our contacts and active jobs running in two days. The import tool is stupid simple.",
+    quote: "We'd been on Buildertrend for four years. Moving sounded terrifying. Twomiah Build had our contacts and active jobs running in two days. The import tool is stupid simple.",
     name: 'Marcus T.',
     title: 'Owner, Tri-State Roofing',
     savings: 'Saves $420/mo',
   },
   {
-    quote: "What got me was the export. Buildertrend literally told me I couldn't export my own client list. BuildPro let me download everything on day one. That's all I needed to know.",
+    quote: "What got me was the export. Buildertrend literally told me I couldn't export my own client list. Twomiah Build let me download everything on day one. That's all I needed to know.",
     name: 'Sarah K.',
     title: 'Operations Manager, Keller Build Group',
     savings: 'Saves $680/mo',
@@ -276,7 +276,7 @@ export default function BuildertrendMigrationPage() {
         height: 60,
       }}>
         <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ fontWeight: 900, fontSize: 18, color: '#fff', letterSpacing: -0.5 }}>BuildPro</div>
+          <div style={{ fontWeight: 900, fontSize: 18, color: '#fff', letterSpacing: -0.5 }}>Twomiah Build</div>
           <div style={{ width: 1, height: 16, background: '#333' }} />
           <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 500 }}>Migration</div>
         </Link>
@@ -382,7 +382,7 @@ export default function BuildertrendMigrationPage() {
           <h2 style={{ fontSize: 40, fontWeight: 900, letterSpacing: -2, marginBottom: 12 }}>
             Side by side
           </h2>
-          <p style={{ color: '#6b7280', fontSize: 16 }}>What you're paying for vs. what you get with BuildPro</p>
+          <p style={{ color: '#6b7280', fontSize: 16 }}>What you're paying for vs. what you get with Twomiah Build</p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginBottom: 6 }}>
@@ -393,7 +393,7 @@ export default function BuildertrendMigrationPage() {
           </div>
           <div style={{ padding: '10px 18px', textAlign: 'center' }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: '#4ade80', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace" }}>
-              BuildPro
+              Twomiah Build
             </span>
           </div>
         </div>
@@ -501,7 +501,7 @@ export default function BuildertrendMigrationPage() {
               Migration packages
             </h2>
             <p style={{ color: '#6b7280', fontSize: 16 }}>
-              One-time fee. No ongoing commitment. Includes first month of BuildPro free.
+              One-time fee. No ongoing commitment. Includes first month of Twomiah Build free.
             </p>
           </div>
 
@@ -629,13 +629,13 @@ export default function BuildertrendMigrationPage() {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         flexWrap: 'wrap', gap: 16,
       }}>
-        <div style={{ fontWeight: 900, fontSize: 16, letterSpacing: -0.5 }}>BuildPro</div>
+        <div style={{ fontWeight: 900, fontSize: 16, letterSpacing: -0.5 }}>Twomiah Build</div>
         <div style={{ display: 'flex', gap: 24 }}>
           <Link to="/pricing" style={{ color: '#4b5563', fontSize: 13, textDecoration: 'none' }}>Pricing</Link>
           <Link to="/signup" style={{ color: '#4b5563', fontSize: 13, textDecoration: 'none' }}>Sign Up</Link>
           <Link to="/agency" style={{ color: '#4b5563', fontSize: 13, textDecoration: 'none' }}>Agency Program</Link>
         </div>
-        <div style={{ color: '#4b5563', fontSize: 12 }}>© 2026 BuildPro. Your data, your rules.</div>
+        <div style={{ color: '#4b5563', fontSize: 12 }}>© 2026 Twomiah Build. Your data, your rules.</div>
       </footer>
     </div>
   );

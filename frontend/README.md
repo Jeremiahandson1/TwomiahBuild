@@ -1,10 +1,10 @@
-# BuildPro CRM Builder
+# Twomiah Build CRM Builder
 
 A complete CRM builder that lets you select features, customize branding, and generate configured CRM instances.
 
 ## Features
 
-- **85+ Features** across 14 categories from the BuildPro vs Procore vs Jobber comparison
+- **85+ Features** across 14 categories from the Twomiah Build vs Procore vs Jobber comparison
 - **Preset Packages**: Service Starter, Project Pro, Contractor Suite, Enterprise
 - **Custom Branding**: Company name, logo, and primary color
 - **Dynamic CRM**: Only enabled features appear in navigation
@@ -40,8 +40,8 @@ A complete CRM builder that lets you select features, customize branding, and ge
 
 ```bash
 # Extract
-unzip buildpro-crm-builder-complete.zip
-cd buildpro-builder
+unzip twomiah-build-crm-builder-complete.zip
+cd twomiah-build-builder
 
 # Install dependencies
 npm install

@@ -34,7 +34,7 @@ export async function geocode(address) {
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
       {
         headers: {
-          'User-Agent': 'BuildPro CRM (contact@buildpro.app)',
+          'User-Agent': 'Twomiah Build CRM (contact@twomiah-build.app)',
         },
       }
     );
@@ -77,7 +77,7 @@ export async function reverseGeocode(lat, lng) {
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
       {
         headers: {
-          'User-Agent': 'BuildPro CRM (contact@buildpro.app)',
+          'User-Agent': 'Twomiah Build CRM (contact@twomiah-build.app)',
         },
       }
     );

@@ -1,4 +1,4 @@
-# BuildPro CRM
+# Twomiah Build CRM
 
 Full-stack construction management system with multi-tenant architecture, real-time updates, and production-ready infrastructure.
 
@@ -56,13 +56,13 @@ Full-stack construction management system with multi-tenant architecture, real-t
 
 ```bash
 # Clone
-git clone https://github.com/your-org/buildpro.git
-cd buildpro
+git clone https://github.com/your-org/twomiah-build.git
+cd twomiah-build
 
 # Start PostgreSQL (Docker option)
-docker run -d --name buildpro-db \
+docker run -d --name twomiah-build-db \
   -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=buildpro \
+  -e POSTGRES_DB=twomiah-build \
   -p 5432:5432 \
   postgres:16-alpine
 
@@ -88,7 +88,7 @@ npm run dev
 ## Project Structure
 
 ```
-buildpro/
+twomiah-build/
 ├── backend/
 │   ├── src/
 │   │   ├── routes/          # API endpoints (18 files)
@@ -175,7 +175,7 @@ docker-compose exec backend npx prisma migrate deploy
 
 ### Backend (.env)
 ```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/buildpro
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/twomiah-build
 JWT_SECRET=your-64-char-secret
 JWT_REFRESH_SECRET=your-64-char-refresh-secret
 PORT=3001

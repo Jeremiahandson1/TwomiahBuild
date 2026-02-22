@@ -67,7 +67,7 @@ export async function getOrCreateAccount(companyId) {
 
 /**
  * Connect Meta account via OAuth.
- * Contractor authorizes BuildPro's Business Manager to manage their ad account.
+ * Contractor authorizes Twomiah Build's Business Manager to manage their ad account.
  */
 export async function connectAccount(companyId, { accessToken, adAccountId }) {
   const account = await getOrCreateAccount(companyId);

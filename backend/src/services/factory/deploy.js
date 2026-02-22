@@ -81,7 +81,7 @@ async function createGitHubRepo(slug, description) {
       headers: githubHeaders(),
       body: JSON.stringify({
         name: slug,
-        description: description || `BuildPro customer: ${slug}`,
+        description: description || `Twomiah Build customer: ${slug}`,
         private: true,
         auto_init: true, // Creates initial commit so we can push
       }),
@@ -97,7 +97,7 @@ async function createGitHubRepo(slug, description) {
       headers: githubHeaders(),
       body: JSON.stringify({
         name: slug,
-        description: description || `BuildPro customer: ${slug}`,
+        description: description || `Twomiah Build customer: ${slug}`,
         private: true,
         auto_init: true,
       }),
@@ -130,10 +130,10 @@ async function pushToGitHub(repoFullName, extractDir) {
     const cmds = [
       `cd "${extractDir}" && git init`,
       `cd "${extractDir}" && git checkout -b main`,
-      `cd "${extractDir}" && git config user.email "factory@buildpro.app"`,
-      `cd "${extractDir}" && git config user.name "BuildPro Factory"`,
+      `cd "${extractDir}" && git config user.email "factory@twomiah-build.app"`,
+      `cd "${extractDir}" && git config user.name "Twomiah Build Factory"`,
       `cd "${extractDir}" && git add -A`,
-      `cd "${extractDir}" && git commit -m "Initial BuildPro deployment"`,
+      `cd "${extractDir}" && git commit -m "Initial Twomiah Build deployment"`,
       `cd "${extractDir}" && git remote add origin "${remoteUrl}" 2>/dev/null || git remote set-url origin "${remoteUrl}"`,
       `cd "${extractDir}" && git push -u origin main --force`,
     ];
@@ -352,7 +352,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
     results.steps.push({ step: 'extract', status: 'ok' });
 
     // ── Step 2: Create GitHub repo ─────────────────────
-    const repo = await createGitHubRepo(slug, `BuildPro: ${factoryCustomer.name}`);
+    const repo = await createGitHubRepo(slug, `Twomiah Build: ${factoryCustomer.name}`);
     results.steps.push({ step: 'github_repo', status: 'ok', repo: repo.full_name });
     results.repoUrl = `https://github.com/${repo.full_name}`;
 

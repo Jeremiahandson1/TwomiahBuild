@@ -4,8 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 export default function TermsPage() {
   const navigate = useNavigate();
   const effective = 'February 1, 2026';
-  const company = 'BuildPro, LLC';
-  const email = 'legal@buildpro.app';
+  const company = 'Twomiah Build, LLC';
+  const email = 'legal@twomiah-build.app';
 
   return (
     <div className="min-h-screen bg-white">
@@ -25,9 +25,9 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Acceptance of Terms</h2>
             <p>
-              By creating an account or using the BuildPro platform ("Service"), you agree to be bound by
+              By creating an account or using the Twomiah Build platform ("Service"), you agree to be bound by
               these Terms of Service ("Terms") and our Privacy Policy. If you do not agree, do not use the
-              Service. These Terms constitute a binding agreement between you and {company} ("BuildPro",
+              Service. These Terms constitute a binding agreement between you and {company} ("Twomiah Build",
               "we", "us", or "our").
             </p>
           </section>
@@ -35,7 +35,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">2. Description of Service</h2>
             <p>
-              BuildPro is a construction management platform providing CRM, project management, invoicing,
+              Twomiah Build is a construction management platform providing CRM, project management, invoicing,
               scheduling, field operations, and related tools for contractors and home service businesses.
               We reserve the right to modify, suspend, or discontinue any part of the Service at any time
               with reasonable notice.
@@ -55,7 +55,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Subscription and Billing</h2>
             <p>
-              BuildPro offers subscription plans billed monthly or annually. By providing payment information,
+              Twomiah Build offers subscription plans billed monthly or annually. By providing payment information,
               you authorize us to charge your payment method on a recurring basis. Subscriptions automatically
               renew unless cancelled before the renewal date. No refunds are issued for partial billing periods.
               We reserve the right to change pricing with 30 days' notice.
@@ -74,8 +74,8 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Your Data</h2>
             <p>
-              You retain ownership of all data you input into BuildPro ("Customer Data"). By using the
-              Service, you grant BuildPro a limited license to store, process, and display your Customer Data
+              You retain ownership of all data you input into Twomiah Build ("Customer Data"). By using the
+              Service, you grant Twomiah Build a limited license to store, process, and display your Customer Data
               solely to provide the Service. We will not sell your Customer Data to third parties. Upon
               account termination, you may export your data for 30 days before it is deleted.
             </p>
@@ -96,7 +96,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">8. Intellectual Property</h2>
             <p>
-              The BuildPro platform, including its software, design, trademarks, and content, is owned by
+              The Twomiah Build platform, including its software, design, trademarks, and content, is owned by
               {company} and protected by applicable intellectual property laws. You may not copy, modify,
               distribute, or create derivative works without our express written consent.
             </p>
@@ -114,7 +114,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">10. Limitation of Liability</h2>
             <p>
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, BUILDPRO SHALL NOT BE LIABLE FOR ANY INDIRECT,
+              TO THE MAXIMUM EXTENT PERMITTED BY LAW, TWOMIAH BUILD SHALL NOT BE LIABLE FOR ANY INDIRECT,
               INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR DATA,
               ARISING OUT OF OR IN CONNECTION WITH THESE TERMS OR YOUR USE OF THE SERVICE. OUR TOTAL
               LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID IN THE 12 MONTHS PRECEDING THE CLAIM.

@@ -8,7 +8,7 @@
  * - Customer portal for self-service billing management
  * 
  * This is SEPARATE from the CRM stripe service which handles
- * end-user invoice payments. This handles BuildPro → Customer billing.
+ * end-user invoice payments. This handles Twomiah Build → Customer billing.
  */
 
 import { stripe } from '../../config/stripe.js';
@@ -32,7 +32,7 @@ async function getOrCreateProduct(planId, planName, description, type = 'subscri
 
   // Search for existing product
   const existing = await stripe.products.search({
-    query: `metadata["buildpro_plan_id"]:"${planId}" AND metadata["buildpro_type"]:"${type}"`,
+    query: `metadata["twomiah-build_plan_id"]:"${planId}" AND metadata["twomiah-build_type"]:"${type}"`,
   });
 
   if (existing.data.length > 0) {
@@ -42,11 +42,11 @@ async function getOrCreateProduct(planId, planName, description, type = 'subscri
 
   // Create new product
   const product = await stripe.products.create({
-    name: `BuildPro ${planName}${type === 'license' ? ' License' : ''}`,
+    name: `Twomiah Build ${planName}${type === 'license' ? ' License' : ''}`,
     description,
     metadata: {
-      buildpro_plan_id: planId,
-      buildpro_type: type,
+      twomiah-build_plan_id: planId,
+      twomiah-build_type: type,
     },
   });
 
@@ -82,7 +82,7 @@ export async function createSubscriptionCheckout(factoryCustomer, {
   const productId = await getOrCreateProduct(
     planId,
     planName,
-    `BuildPro ${planName} — ${factoryCustomer.products?.join(', ') || 'CRM'}`,
+    `Twomiah Build ${planName} — ${factoryCustomer.products?.join(', ') || 'CRM'}`,
     'subscription'
   );
 
@@ -94,8 +94,8 @@ export async function createSubscriptionCheckout(factoryCustomer, {
       name: factoryCustomer.name,
       phone: factoryCustomer.phone || undefined,
       metadata: {
-        buildpro_factory_customer_id: factoryCustomer.id,
-        buildpro_operator_company_id: factoryCustomer.companyId,
+        twomiah-build_factory_customer_id: factoryCustomer.id,
+        twomiah-build_operator_company_id: factoryCustomer.companyId,
       },
     });
     stripeCustomerId = customer.id;
@@ -172,7 +172,7 @@ export async function createLicenseCheckout(factoryCustomer, {
   const productId = await getOrCreateProduct(
     planId,
     planName,
-    description || `BuildPro ${planName} License — One-time purchase`,
+    description || `Twomiah Build ${planName} License — One-time purchase`,
     'license'
   );
 
@@ -183,8 +183,8 @@ export async function createLicenseCheckout(factoryCustomer, {
       email: factoryCustomer.email,
       name: factoryCustomer.name,
       metadata: {
-        buildpro_factory_customer_id: factoryCustomer.id,
-        buildpro_operator_company_id: factoryCustomer.companyId,
+        twomiah-build_factory_customer_id: factoryCustomer.id,
+        twomiah-build_operator_company_id: factoryCustomer.companyId,
       },
     });
     stripeCustomerId = customer.id;

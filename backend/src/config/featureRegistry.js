@@ -1,7 +1,7 @@
 /**
  * Feature Registry
  * 
- * Master list of ALL available features in BuildPro.
+ * Master list of ALL available features in Twomiah Build.
  * This is the single source of truth for what can be enabled/disabled.
  */
 

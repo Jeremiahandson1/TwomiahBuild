@@ -69,7 +69,7 @@ export async function notifyNewLead(companyId, contact) {
     const smsBody =
       `🔔 New lead${source}: ${leadName}\n` +
       `📞 ${leadPhone}  ✉️ ${leadEmail}\n` +
-      `Reply fast — speed wins jobs. Open BuildPro to respond.`;
+      `Reply fast — speed wins jobs. Open Twomiah Build to respond.`;
 
     const promises = [];
 
@@ -137,9 +137,9 @@ async function sendLeadAlertEmail(to, companyName, contact, source) {
           ⚡ Respond within 5 minutes — leads contacted quickly are 9× more likely to convert.
         </div>
         <div style="margin-top: 16px; text-align: center;">
-          <a href="${process.env.FRONTEND_URL || 'https://app.buildpro.io'}/contacts"
+          <a href="${process.env.FRONTEND_URL || 'https://app.twomiah-build.io'}/contacts"
              style="display: inline-block; background: #f97316; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">
-            Open in BuildPro →
+            Open in Twomiah Build →
           </a>
         </div>
       </div>
@@ -157,7 +157,7 @@ async function sendLeadAlertEmail(to, companyName, contact, source) {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     return sgMail.send({
       to,
-      from: process.env.DEFAULT_FROM_EMAIL || 'noreply@buildpro.io',
+      from: process.env.DEFAULT_FROM_EMAIL || 'noreply@twomiah-build.io',
       subject,
       html,
     });

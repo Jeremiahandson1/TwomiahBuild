@@ -1,4 +1,4 @@
-# BuildPro Deployment Guide
+# Twomiah Build Deployment Guide
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@
 
 ```env
 # ── Required ──────────────────────────────────────────────────────────────────
-DATABASE_URL=postgresql://user:password@host:5432/buildpro
+DATABASE_URL=postgresql://user:password@host:5432/twomiah-build
 JWT_SECRET=<64-character-random-string>
 JWT_REFRESH_SECRET=<64-character-random-string>
 PORT=3001
@@ -28,11 +28,11 @@ STORAGE_BACKEND=s3
 R2_ACCOUNT_ID=<cloudflare-account-id>
 R2_ACCESS_KEY_ID=<r2-access-key>
 R2_SECRET_ACCESS_KEY=<r2-secret-key>
-R2_BUCKET_NAME=buildpro-uploads
+R2_BUCKET_NAME=twomiah-build-uploads
 R2_PUBLIC_URL=https://<your-r2-subdomain>.r2.dev
 
 # AWS S3 (alternative to R2)
-# S3_BUCKET=buildpro-uploads
+# S3_BUCKET=twomiah-build-uploads
 # S3_REGION=us-east-1
 # S3_ACCESS_KEY_ID=<aws-access-key>
 # S3_SECRET_ACCESS_KEY=<aws-secret>
@@ -92,8 +92,8 @@ EXPO_PUBLIC_PROJECT_ID=<your-expo-project-id>
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-org/buildpro.git
-cd buildpro
+git clone https://github.com/your-org/twomiah-build.git
+cd twomiah-build
 
 # 2. Create .env file
 cp .env.example .env
@@ -151,21 +151,21 @@ railway up
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: buildpro-backend
+  name: twomiah-build-backend
 spec:
   replicas: 2
   template:
     spec:
       containers:
       - name: backend
-        image: ghcr.io/your-org/buildpro/backend:latest
+        image: ghcr.io/your-org/twomiah-build/backend:latest
         ports:
         - containerPort: 3001
         env:
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: buildpro-secrets
+              name: twomiah-build-secrets
               key: database-url
 ```
 
@@ -179,7 +179,7 @@ api.your-domain.com {
 }
 
 your-domain.com {
-    root * /var/www/buildpro
+    root * /var/www/twomiah-build
     try_files {path} /index.html
     file_server
 }
@@ -257,7 +257,7 @@ psql $DATABASE_URL < backup-20240315.sql
 
 ```bash
 # Sync to S3
-aws s3 sync ./uploads s3://your-bucket/buildpro-uploads
+aws s3 sync ./uploads s3://your-bucket/twomiah-build-uploads
 ```
 
 ## Scaling

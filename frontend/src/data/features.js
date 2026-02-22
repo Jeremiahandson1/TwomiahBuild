@@ -1,4 +1,4 @@
-// Complete BuildPro Feature Definitions
+// Complete Twomiah Build Feature Definitions
 // All 85+ features from the comparison document
 
 export const FEATURE_CATEGORIES = [

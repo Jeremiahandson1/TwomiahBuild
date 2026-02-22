@@ -621,7 +621,7 @@ export default {
 
 /**
  * Buildertrend uses specific column names in its CSV exports.
- * These mappings translate Buildertrend fields → BuildPro fields.
+ * These mappings translate Buildertrend fields → Twomiah Build fields.
  *
  * Buildertrend exports available:
  *   Contacts: "Contacts.csv" from Contacts > Export

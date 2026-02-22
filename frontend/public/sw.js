@@ -1,8 +1,8 @@
-// Service Worker for BuildPro PWA
+// Service Worker for Twomiah Build PWA
 // Provides offline caching and background sync
 
-const CACHE_NAME = 'buildpro-v1';
-const API_CACHE = 'buildpro-api-v1';
+const CACHE_NAME = 'twomiah-build-v1';
+const API_CACHE = 'twomiah-build-api-v1';
 
 // Static assets to cache on install
 const STATIC_ASSETS = [

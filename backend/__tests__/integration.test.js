@@ -80,7 +80,7 @@ async function seedTestData() {
   });
   userA = await prisma.user.create({
     data: {
-      email: `user-a-${Date.now()}@test.buildpro.io`,
+      email: `user-a-${Date.now()}@test.twomiah-build.io`,
       passwordHash: hash,
       firstName: 'Test',
       lastName: 'UserA',
@@ -100,7 +100,7 @@ async function seedTestData() {
   });
   userB = await prisma.user.create({
     data: {
-      email: `user-b-${Date.now()}@test.buildpro.io`,
+      email: `user-b-${Date.now()}@test.twomiah-build.io`,
       passwordHash: hash,
       firstName: 'Test',
       lastName: 'UserB',
@@ -246,7 +246,7 @@ describe('Multi-Tenant Isolation (IDOR Prevention)', () => {
     const contactRes = await request
       .post('/api/v1/contacts')
       .set('Authorization', `Bearer ${tokenA}`)
-      .send({ name: 'IDOR Test Contact', email: 'idor@test.buildpro.io' });
+      .send({ name: 'IDOR Test Contact', email: 'idor@test.twomiah-build.io' });
     contactAId = contactRes.body?.id;
   });
 
@@ -328,7 +328,7 @@ describe('Role-Based Access Control', () => {
     const hash = await bcrypt.hash('TestPass123!', 10);
     const viewer = await prisma.user.create({
       data: {
-        email: `viewer-${Date.now()}@test.buildpro.io`,
+        email: `viewer-${Date.now()}@test.twomiah-build.io`,
         passwordHash: hash,
         firstName: 'Test',
         lastName: 'Viewer',

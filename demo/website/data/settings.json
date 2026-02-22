@@ -1,8 +1,8 @@
 {
-  "siteName": "BuildPro",
-  "companyName": "BuildPro",
+  "siteName": "Twomiah Build",
+  "companyName": "Twomiah Build",
   "phone": "(715) 999-0000",
-  "email": "hello@buildpro.io",
+  "email": "hello@twomiah-build.io",
   "address": "Eau Claire, WI",
   "city": "Eau Claire",
   "state": "WI",
@@ -19,8 +19,8 @@
     "yelp": "",
     "googleBusiness": ""
   },
-  "defaultMetaTitle": "BuildPro \u2014 Professional Websites & Business Software for Local Businesses",
-  "defaultMetaDescription": "BuildPro generates complete business websites, CRM, and analytics in minutes. Built for contractors, home care agencies, and local service businesses.",
+  "defaultMetaTitle": "Twomiah Build \u2014 Professional Websites & Business Software for Local Businesses",
+  "defaultMetaDescription": "Twomiah Build generates complete business websites, CRM, and analytics in minutes. Built for contractors, home care agencies, and local service businesses.",
   "analytics": {
     "googleAnalyticsId": "",
     "facebookPixelId": "",
@@ -39,16 +39,16 @@
     "showContactLink": true,
     "backgroundImage": ""
   },
-  "robotsTxt": "User-agent: *\nAllow: /\n\nSitemap: https://buildpro-demo-site.onrender.com/sitemap.xml",
+  "robotsTxt": "User-agent: *\nAllow: /\n\nSitemap: https://twomiah-build-demo-site.onrender.com/sitemap.xml",
   "emailNotifications": {
     "enabled": false,
-    "recipient": "demo@buildpro.io",
+    "recipient": "demo@twomiah-build.io",
     "smtpHost": "",
     "smtpPort": 587,
     "smtpUser": "",
     "smtpPass": "",
-    "fromEmail": "noreply@demo.buildpro.io",
-    "fromName": "BuildPro Demo Co Website",
+    "fromEmail": "noreply@demo.twomiah-build.io",
+    "fromName": "Twomiah Build Demo Co Website",
     "sendgridApiKey": ""
   },
   "twoFactorEnabled": false,

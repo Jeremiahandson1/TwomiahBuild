@@ -303,7 +303,7 @@ export async function adjustStock(companyId, {
     try {
       if (item.company?.email) {
         await emailService.send(item.company.email, 'lowStock', {
-          companyName: item.company.name || 'BuildPro',
+          companyName: item.company.name || 'Twomiah Build',
           itemName: item.name,
           sku: item.sku,
           currentQuantity: newQuantity,

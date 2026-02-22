@@ -84,7 +84,7 @@ export async function createSubscription(companyId, {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `BuildPro ${tier.name}`,
+            name: `Twomiah Build ${tier.name}`,
             metadata: { tierId },
           },
           unit_amount: totalPrice,
@@ -185,7 +185,7 @@ export async function changeTier(companyId, newTierId, { immediate = false } = {
       id: stripeSubscription.items.data[0].id,
       price_data: {
         currency: 'usd',
-        product_data: { name: `BuildPro ${newTier.name}` },
+        product_data: { name: `Twomiah Build ${newTier.name}` },
         unit_amount: totalPrice,
         recurring: {
           interval: subscription.billingCycle === 'yearly' ? 'year' : 'month',
@@ -239,7 +239,7 @@ export async function updateUserCount(companyId, newUserCount) {
       id: stripeSubscription.items.data[0].id,
       price_data: {
         currency: 'usd',
-        product_data: { name: `BuildPro ${tier.name}` },
+        product_data: { name: `Twomiah Build ${tier.name}` },
         unit_amount: totalPrice,
         recurring: {
           interval: subscription.billingCycle === 'yearly' ? 'year' : 'month',
@@ -281,7 +281,7 @@ export async function processOneTimePurchase(companyId, {
   
   const amount = pkg.price;
   const enabledFeatures = pkg.features;
-  const description = `BuildPro ${pkg.name} - Lifetime License`;
+  const description = `Twomiah Build ${pkg.name} - Lifetime License`;
 
   // Create or get Stripe customer
   let stripeCustomerId = company.stripeCustomerId;
@@ -490,7 +490,7 @@ export async function generateInvoice(companyId, { periodStart, periodEnd }) {
   // Subscription fee
   if (subscription) {
     lineItems.push({
-      description: `${tier?.name || 'BuildPro'} Subscription`,
+      description: `${tier?.name || 'Twomiah Build'} Subscription`,
       quantity: 1,
       unitPrice: subscription.totalPrice,
       total: subscription.totalPrice,

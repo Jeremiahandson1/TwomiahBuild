@@ -16,8 +16,8 @@ import nodemailer from 'nodemailer';
 import logger from './logger.js';
 
 // Config
-const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@buildpro.app';
-const FROM_NAME = process.env.FROM_NAME || 'BuildPro';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@twomiah-build.app';
+const FROM_NAME = process.env.FROM_NAME || 'Twomiah Build';
 const APP_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Detect which provider is configured
@@ -131,7 +131,7 @@ const templates = {
     html: `
       <!DOCTYPE html><html><head><style>${baseStyles}</style></head>
       <body><div class="container">
-        <div class="header"><h1 style="margin:0;">BuildPro</h1></div>
+        <div class="header"><h1 style="margin:0;">Twomiah Build</h1></div>
         <div class="content">
           <h2>Password Reset</h2>
           <p>Hi ${data.firstName},</p>
@@ -140,18 +140,18 @@ const templates = {
           <p style="text-align:center;"><a href="${APP_URL}/reset-password?token=${data.resetToken}" class="button">Reset Password</a></p>
           <p>This link expires in 1 hour. If you didn't request this, ignore this email.</p>
         </div>
-        <div class="footer">&copy; ${new Date().getFullYear()} BuildPro</div>
+        <div class="footer">&copy; ${new Date().getFullYear()} Twomiah Build</div>
       </div></body></html>
     `,
     text: `Hi ${data.firstName}, your password reset code is: ${data.resetCode}\n\nOr visit: ${APP_URL}/reset-password?token=${data.resetToken}\n\nExpires in 1 hour.`,
   }),
 
   welcome: (data) => ({
-    subject: 'Welcome to BuildPro!',
+    subject: 'Welcome to Twomiah Build!',
     html: `
       <!DOCTYPE html><html><head><style>${baseStyles}</style></head>
       <body><div class="container">
-        <div class="header"><h1 style="margin:0;">Welcome to BuildPro!</h1></div>
+        <div class="header"><h1 style="margin:0;">Welcome to Twomiah Build!</h1></div>
         <div class="content">
           <h2>Hi ${data.firstName},</h2>
           <p>Your account for <strong>${data.companyName}</strong> is ready.</p>
@@ -164,7 +164,7 @@ const templates = {
             <li>Daily logs and inspections</li>
           </ul>
         </div>
-        <div class="footer">&copy; ${new Date().getFullYear()} BuildPro</div>
+        <div class="footer">&copy; ${new Date().getFullYear()} Twomiah Build</div>
       </div></body></html>
     `,
     text: `Welcome ${data.firstName}! Your account for ${data.companyName} is ready. Login: ${APP_URL}/login`,
@@ -291,7 +291,7 @@ const templates = {
           </div>
           <p style="text-align:center;"><a href="${APP_URL}/quotes/${data.quoteId}" class="button">View Quote</a></p>
         </div>
-        <div class="footer">BuildPro</div>
+        <div class="footer">Twomiah Build</div>
       </div></body></html>
     `,
     text: `Quote ${data.quoteNumber} approved by ${data.contactName}. Amount: $${data.total}`,
@@ -316,7 +316,7 @@ const templates = {
           </div>
           <p style="text-align:center;"><a href="${APP_URL}/jobs/${data.jobId}" class="button">View Job</a></p>
         </div>
-        <div class="footer">BuildPro</div>
+        <div class="footer">Twomiah Build</div>
       </div></body></html>
     `,
     text: `New job assigned: ${data.jobTitle}\n\nJob #: ${data.jobNumber}\nScheduled: ${data.scheduledDate}\nLocation: ${data.address || 'See details'}`,
@@ -337,7 +337,7 @@ const templates = {
           </div>
           <p style="text-align:center;"><a href="${APP_URL}/jobs/${data.jobId}" class="button">View Job</a></p>
         </div>
-        <div class="footer">BuildPro</div>
+        <div class="footer">Twomiah Build</div>
       </div></body></html>
     `,
     text: `Job ${data.jobNumber} status changed: ${data.oldStatus} → ${data.newStatus}`,
@@ -365,7 +365,7 @@ const templates = {
           ` : ''}
           <p style="text-align:center;"><a href="${APP_URL}" class="button">Open Dashboard</a></p>
         </div>
-        <div class="footer">BuildPro</div>
+        <div class="footer">Twomiah Build</div>
       </div></body></html>
     `,
     text: `Daily Summary for ${data.date}\n\nJobs: ${data.jobsToday}\nOverdue Invoices: ${data.overdueInvoices}\nPending Quotes: ${data.pendingQuotes}`,
@@ -373,22 +373,22 @@ const templates = {
 
   // ============ TEAM ============
   teamInvite: (data) => ({
-    subject: `You're invited to join ${data.companyName} on BuildPro`,
+    subject: `You're invited to join ${data.companyName} on Twomiah Build`,
     html: `
       <!DOCTYPE html><html><head><style>${baseStyles}</style></head>
       <body><div class="container">
         <div class="header"><h1 style="margin:0;">You're Invited!</h1></div>
         <div class="content">
           <p>Hi,</p>
-          <p><strong>${data.inviterName}</strong> has invited you to join <strong>${data.companyName}</strong> on BuildPro.</p>
+          <p><strong>${data.inviterName}</strong> has invited you to join <strong>${data.companyName}</strong> on Twomiah Build.</p>
           <p>Your role: <strong>${data.role}</strong></p>
           <p style="text-align:center;"><a href="${data.inviteLink}" class="button">Accept Invitation</a></p>
           <p>This invitation expires in 7 days.</p>
         </div>
-        <div class="footer">BuildPro</div>
+        <div class="footer">Twomiah Build</div>
       </div></body></html>
     `,
-    text: `${data.inviterName} invited you to join ${data.companyName} on BuildPro.\n\nAccept: ${data.inviteLink}`,
+    text: `${data.inviterName} invited you to join ${data.companyName} on Twomiah Build.\n\nAccept: ${data.inviteLink}`,
   }),
 
   // ============ PORTAL ============

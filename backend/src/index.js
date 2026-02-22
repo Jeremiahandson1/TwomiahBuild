@@ -106,7 +106,7 @@ app.use(helmet({
 }));
 
 // CORS — supports multiple frontend origins via comma-separated FRONTEND_URL env var
-// e.g. FRONTEND_URL=https://app.buildpro.io,https://staging.buildpro.io
+// e.g. FRONTEND_URL=https://app.twomiah-build.io,https://staging.twomiah-build.io
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
   .split(',')
   .map(o => o.trim())

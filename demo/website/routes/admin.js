@@ -114,7 +114,7 @@ initFile(servicesDataFile, []);
 initFile(homepageFile, {
   hero: {
     tagline: 'Quality Work, Every Time',
-    title: 'BuildPro Demo Co',
+    title: 'Twomiah Build Demo Co',
     subtitle: 'Professional Home Services Services',
     description: 'Serving the Greater Austin Area with Quality & Professionalism',
     image: '',
@@ -157,7 +157,7 @@ initFile(templatesFile, [
     name: 'About Us',
     description: 'Standard about page template',
     content: `<h2>Our Story</h2>
-<p>BuildPro Demo Co has been proudly serving the Greater Austin Area with professional Home Services services.</p>
+<p>Twomiah Build Demo Co has been proudly serving the Greater Austin Area with professional Home Services services.</p>
 
 <h2>Our Mission</h2>
 <p>We are committed to delivering the highest quality workmanship while maintaining honest, transparent communication with every customer.</p>
@@ -167,7 +167,7 @@ initFile(templatesFile, [
 <p><strong>Quality Materials</strong> - We use only the best materials from trusted manufacturers.</p>
 <p><strong>Customer Focused</strong> - Your satisfaction is our top priority.</p>
 <p><strong>Licensed &amp; Insured</strong> - Full protection for your peace of mind.</p>`,
-    heroDescription: 'Learn about BuildPro Demo Co and our commitment to quality.',
+    heroDescription: 'Learn about Twomiah Build Demo Co and our commitment to quality.',
     tagline: 'Quality You Can Trust'
   },
   {
@@ -200,10 +200,10 @@ if (!fs.existsSync(settingsFile)) {
   const defaultPassword = bcrypt.hashSync('demo1234', 10);
   fs.writeFileSync(settingsFile, JSON.stringify({
     adminPassword: defaultPassword,
-    siteName: 'BuildPro Demo Co',
-    companyName: 'BuildPro Demo Co LLC',
+    siteName: 'Twomiah Build Demo Co',
+    companyName: 'Twomiah Build Demo Co LLC',
     phone: '(555) 123-4567',
-    email: 'demo@buildpro.io',
+    email: 'demo@twomiah-build.io',
     address: '123 Main Street',
     city: 'Austin',
     state: 'TX',
@@ -220,7 +220,7 @@ if (!fs.existsSync(settingsFile)) {
       yelp: '',
       googleBusiness: ''
     },
-    defaultMetaTitle: 'BuildPro Demo Co - Home Services Services in Austin',
+    defaultMetaTitle: 'Twomiah Build Demo Co - Home Services Services in Austin',
     defaultMetaDescription: 'Professional Home Services services in the Greater Austin Area. Contact us today for a free estimate.',
     analytics: {
       googleAnalyticsId: '',
@@ -243,16 +243,16 @@ if (!fs.existsSync(settingsFile)) {
     robotsTxt: `User-agent: *
 Allow: /
 
-Sitemap: https://buildpro-demo-site.onrender.com/sitemap.xml`,
+Sitemap: https://twomiah-build-demo-site.onrender.com/sitemap.xml`,
     emailNotifications: {
       enabled: false,
-      recipient: 'demo@buildpro.io',
+      recipient: 'demo@twomiah-build.io',
       smtpHost: '',
       smtpPort: 587,
       smtpUser: '',
       smtpPass: '',
-      fromEmail: 'noreply@demo.buildpro.io',
-      fromName: 'BuildPro Demo Co Website',
+      fromEmail: 'noreply@demo.twomiah-build.io',
+      fromName: 'Twomiah Build Demo Co Website',
       sendgridApiKey: ''
     },
     twoFactorEnabled: false,
@@ -503,7 +503,7 @@ router.post('/2fa/setup', authMiddleware, (req, res) => {
     settings.twoFactorSecret = secret;
     fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
     
-    const otpauthUrl = `otpauth://totp/buildpro-demo-coAdmin?secret=${secret}&issuer=buildpro-demo-co`;
+    const otpauthUrl = `otpauth://totp/twomiah-build-demo-coAdmin?secret=${secret}&issuer=twomiah-build-demo-co`;
     res.json({ secret, otpauthUrl });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
@@ -940,7 +940,7 @@ router.get('/sitemap.xml', (req, res) => {
     const pages = JSON.parse(fs.readFileSync(pagesFile, 'utf8'));
     const services = JSON.parse(fs.readFileSync(servicesDataFile, 'utf8'));
     
-    const baseUrl = process.env.SITE_URL || 'https://buildpro-demo-site.onrender.com';
+    const baseUrl = process.env.SITE_URL || 'https://twomiah-build-demo-site.onrender.com';
     
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
@@ -2535,7 +2535,7 @@ router.post('/posts', authMiddleware, (req, res) => {
       slug: req.body.slug || '',
       excerpt: req.body.excerpt || '',
       content: req.body.content || '',
-      author: req.body.author || 'BuildPro Demo Co',
+      author: req.body.author || 'Twomiah Build Demo Co',
       publishedAt: req.body.publishedAt || new Date().toISOString(),
       category: req.body.category || 'tips',
       tags: req.body.tags || [],

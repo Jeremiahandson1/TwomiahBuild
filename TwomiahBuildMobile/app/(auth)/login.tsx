@@ -37,7 +37,7 @@ export default function LoginScreen() {
       <View style={styles.inner}>
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>BuildPro</Text>
+          <Text style={styles.logoText}>Twomiah Build</Text>
           <Text style={styles.logoSub}>Field Operations</Text>
         </View>
 
@@ -91,7 +91,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.footer}>BuildPro v1.0  •  © 2026</Text>
+        <Text style={styles.footer}>Twomiah Build v1.0  •  © 2026</Text>
       </View>
     </KeyboardAvoidingView>
   );

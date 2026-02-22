@@ -917,7 +917,7 @@ function PageEditor() {
                           )}
                         </div>
                         <div className="preview-card-content">
-                          <div className="preview-card-domain">demo.buildpro.io</div>
+                          <div className="preview-card-domain">demo.twomiah-build.io</div>
                           <div className="preview-card-title">{formData.metaTitle || formData.title || 'Page Title'}</div>
                           <div className="preview-card-desc">{formData.metaDescription || 'Add a meta description to see how it appears when shared.'}</div>
                         </div>

@@ -25,7 +25,7 @@ async function main() {
         products: {{PRODUCTS_JSON}},
         siteUrl: '{{SITE_URL}}',
         cmsUrl: '{{CMS_URL}}',
-        generatedBy: 'BuildPro Factory',
+        generatedBy: 'Twomiah Build Factory',
         generatedAt: new Date().toISOString(),
       },
     },

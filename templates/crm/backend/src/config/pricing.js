@@ -1,5 +1,5 @@
 /**
- * BuildPro Pricing Configuration
+ * Twomiah Build Pricing Configuration
  * 
  * Single source of truth for all pricing:
  * - SaaS subscription tiers

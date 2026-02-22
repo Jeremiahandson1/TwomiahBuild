@@ -1,5 +1,5 @@
 /**
- * BuildPro Marketing Hub
+ * Twomiah Build Marketing Hub
  * /marketing — Paid Ads Management (Google + Meta)
  * Spec: February 2026
  *

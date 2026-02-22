@@ -179,7 +179,7 @@ export function BuilderPage() {
                 <Hammer className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">BuildPro Builder</h1>
+                <h1 className="text-xl font-bold text-white">Twomiah Build Builder</h1>
                 <p className="text-xs text-slate-500">Create your custom CRM</p>
               </div>
             </div>

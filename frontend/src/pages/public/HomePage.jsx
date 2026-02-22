@@ -16,7 +16,7 @@ const NAV_LINKS = [
 ];
 
 const STATS = [
-  { value: '2,400+', label: 'Contractors Running BuildPro' },
+  { value: '2,400+', label: 'Contractors Running Twomiah Build' },
   { value: '$1.2B', label: 'In Invoices Processed' },
   { value: '98.9%', label: 'Uptime SLA' },
   { value: '4.9★', label: 'Average Customer Rating' },
@@ -416,7 +416,7 @@ function Features() {
             <span style={{ color: '#f97316' }}>SOFTWARE STACK</span>
           </h2>
           <p style={{ color: '#64748b', fontSize: 18, maxWidth: 520, margin: '0 auto' }}>
-            Stop paying for 5 apps that don't talk to each other. BuildPro is everything your field service business needs.
+            Stop paying for 5 apps that don't talk to each other. Twomiah Build is everything your field service business needs.
           </p>
         </div>
 
@@ -638,7 +638,7 @@ function Footer() {
           ))}
         </div>
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 24, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12 }}>
-          <span style={{ color: '#334155', fontSize: 13 }}>© 2026 BuildPro. All rights reserved.</span>
+          <span style={{ color: '#334155', fontSize: 13 }}>© 2026 Twomiah Build. All rights reserved.</span>
           <div style={{ display: 'flex', gap: 20 }}>
             {['Privacy', 'Terms', 'Security'].map(l => (
               <a key={l} href="#" style={{ color: '#334155', textDecoration: 'none', fontSize: 13 }}>{l}</a>

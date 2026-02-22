@@ -222,7 +222,7 @@ router.post('/create-checkout', authenticate, async (req, res, next) => {
               price_data: {
                 currency: 'usd',
                 product_data: {
-                  name: `BuildPro ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`,
+                  name: `Twomiah Build ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`,
                   description: billingCycle === 'annual' ? 'Billed annually' : 'Billed monthly',
                 },
                 unit_amount: amount,
@@ -644,7 +644,7 @@ router.post('/addons/purchase', authenticate, async (req, res, next) => {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `BuildPro ${addon.name}`,
+            name: `Twomiah Build ${addon.name}`,
             description: `Monthly add-on subscription`,
           },
           unit_amount: addon.price,
@@ -745,7 +745,7 @@ router.post('/self-hosted/purchase', async (req, res, next) => {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `BuildPro ${license.name}`,
+            name: `Twomiah Build ${license.name}`,
             description: 'Self-hosted perpetual license',
           },
           unit_amount: license.price,
@@ -762,7 +762,7 @@ router.post('/self-hosted/purchase', async (req, res, next) => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `BuildPro ${addon.name}`,
+              name: `Twomiah Build ${addon.name}`,
               description: addon.recurring ? 'Recurring service' : 'One-time service',
             },
             unit_amount: addon.price,
@@ -882,8 +882,8 @@ router.get('/self-hosted/download/:licenseId', async (req, res, next) => {
     // In production, this would serve the actual download
     // For now, return download info
     res.json({
-      downloadUrl: `https://github.com/yourusername/buildpro/releases/latest`,
-      documentation: 'https://docs.buildpro.app/self-hosted',
+      downloadUrl: `https://github.com/yourusername/twomiah-build/releases/latest`,
+      documentation: 'https://docs.twomiah-build.app/self-hosted',
       licenseKey: license.licenseKey,
       instructions: [
         '1. Download the release package',

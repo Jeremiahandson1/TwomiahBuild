@@ -122,7 +122,7 @@ function HomePage({ onFormSuccess }) {
 
   // Use settings or defaults
   const phone = settings?.phone || '(555) 123-4567';
-  const email = settings?.email || 'demo@buildpro.io';
+  const email = settings?.email || 'demo@twomiah-build.io';
   const address = settings?.address || '123 Main Street';
   const city = settings?.city || 'Austin';
   const state = settings?.state || 'WI';
@@ -465,9 +465,9 @@ function HomePage({ onFormSuccess }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "HomeAndConstructionBusiness",
-        "name": "BuildPro Demo Co",
-        "image": "https://buildpro-demo-site.onrender.com/logo.jpg",
-        "url": "https://buildpro-demo-site.onrender.com",
+        "name": "Twomiah Build Demo Co",
+        "image": "https://twomiah-build-demo-site.onrender.com/logo.jpg",
+        "url": "https://twomiah-build-demo-site.onrender.com",
         "telephone": `+1${phone.replace(/\D/g, '')}`,
         "email": email,
         "address": {

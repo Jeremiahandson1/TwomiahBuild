@@ -154,7 +154,7 @@ export default function PricingPage() {
               <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
                 <Building className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900">BuildPro</span>
+              <span className="text-2xl font-bold text-gray-900">Twomiah Build</span>
             </div>
             <div className="flex items-center gap-4">
               <a href="/login" className="text-gray-600 hover:text-gray-900">Log In</a>
@@ -297,7 +297,7 @@ export default function PricingPage() {
           <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 12 }}>Your data is yours. Always.</h2>
           <p style={{ fontSize: 15, color: '#94a3b8', marginBottom: 28, lineHeight: 1.7 }}>
             Buildertrend has no bulk export. Customers who want to leave are stuck.{' '}
-            <strong style={{ color: '#fff' }}>BuildPro is the opposite.</strong>{' '}
+            <strong style={{ color: '#fff' }}>Twomiah Build is the opposite.</strong>{' '}
             Every plan includes a one-click full export — contacts, jobs, projects, invoices, quotes, expenses — as a ZIP you download any time, no support ticket required.
             Switching away is always an option. That's why most people don't.
           </p>
@@ -323,16 +323,16 @@ export default function PricingPage() {
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 36 }}>
             <span style={{ background: '#dbeafe', color: '#1d4ed8', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Agency Program</span>
-            <h2 style={{ fontSize: 28, fontWeight: 700, margin: '12px 0 8px' }}>Resell BuildPro Under Your Brand</h2>
+            <h2 style={{ fontSize: 28, fontWeight: 700, margin: '12px 0 8px' }}>Resell Twomiah Build Under Your Brand</h2>
             <p style={{ color: '#64748b', fontSize: 15, lineHeight: 1.7 }}>
-              None of our competitors offer this. The BuildPro Factory is available as a white-label agency program —
+              None of our competitors offer this. The Twomiah Build Factory is available as a white-label agency program —
               deploy fully branded instances for your clients under your own domain and logo.
             </p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
             {[
               { icon: '🏭', title: 'Factory Access', desc: 'Generate complete client sites in minutes. CMS, CRM, analytics — all pre-built.' },
-              { icon: '🎨', title: 'Your Branding', desc: 'Your logo, your domain, your colors. Clients never see BuildPro.' },
+              { icon: '🎨', title: 'Your Branding', desc: 'Your logo, your domain, your colors. Clients never see Twomiah Build.' },
               { icon: '💰', title: 'Your Pricing', desc: 'Charge what the market will bear. We charge you wholesale.' },
               { icon: '🔧', title: 'Full Source Code', desc: 'Self-hosted license includes everything. Customize as needed for clients.' },
             ].map(item => (
@@ -396,7 +396,7 @@ export default function PricingPage() {
                 <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
                   <Building className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-lg font-bold text-white">BuildPro</span>
+                <span className="text-lg font-bold text-white">Twomiah Build</span>
               </div>
               <p className="text-sm">
                 The complete platform for contractors and service businesses.
@@ -431,7 +431,7 @@ export default function PricingPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
-            © {new Date().getFullYear()} BuildPro. All rights reserved.
+            © {new Date().getFullYear()} Twomiah Build. All rights reserved.
           </div>
         </div>
       </footer>
@@ -692,7 +692,7 @@ function FAQ() {
     },
     {
       q: 'Can I migrate from Buildertrend?',
-      a: 'Yes. BuildPro includes a Buildertrend migration wizard that maps your exported contacts and jobs directly into BuildPro. Export your data from Buildertrend, upload the CSV, and we handle the field mapping automatically. White-glove migration service is also available — we\'ll move everything for you.',
+      a: 'Yes. Twomiah Build includes a Buildertrend migration wizard that maps your exported contacts and jobs directly into Twomiah Build. Export your data from Buildertrend, upload the CSV, and we handle the field mapping automatically. White-glove migration service is also available — we\'ll move everything for you.',
     },
     {
       q: 'What happens to my data if I cancel?',

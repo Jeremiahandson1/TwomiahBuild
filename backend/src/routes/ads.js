@@ -180,7 +180,7 @@ router.get('/admin/dashboard', requireRole('owner'), async (req, res, next) => {
 /**
  * POST /api/v1/ads/factory/create
  *
- * Onboard a new contractor's marketing stack. Owner-only (BuildPro admin).
+ * Onboard a new contractor's marketing stack. Owner-only (Twomiah Build admin).
  * Body: { companyId, vertical, city, state, googleBudget, metaBudget, tier, ... }
  */
 router.post('/factory/create', requireRole('owner'), async (req, res, next) => {

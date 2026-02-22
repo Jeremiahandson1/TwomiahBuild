@@ -4,8 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 export default function PrivacyPage() {
   const navigate = useNavigate();
   const effective = 'February 1, 2026';
-  const company = 'BuildPro, LLC';
-  const email = 'privacy@buildpro.app';
+  const company = 'Twomiah Build, LLC';
+  const email = 'privacy@twomiah-build.app';
 
   return (
     <div className="min-h-screen bg-white">
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Overview</h2>
             <p>
-              {company} ("BuildPro", "we", "us") operates the BuildPro construction management platform.
+              {company} ("Twomiah Build", "we", "us") operates the Twomiah Build construction management platform.
               This Privacy Policy explains what information we collect, how we use it, and your rights
               regarding that information. By using the Service, you consent to the practices described here.
             </p>
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
               We share information only with trusted service providers who assist us in operating the Service
               (such as cloud hosting, payment processing, and email delivery). These providers are bound by
               contractual obligations to protect your data. We may also disclose information when required by
-              law or to protect the rights and safety of BuildPro, our users, or the public.
+              law or to protect the rights and safety of Twomiah Build, our users, or the public.
             </p>
           </section>
 

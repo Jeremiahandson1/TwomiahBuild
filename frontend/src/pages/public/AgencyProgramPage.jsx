@@ -20,7 +20,7 @@ const HOW_IT_WORKS = [
   {
     step: '02',
     title: 'Get Factory access',
-    desc: 'You get full access to the BuildPro Factory — generate complete client platforms in minutes. Your branding, their domain, your pricing.',
+    desc: 'You get full access to the Twomiah Build Factory — generate complete client platforms in minutes. Your branding, their domain, your pricing.',
   },
   {
     step: '03',
@@ -41,7 +41,7 @@ const AGENCY_TIERS = [
     priceNote: 'to join',
     monthlyFee: '$149/mo per client',
     highlight: false,
-    description: 'White-label BuildPro under your brand. Charge what you want.',
+    description: 'White-label Twomiah Build under your brand. Charge what you want.',
     includes: [
       'Factory access (generate client sites)',
       'Your branding & domain',
@@ -122,8 +122,8 @@ const WHAT_YOU_BUILD = [
 
 const FAQS = [
   {
-    q: 'Can clients see they\'re on BuildPro?',
-    a: 'No. Your logo, your domain, your colors. BuildPro is invisible. You white-label everything including the mobile app icon.',
+    q: 'Can clients see they\'re on Twomiah Build?',
+    a: 'No. Your logo, your domain, your colors. Twomiah Build is invisible. You white-label everything including the mobile app icon.',
   },
   {
     q: 'What do I charge my clients?',
@@ -247,7 +247,7 @@ export default function AgencyProgramPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60,
       }}>
         <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ fontWeight: 900, fontSize: 18, color: '#fff', letterSpacing: -0.5 }}>BuildPro</div>
+          <div style={{ fontWeight: 900, fontSize: 18, color: '#fff', letterSpacing: -0.5 }}>Twomiah Build</div>
           <div style={{ width: 1, height: 16, background: '#333' }} />
           <div style={{ fontSize: 12, color: '#6b7280' }}>Agency Program</div>
         </Link>
@@ -283,7 +283,7 @@ export default function AgencyProgramPage() {
           letterSpacing: -4, marginBottom: 24,
           animation: 'fadeSlideUp 0.4s ease forwards 0.1s', opacity: 0,
         }}>
-          Sell BuildPro<br />
+          Sell Twomiah Build<br />
           <span style={{
             background: 'linear-gradient(135deg, #f97316, #fb923c)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
@@ -297,7 +297,7 @@ export default function AgencyProgramPage() {
           maxWidth: 560, margin: '0 auto 40px',
           animation: 'fadeSlideUp 0.4s ease forwards 0.2s', opacity: 0,
         }}>
-          White-label the entire BuildPro platform. Your logo. Your domain.
+          White-label the entire Twomiah Build platform. Your logo. Your domain.
           Your pricing. We run the infrastructure. You keep the margin.
         </p>
 
@@ -633,13 +633,13 @@ export default function AgencyProgramPage() {
         borderTop: '1px solid #1a1a1a', padding: '32px',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16,
       }}>
-        <div style={{ fontWeight: 900, fontSize: 16, letterSpacing: -0.5 }}>BuildPro</div>
+        <div style={{ fontWeight: 900, fontSize: 16, letterSpacing: -0.5 }}>Twomiah Build</div>
         <div style={{ display: 'flex', gap: 24 }}>
           <Link to="/pricing" style={{ color: '#4b5563', fontSize: 13, textDecoration: 'none' }}>Pricing</Link>
           <Link to="/migrate-from-buildertrend" style={{ color: '#4b5563', fontSize: 13, textDecoration: 'none' }}>Migration</Link>
           <Link to="/signup" style={{ color: '#4b5563', fontSize: 13, textDecoration: 'none' }}>Sign Up</Link>
         </div>
-        <div style={{ color: '#4b5563', fontSize: 12 }}>© 2026 BuildPro. Built for the trades.</div>
+        <div style={{ color: '#4b5563', fontSize: 12 }}>© 2026 Twomiah Build. Built for the trades.</div>
       </footer>
     </div>
   );

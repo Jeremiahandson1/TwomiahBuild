@@ -107,7 +107,7 @@ export function csrfProtection(req, res, next) {
   // Skip for API clients using Bearer token auth.
   // CSRF attacks exploit cookie-based auth — an attacker can trick a browser
   // into sending cookies automatically, but CANNOT set the Authorization header.
-  // All BuildPro API routes use Bearer tokens, so they are not CSRF-vulnerable.
+  // All Twomiah Build API routes use Bearer tokens, so they are not CSRF-vulnerable.
   // CSRF enforcement only applies to any future session-cookie-based flows.
   const authHeader = req.get('Authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {

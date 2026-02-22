@@ -107,7 +107,7 @@ function Header() {
   };
 
   const phone = settings?.phone || '(555) 123-4567';
-  const email = settings?.email || 'demo@buildpro.io';
+  const email = settings?.email || 'demo@twomiah-build.io';
   const logoUrl = settings?.logo ? (settings.logo.startsWith('http') ? settings.logo : `${API_BASE.replace('/api', '')}${settings.logo}`) : '/logo.jpg';
   const phoneRaw = phone.replace(/\D/g, '');
 
@@ -143,7 +143,7 @@ function Header() {
         <div className="container">
           <div className="nav-content">
             <Link to="/" className="logo" onClick={handleLinkClick}>
-  <img src={logoUrl} alt="BuildPro Demo Co" className="logo-image" />
+  <img src={logoUrl} alt="Twomiah Build Demo Co" className="logo-image" />
 </Link>
             <nav className={`main-nav ${menuOpen ? 'active' : ''}`}>
               <ul>

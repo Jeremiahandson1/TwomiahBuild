@@ -363,12 +363,12 @@ function generateConfirmationCode() {
  * Generate embed code for website
  */
 export function getEmbedCode(companyId, companySlug) {
-  return `<!-- BuildPro Online Booking Widget -->
-<div id="buildpro-booking"></div>
-<script src="${process.env.FRONTEND_URL || 'https://app.buildpro.com'}/booking-widget.js"></script>
+  return `<!-- Twomiah Build Online Booking Widget -->
+<div id="twomiah-build-booking"></div>
+<script src="${process.env.FRONTEND_URL || 'https://app.twomiah-build.com'}/booking-widget.js"></script>
 <script>
-  BuildProBooking.init({
-    container: '#buildpro-booking',
+  Twomiah BuildBooking.init({
+    container: '#twomiah-build-booking',
     company: '${companySlug}',
   });
 </script>`;

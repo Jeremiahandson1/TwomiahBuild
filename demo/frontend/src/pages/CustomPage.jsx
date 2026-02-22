@@ -100,7 +100,7 @@ function CustomPage() {
       <section className="custom-cta">
         <div className="container">
           <h2>Have Questions?</h2>
-          <p>Contact BuildPro Demo Co today. We're here to help with all your construction needs.</p>
+          <p>Contact Twomiah Build Demo Co today. We're here to help with all your construction needs.</p>
           <div className="cta-buttons">
             <Link to="/#contact" className="btn btn-primary btn-lg">Contact Us</Link>
             <a href="tel:5551234567" className="btn btn-outline-light btn-lg">Call (555) 123-4567</a>

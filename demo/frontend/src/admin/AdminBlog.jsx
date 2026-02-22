@@ -36,7 +36,7 @@ function AdminBlog() {
       slug: '',
       excerpt: '',
       content: '',
-      author: 'BuildPro Demo Co',
+      author: 'Twomiah Build Demo Co',
       category: 'roofing',
       tags: [],
       image: '',

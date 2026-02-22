@@ -19,7 +19,7 @@ function Footer() {
   }, []);
 
   const phone = settings?.phone || '(555) 123-4567';
-  const email = settings?.email || 'demo@buildpro.io';
+  const email = settings?.email || 'demo@twomiah-build.io';
   const address = settings?.address || '123 Main Street';
   const city = settings?.city || 'Austin';
   const state = settings?.state || 'WI';
@@ -41,7 +41,7 @@ function Footer() {
                     <rect x="15" y="22" width="10" height="14" stroke="currentColor" strokeWidth="2"/>
                   </svg>
                 </div>
-                <span>BUILDPRO DEMO CO</span>
+                <span>TWOMIAH BUILD DEMO CO</span>
               </div>
               <p>Quality services for customers throughout the Austin area. Licensed, insured, and committed to excellence.</p>
               <div className="social-links">
@@ -154,7 +154,7 @@ function Footer() {
 
       <div className="footer-bottom">
         <div className="container">
-          <p>&copy; {currentYear} BuildPro Demo Co. All rights reserved.</p>
+          <p>&copy; {currentYear} Twomiah Build Demo Co. All rights reserved.</p>
           <p>Serving Austin, Pflugerville, Round Rock, and the Greater Austin Area</p>
         </div>
       </div>

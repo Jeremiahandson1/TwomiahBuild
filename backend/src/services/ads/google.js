@@ -131,7 +131,7 @@ export async function getOrCreateAccount(companyId) {
 /**
  * Connect a real Google Ads account.
  * Called after contractor completes OAuth or provides credentials.
- * Stores tokens, creates customer account under BuildPro MCC.
+ * Stores tokens, creates customer account under Twomiah Build MCC.
  */
 export async function connectAccount(companyId, { authCode, refreshToken }) {
   const account = await getOrCreateAccount(companyId);
@@ -443,7 +443,7 @@ const GoogleAdsAdapter = {
 
   async createCustomerAccount(companyId, { refreshToken }) {
     console.log('[GoogleAds] STUB: createCustomerAccount for', companyId);
-    return { id: `STUB_${companyId}`, name: `BuildPro — ${companyId}` };
+    return { id: `STUB_${companyId}`, name: `Twomiah Build — ${companyId}` };
   },
 
   async createCampaign(account, campaign) {

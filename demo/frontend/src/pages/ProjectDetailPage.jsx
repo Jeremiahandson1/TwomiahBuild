@@ -291,7 +291,7 @@ function ProjectDetailPage() {
       <section className="project-bottom-cta">
         <div className="container">
           <h2>Ready to Start Your Project?</h2>
-          <p>Contact BuildPro Demo Co for a free estimate on your roofing, siding, or window project.</p>
+          <p>Contact Twomiah Build Demo Co for a free estimate on your roofing, siding, or window project.</p>
           <div className="cta-buttons">
             <Link to="/#contact" className="btn btn-primary btn-lg">Get Free Estimate</Link>
             <a href="tel:5551234567" className="btn btn-outline-light btn-lg">Call (555) 123-4567</a>

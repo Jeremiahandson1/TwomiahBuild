@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 5000;
 // Ensure uploads directory exists
 const appPaths = require('./config/paths');
 const uploadsDir = appPaths.uploads;
-const BASE_URL = process.env.BASE_URL || 'https://buildpro-demo-site.onrender.com';
+const BASE_URL = process.env.BASE_URL || 'https://twomiah-build-demo-site.onrender.com';
 
 // Check if we have a build directory
 const buildDir = path.join(__dirname, 'build');
@@ -162,7 +162,7 @@ app.get('/', (req, res) => {
     homepage,
     testimonials,
     gallery,
-    title: `${common.settings.companyName || 'BuildPro Demo Co'} - ${common.settings.tagline || 'Quality Work, Every Time'}`,
+    title: `${common.settings.companyName || 'Twomiah Build Demo Co'} - ${common.settings.tagline || 'Quality Work, Every Time'}`,
     description: common.settings.metaDescription || 'Professional contracting services.',
     canonicalUrl: BASE_URL,
   });
@@ -173,7 +173,7 @@ app.get('/services', (req, res) => {
   const common = getCommonData();
   renderPage(res, 'service', {
     ...common,
-    title: `Our Services | ${common.settings.companyName || 'BuildPro Demo Co'}`,
+    title: `Our Services | ${common.settings.companyName || 'Twomiah Build Demo Co'}`,
     description: 'View our full range of professional services.',
     canonicalUrl: `${BASE_URL}/services`,
     service: null,
@@ -189,7 +189,7 @@ app.get('/services/:slug', (req, res) => {
   renderPage(res, 'service', {
     ...common,
     service,
-    title: `${service.name} | ${common.settings.companyName || 'BuildPro Demo Co'}`,
+    title: `${service.name} | ${common.settings.companyName || 'Twomiah Build Demo Co'}`,
     description: service.description || '',
     canonicalUrl: `${BASE_URL}/services/${service.slug || service.id}`,
   });
@@ -205,7 +205,7 @@ app.get('/services/:slug/:sub', (req, res) => {
     ...common,
     service: service || {},
     subservice: sub || {},
-    title: `${sub ? sub.name : 'Service'} | ${common.settings.companyName || 'BuildPro Demo Co'}`,
+    title: `${sub ? sub.name : 'Service'} | ${common.settings.companyName || 'Twomiah Build Demo Co'}`,
     description: sub ? sub.description || '' : '',
     canonicalUrl: `${BASE_URL}/services/${req.params.slug}/${req.params.sub}`,
   });
@@ -218,7 +218,7 @@ app.get('/gallery', (req, res) => {
   renderPage(res, 'gallery', {
     ...common,
     gallery,
-    title: `Gallery | ${common.settings.companyName || 'BuildPro Demo Co'}`,
+    title: `Gallery | ${common.settings.companyName || 'Twomiah Build Demo Co'}`,
     description: 'Browse our project gallery.',
     canonicalUrl: `${BASE_URL}/gallery`,
   });
@@ -231,7 +231,7 @@ app.get('/blog', (req, res) => {
   renderPage(res, 'blog', {
     ...common,
     posts: Array.isArray(posts) ? posts.filter(p => p.published) : [],
-    title: `Blog | ${common.settings.companyName || 'BuildPro Demo Co'}`,
+    title: `Blog | ${common.settings.companyName || 'Twomiah Build Demo Co'}`,
     description: 'Read our latest posts.',
     canonicalUrl: `${BASE_URL}/blog`,
   });
@@ -246,7 +246,7 @@ app.get('/blog/:slug', (req, res) => {
   renderPage(res, 'blog-post', {
     ...common,
     post,
-    title: `${post.title} | ${common.settings.companyName || 'BuildPro Demo Co'}`,
+    title: `${post.title} | ${common.settings.companyName || 'Twomiah Build Demo Co'}`,
     description: post.excerpt || '',
     canonicalUrl: `${BASE_URL}/blog/${post.slug}`,
   });
@@ -257,7 +257,7 @@ app.get('/contact', (req, res) => {
   const common = getCommonData();
   renderPage(res, 'contact', {
     ...common,
-    title: `Contact Us | ${common.settings.companyName || 'BuildPro Demo Co'}`,
+    title: `Contact Us | ${common.settings.companyName || 'Twomiah Build Demo Co'}`,
     description: 'Get in touch with us today.',
     canonicalUrl: `${BASE_URL}/contact`,
   });
@@ -284,7 +284,7 @@ app.get('/:slug', (req, res, next) => {
   renderPage(res, 'custom-page', {
     ...common,
     page,
-    title: `${page.title} | ${common.settings.companyName || 'BuildPro Demo Co'}`,
+    title: `${page.title} | ${common.settings.companyName || 'Twomiah Build Demo Co'}`,
     description: page.description || '',
     canonicalUrl: `${BASE_URL}/${page.slug}`,
   });
@@ -329,7 +329,7 @@ app.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║
-║   🏠 BuildPro Demo Co                                  ║
+║   🏠 Twomiah Build Demo Co                                  ║
 ║                                                            ║
 ║   Server running on port ${PORT}                             ║
 ║   Environment: ${process.env.NODE_ENV || 'development'}                            ║

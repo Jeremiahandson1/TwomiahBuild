@@ -1,11 +1,11 @@
-# BuildPro Mobile
+# Twomiah Build Mobile
 
 React Native / Expo app for field crews. Items #14 + #15 from the priority list.
 
 ## What's Built
 
 ### Screens
-- **Login** — JWT auth against your existing BuildPro backend
+- **Login** — JWT auth against your existing Twomiah Build backend
 - **Home** — Dashboard with live clock-in timer, quick actions, sync status
 - **Jobs** — Searchable list with local SQLite cache (works offline)
 - **Job Detail** — Clock in/out, daily log, photos, tasks — all from one screen
@@ -39,7 +39,7 @@ npm install
 ### Environment
 ```bash
 cp .env.example .env.local
-# Set EXPO_PUBLIC_API_URL to your BuildPro backend URL
+# Set EXPO_PUBLIC_API_URL to your Twomiah Build backend URL
 ```
 
 **Local dev tip:** Use your machine's local IP (e.g. `http://192.168.1.50:3001`), not `localhost` — your phone/simulator can't reach localhost on your machine.
@@ -112,7 +112,7 @@ src/
 
 ## Backend API Routes Used
 
-All routes are on your existing BuildPro backend:
+All routes are on your existing Twomiah Build backend:
 
 | Method | Route | Purpose |
 |--------|-------|---------|

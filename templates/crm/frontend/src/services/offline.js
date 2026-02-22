@@ -7,7 +7,7 @@
  * - Sync when back online
  */
 
-const DB_NAME = 'buildpro-offline';
+const DB_NAME = 'twomiah-build-offline';
 const DB_VERSION = 1;
 
 // Store names

@@ -1,7 +1,7 @@
 /**
  * Offline-First Database
  *
- * Single persistent database file "buildpro.db" with versioned migrations.
+ * Single persistent database file "twomiah-build.db" with versioned migrations.
  * On startup, runs any pending migrations in order — never wipes existing data.
  * Add new changes by appending a new migration to the MIGRATIONS array.
  *
@@ -190,7 +190,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   }
 
   try {
-    db = await SQLite.openDatabaseAsync('buildpro.db');
+    db = await SQLite.openDatabaseAsync('twomiah-build.db');
     await runMigrations(db);
   } catch (err: any) {
     dbUnavailable = true;

@@ -128,7 +128,7 @@ export default function ProfileScreen() {
         <Text style={styles.sectionTitle}>About</Text>
         <View style={styles.card}>
           <Row label="App Version" value="1.0.0" />
-          <Row label="Platform" value="BuildPro Field" />
+          <Row label="Platform" value="Twomiah Build Field" />
         </View>
 
         {/* Actions */}

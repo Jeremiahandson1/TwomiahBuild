@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "BuildPro",
-    "slug": "buildpro",
+    "name": "Twomiah Build",
+    "slug": "twomiah-build",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,12 +13,12 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "io.buildpro.mobile",
+      "bundleIdentifier": "io.twomiah-build.mobile",
       "infoPlist": {
-        "NSCameraUsageDescription": "BuildPro uses your camera to capture site photos and document progress.",
-        "NSPhotoLibraryUsageDescription": "BuildPro accesses your photo library to attach images to jobs and daily logs.",
-        "NSLocationWhenInUseUsageDescription": "BuildPro uses your location for GPS clock-in and job site tracking.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "BuildPro uses your location in the background for automatic clock-in when you arrive at a job site."
+        "NSCameraUsageDescription": "Twomiah Build uses your camera to capture site photos and document progress.",
+        "NSPhotoLibraryUsageDescription": "Twomiah Build accesses your photo library to attach images to jobs and daily logs.",
+        "NSLocationWhenInUseUsageDescription": "Twomiah Build uses your location for GPS clock-in and job site tracking.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Twomiah Build uses your location in the background for automatic clock-in when you arrive at a job site."
       }
     },
     "android": {
@@ -26,7 +26,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1e3a5f"
       },
-      "package": "io.buildpro.mobile",
+      "package": "io.twomiah-build.mobile",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -56,17 +56,17 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "BuildPro uses your location for automatic job site clock-in."
+          "locationAlwaysAndWhenInUsePermission": "Twomiah Build uses your location for automatic job site clock-in."
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "BuildPro uses your camera for site photos."
+          "cameraPermission": "Twomiah Build uses your camera for site photos."
         }
       ]
     ],
-    "scheme": "buildpro",
+    "scheme": "twomiah-build",
     "extra": {
       "router": {
         "origin": false

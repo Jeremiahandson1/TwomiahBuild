@@ -65,7 +65,7 @@ function startServer(port) {
         if (req.url.includes('public-settings')) {
           res.end(JSON.stringify({
             phone: '(555) 123-4567',
-            email: 'demo@buildpro.io',
+            email: 'demo@twomiah-build.io',
             address: '123 Main Street',
             city: 'Austin',
             state: 'WI',

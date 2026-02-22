@@ -95,7 +95,7 @@ const WEBSITE_PRESETS = [
 
 // ─── MAIN WIZARD ───────────────────────────────────────────────────
 
-const STORAGE_KEY = 'buildpro-factory-wizard';
+const STORAGE_KEY = 'twomiah-build-factory-wizard';
 
 function loadSavedState() {
   try {
@@ -248,7 +248,7 @@ export default function FactoryWizard() {
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px', color: '#111827' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>BuildPro Factory</h1>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Twomiah Build Factory</h1>
         <p style={{ color: '#6b7280', marginTop: 4 }}>Generate deployable software packages for your customers</p>
         {(step > 0 || config.company.name) && !result && (
           <button

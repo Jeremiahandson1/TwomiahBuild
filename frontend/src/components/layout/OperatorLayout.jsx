@@ -72,7 +72,7 @@ export default function OperatorLayout() {
             <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
               <Factory className="w-4.5 h-4.5 text-white" />
             </div>
-            <span className="font-semibold text-base text-white tracking-tight">BuildPro</span>
+            <span className="font-semibold text-base text-white tracking-tight">Twomiah Build</span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -110,7 +110,7 @@ export default function OperatorLayout() {
           <div className="mt-8 pt-4 border-t border-slate-800">
             <p className="px-3 text-[11px] font-medium text-slate-600 uppercase tracking-wider mb-2">Demos</p>
             <a
-              href="https://buildpro-demo-site.onrender.com"
+              href="https://twomiah-build-demo-site.onrender.com"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-800 hover:text-slate-300 transition-colors"
@@ -120,7 +120,7 @@ export default function OperatorLayout() {
               <ExternalLink className="w-3.5 h-3.5 ml-auto opacity-50" />
             </a>
             <a
-              href="https://buildpro-demo-site.onrender.com/admin"
+              href="https://twomiah-build-demo-site.onrender.com/admin"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-800 hover:text-slate-300 transition-colors"
@@ -130,7 +130,7 @@ export default function OperatorLayout() {
               <ExternalLink className="w-3.5 h-3.5 ml-auto opacity-50" />
             </a>
             <a
-              href="https://buildpro-demo-site.onrender.com/visualize"
+              href="https://twomiah-build-demo-site.onrender.com/visualize"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-800 hover:text-slate-300 transition-colors"
@@ -180,7 +180,7 @@ export default function OperatorLayout() {
               <Menu className="w-5 h-5" />
             </button>
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">{company?.name || 'BuildPro'}</h2>
+              <h2 className="text-sm font-semibold text-slate-900">{company?.name || 'Twomiah Build'}</h2>
               <p className="text-xs text-slate-500">{user?.email}</p>
             </div>
           </div>

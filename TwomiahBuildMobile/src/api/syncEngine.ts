@@ -17,10 +17,10 @@ import * as SecureStore from 'expo-secure-store';
 import { getSession, getPendingSync, markSyncComplete, markSyncFailed, resetFailedSync, getSyncQueueCount } from '../utils/database';
 import { useSyncStore } from '../store/syncStore';
 
-const TOKEN_KEY = 'buildpro_auth_token';
+const TOKEN_KEY = 'twomiah-build_auth_token';
 
-const SYNC_TASK = 'buildpro-background-sync';
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://api.buildpro.io';
+const SYNC_TASK = 'twomiah-build-background-sync';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://api.twomiah-build.io';
 
 let netInfoUnsubscribe: (() => void) | null = null;
 let syncInProgress = false;
@@ -102,7 +102,7 @@ export async function drainSyncQueue() {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
-      'X-Client': 'buildpro-mobile',
+      'X-Client': 'twomiah-build-mobile',
     };
 
     let successCount = 0;
@@ -125,7 +125,7 @@ export async function drainSyncQueue() {
 
           response = await fetch(`${API_BASE}${item.endpoint}`, {
             method: 'POST',
-            headers: { Authorization: `Bearer ${token}`, 'X-Client': 'buildpro-mobile' },
+            headers: { Authorization: `Bearer ${token}`, 'X-Client': 'twomiah-build-mobile' },
             body: formData,
           });
         } else {

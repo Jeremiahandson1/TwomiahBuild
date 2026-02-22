@@ -36,7 +36,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: buildpro_test
+          POSTGRES_DB: twomiah-build_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -46,8 +46,8 @@ jobs:
           - 5432:5432
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/buildpro_test
-      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/buildpro_test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/twomiah-build_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/twomiah-build_test
       JWT_SECRET: test-jwt-secret-key-for-ci-testing-only
       JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci-testing-only
       NODE_ENV: test

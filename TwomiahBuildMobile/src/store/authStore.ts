@@ -4,8 +4,8 @@ import * as SecureStore from 'expo-secure-store';
 import api, { ApiError } from '../api/client';
 import { unregisterFromPushNotifications } from '../utils/pushNotifications';
 
-const TOKEN_KEY = 'buildpro_auth_token';
-const REFRESH_TOKEN_KEY = 'buildpro_refresh_token';
+const TOKEN_KEY = 'twomiah-build_auth_token';
+const REFRESH_TOKEN_KEY = 'twomiah-build_refresh_token';
 
 interface User {
   id: string;
