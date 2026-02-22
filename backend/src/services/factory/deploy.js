@@ -401,7 +401,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
         const backend = await createRenderWebService({
           name: `${slug}-api`,
           repoFullName: repo.full_name,
-          rootDir: 'backend',
+          rootDir: 'crm/backend',
           buildCommand: 'npm install && npx prisma generate && npx prisma db push',
           startCommand: 'npm start',
           envVars: backendEnvVars,
@@ -419,7 +419,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
         const frontend = await createRenderStaticSite({
           name: `${slug}-crm`,
           repoFullName: repo.full_name,
-          rootDir: 'frontend',
+          rootDir: 'crm/frontend',
           buildCommand: 'npm install && npm run build',
           publishPath: 'dist',
           envVars: [
