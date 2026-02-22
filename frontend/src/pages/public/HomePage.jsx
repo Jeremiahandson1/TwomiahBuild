@@ -22,54 +22,56 @@ const STATS = [
   { value: '4.9★', label: 'Average Customer Rating' },
 ];
 
-const FEATURES = [
+const FEATURE_CATEGORIES = [
   {
     icon: FileText,
-    title: 'Quotes & Invoicing',
-    desc: 'Create professional quotes in minutes. Auto-convert to invoices. Get paid online.',
-    color: '#f97316',
+    title: 'Quoting & Estimating',
+    features: ['Professional quotes', 'Quote templates', 'Optional add-ons & upsells', 'Online approval + e-signature', 'Deposit collection', 'Automated follow-ups'],
   },
   {
     icon: Clock,
     title: 'Scheduling & Dispatch',
-    desc: 'Drag-and-drop calendar. GPS time tracking. Auto clock-in at job sites.',
-    color: '#fb923c',
-  },
-  {
-    icon: Users,
-    title: 'CRM & Lead Pipeline',
-    desc: 'Every lead, every customer, every job — tracked from first contact to final payment.',
-    color: '#f97316',
-  },
-  {
-    icon: BarChart3,
-    title: 'Job Costing & Reports',
-    desc: 'Know your margins on every job. Compare estimate vs. actual in real time.',
-    color: '#fb923c',
-  },
-  {
-    icon: Shield,
-    title: 'QuickBooks Sync',
-    desc: 'Two-way sync with QuickBooks Online. Your accountant will love you.',
-    color: '#f97316',
+    features: ['Drag & drop calendar', 'Online booking', 'Route optimization', 'Map view of jobs', 'Recurring jobs', 'Automated visit reminders', 'Gantt schedules'],
   },
   {
     icon: Smartphone,
     title: 'Mobile Field App',
-    desc: 'Your crew clocks in, captures photos, and submits daily logs — from the field.',
-    color: '#fb923c',
-  },
-  {
-    icon: Globe,
-    title: 'Customer Portal',
-    desc: 'Clients approve quotes, view invoices, and pay online without calling you.',
-    color: '#f97316',
+    features: ['GPS time tracking', 'Auto clock-in at job sites', 'Photo & video capture', 'Daily logs', 'Work orders & checklists', 'On-my-way texts to customers'],
   },
   {
     icon: Wrench,
-    title: 'Project Management',
-    desc: 'Change orders, RFIs, punch lists, lien waivers — the full construction stack.',
-    color: '#fb923c',
+    title: 'Construction Project Management',
+    features: ['RFIs & submittals', 'Change orders', 'Punch lists', 'Lien waivers', 'Subcontractor management', 'Document control'],
+  },
+  {
+    icon: Users,
+    title: 'CRM & Client Management',
+    features: ['Lead pipeline', 'Customer history', 'Customer portal', 'Online quote approval', 'Online invoice payment', 'Automated follow-ups'],
+  },
+  {
+    icon: BarChart3,
+    title: 'Invoicing & Payments',
+    features: ['Auto-convert quotes to invoices', 'Online payments (Stripe)', 'Consumer financing (Wisetack)', 'Automated payment reminders', 'Partial payments & deposits'],
+  },
+  {
+    icon: Shield,
+    title: 'Financial Management',
+    features: ['QuickBooks two-way sync', 'Job costing', 'Estimate vs. actual reporting', 'Expense tracking', 'Payroll reporting', 'Profit & loss by job'],
+  },
+  {
+    icon: Globe,
+    title: 'Marketing & Growth',
+    features: ['Google Reviews automation', 'Email marketing campaigns', 'Referral program', 'Website builder', 'SEO tools', 'AI Receptionist'],
+  },
+  {
+    icon: TrendingUp,
+    title: 'Advanced Features & AI',
+    features: ['AI-powered estimating', 'Predictive job costing', 'Smart scheduling', 'Automated workflows', 'Bid management', 'Preconstruction tools'],
+  },
+  {
+    icon: Users,
+    title: 'Team Management',
+    features: ['Role-based permissions', 'Crew scheduling', 'Time & attendance', 'Subcontractor portals', 'Team chat', 'Performance reporting'],
   },
 ];
 
@@ -494,42 +496,58 @@ function Stats() {
 function Features() {
   const [ref, inView] = useInView(0.1);
   return (
-    <section id="features" ref={ref} style={{ background: '#030712', padding: '100px 24px' }}>
+    <section id="features" ref={ref} style={{ background: '#0D0D0D', padding: '100px 24px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 72 }}>
-          <div style={{ display: 'inline-block', color: '#f97316', fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 16, background: 'rgba(249,115,22,0.1)', padding: '6px 14px', borderRadius: 100, border: '1px solid rgba(249,115,22,0.25)' }}>
-            Everything In One Platform
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 20 }}>
+            <span style={{ width: 32, height: 2, background: '#FF6D00', display: 'inline-block' }} />
+            <span style={{ color: '#FF6D00', fontSize: 11, fontWeight: 700, letterSpacing: '0.35em', textTransform: 'uppercase', fontFamily: "'Barlow', sans-serif" }}>Everything In One Platform</span>
+            <span style={{ width: 32, height: 2, background: '#FF6D00', display: 'inline-block' }} />
           </div>
-          <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 'clamp(36px, 5vw, 58px)', fontWeight: 800, color: 'white', lineHeight: 1.1, marginBottom: 16 }}>
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(40px, 5vw, 64px)', letterSpacing: '0.04em', color: 'white', lineHeight: 1.0, marginBottom: 16 }}>
             REPLACE YOUR ENTIRE<br />
-            <span style={{ color: '#f97316' }}>SOFTWARE STACK</span>
+            <span style={{ background: 'linear-gradient(135deg, #FFAB00, #FF3D00)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>SOFTWARE STACK</span>
           </h2>
-          <p style={{ color: '#64748b', fontSize: 18, maxWidth: 520, margin: '0 auto' }}>
-            Stop paying for 5 apps that don't talk to each other. Twomiah Build is everything your field service business needs.
+          <p style={{ color: '#555', fontSize: 18, maxWidth: 520, margin: '0 auto', fontFamily: "'Barlow', sans-serif", fontWeight: 500 }}>
+            Stop paying for 5 apps that don't talk to each other. 118 features. One platform.
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
-          {FEATURES.map((f, i) => {
-            const Icon = f.icon;
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 2 }}>
+          {FEATURE_CATEGORIES.map((cat, i) => {
+            const Icon = cat.icon;
             return (
-              <div key={f.title} style={{
-                background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(249,115,22,0.1)',
-                borderRadius: 14, padding: 28, cursor: 'default',
-                opacity: inView ? 1 : 0, transform: inView ? 'none' : 'translateY(24px)',
-                transition: `all 0.5s ease ${i * 0.07}s`,
+              <div key={cat.title} style={{
+                background: '#1A1A1A',
+                padding: 28,
+                opacity: inView ? 1 : 0,
+                transform: inView ? 'none' : 'translateY(24px)',
+                transition: `all 0.5s ease ${i * 0.06}s`,
               }}
-                onMouseEnter={e => { e.currentTarget.style.border = '1px solid rgba(249,115,22,0.35)'; e.currentTarget.style.background = 'rgba(249,115,22,0.05)'; }}
-                onMouseLeave={e => { e.currentTarget.style.border = '1px solid rgba(249,115,22,0.1)'; e.currentTarget.style.background = 'rgba(15,23,42,0.6)'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#222'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#1A1A1A'; }}
               >
-                <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(249,115,22,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                  <Icon size={22} color={f.color} />
+                <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(255,109,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+                  <Icon size={20} color="#FF6D00" />
                 </div>
-                <h3 style={{ color: 'white', fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{f.title}</h3>
-                <p style={{ color: '#64748b', fontSize: 14, lineHeight: 1.6 }}>{f.desc}</p>
+                <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif", color: 'white', fontSize: 18, fontWeight: 700, marginBottom: 14, letterSpacing: '0.02em' }}>{cat.title}</h3>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {cat.features.map(f => (
+                    <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 7, fontFamily: "'Barlow', sans-serif", fontSize: 13, color: '#777', lineHeight: 1.4 }}>
+                      <span style={{ color: '#FF6D00', marginTop: 2, flexShrink: 0 }}>›</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
               </div>
             );
           })}
+        </div>
+
+        {/* Feature count callout */}
+        <div style={{ textAlign: 'center', marginTop: 48, padding: '24px', background: 'rgba(255,109,0,0.05)', border: '1px solid rgba(255,109,0,0.15)', borderRadius: 8 }}>
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, color: '#FF6D00', letterSpacing: '0.05em' }}>118 FEATURES</span>
+          <span style={{ fontFamily: "'Barlow', sans-serif", color: '#555', fontSize: 15, marginLeft: 16 }}>across 10 categories. All included. No per-feature pricing.</span>
         </div>
       </div>
     </section>
