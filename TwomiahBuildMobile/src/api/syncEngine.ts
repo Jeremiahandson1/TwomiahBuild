@@ -17,7 +17,7 @@ import * as SecureStore from 'expo-secure-store';
 import { getSession, getPendingSync, markSyncComplete, markSyncFailed, resetFailedSync, getSyncQueueCount } from '../utils/database';
 import { useSyncStore } from '../store/syncStore';
 
-const TOKEN_KEY = 'twomiah-build_auth_token';
+const TOKEN_KEY = 'twomiah_build_auth_token';
 
 const SYNC_TASK = 'twomiah-build-background-sync';
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://api.twomiah-build.io';

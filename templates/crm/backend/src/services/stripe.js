@@ -52,8 +52,8 @@ export async function getOrCreateCustomer(contact) {
       country: 'US',
     } : undefined,
     metadata: {
-      twomiah-build_contact_id: contact.id,
-      twomiah-build_company_id: contact.companyId,
+      twomiah_build_contact_id: contact.id,
+      twomiah_build_company_id: contact.companyId,
     },
   });
 
@@ -432,7 +432,7 @@ export async function createConnectAccount(company) {
       name: company.name,
     },
     metadata: {
-      twomiah-build_company_id: company.id,
+      twomiah_build_company_id: company.id,
     },
   });
 

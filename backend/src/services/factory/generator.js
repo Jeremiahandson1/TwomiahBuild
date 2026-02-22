@@ -25,8 +25,8 @@ const __dirname = path.dirname(__filename);
 // Template and output directories — configurable via env vars
 // Walks up from generator.js → services/factory/ → services/ → src/ → backend/ → project root
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
-const TEMPLATES_ROOT = process.env.TWOMIAH BUILD_TEMPLATES_DIR || path.join(PROJECT_ROOT, 'templates');
-const OUTPUT_DIR = process.env.TWOMIAH BUILD_OUTPUT_DIR || path.join(PROJECT_ROOT, 'generated');
+const TEMPLATES_ROOT = process.env.TWOMIAH_BUILD_TEMPLATES_DIR || path.join(PROJECT_ROOT, 'templates');
+const OUTPUT_DIR = process.env.TWOMIAH_BUILD_OUTPUT_DIR || path.join(PROJECT_ROOT, 'generated');
 
 // Text file extensions to process for token injection
 const TEXT_EXTS = new Set([
@@ -49,7 +49,7 @@ export async function generate(config) {
   if (!fs.existsSync(TEMPLATES_ROOT)) {
     throw new Error(
       `Templates directory not found at ${TEMPLATES_ROOT}. ` +
-      `Set TWOMIAH BUILD_TEMPLATES_DIR env var or ensure templates/ exists at project root.`
+      `Set TWOMIAH_BUILD_TEMPLATES_DIR env var or ensure templates/ exists at project root.`
     );
   }
 

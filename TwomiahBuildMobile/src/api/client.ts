@@ -13,8 +13,8 @@ import * as SecureStore from 'expo-secure-store';
 import { enqueueSync } from '../utils/database';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://twomiah-build-api-y5e1.onrender.com';
-const TOKEN_KEY = 'twomiah-build_auth_token';
-const REFRESH_TOKEN_KEY = 'twomiah-build_refresh_token';
+const TOKEN_KEY = 'twomiah_build_auth_token';
+const REFRESH_TOKEN_KEY = 'twomiah_build_refresh_token';
 
 class ApiClient {
   private refreshPromise: Promise<boolean> | null = null;

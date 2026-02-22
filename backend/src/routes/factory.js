@@ -25,7 +25,7 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..');
-const OUTPUT_DIR = process.env.TWOMIAH BUILD_OUTPUT_DIR || path.join(PROJECT_ROOT, 'generated');
+const OUTPUT_DIR = process.env.TWOMIAH_BUILD_OUTPUT_DIR || path.join(PROJECT_ROOT, 'generated');
 
 // Skip auth for public endpoints
 router.use((req, res, next) => {

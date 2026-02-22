@@ -32,7 +32,7 @@ async function getOrCreateProduct(planId, planName, description, type = 'subscri
 
   // Search for existing product
   const existing = await stripe.products.search({
-    query: `metadata["twomiah-build_plan_id"]:"${planId}" AND metadata["twomiah-build_type"]:"${type}"`,
+    query: `metadata["twomiah_build_plan_id"]:"${planId}" AND metadata["twomiah_build_type"]:"${type}"`,
   });
 
   if (existing.data.length > 0) {
@@ -45,8 +45,8 @@ async function getOrCreateProduct(planId, planName, description, type = 'subscri
     name: `Twomiah Build ${planName}${type === 'license' ? ' License' : ''}`,
     description,
     metadata: {
-      twomiah-build_plan_id: planId,
-      twomiah-build_type: type,
+      twomiah_build_plan_id: planId,
+      twomiah_build_type: type,
     },
   });
 
@@ -94,8 +94,8 @@ export async function createSubscriptionCheckout(factoryCustomer, {
       name: factoryCustomer.name,
       phone: factoryCustomer.phone || undefined,
       metadata: {
-        twomiah-build_factory_customer_id: factoryCustomer.id,
-        twomiah-build_operator_company_id: factoryCustomer.companyId,
+        twomiah_build_factory_customer_id: factoryCustomer.id,
+        twomiah_build_operator_company_id: factoryCustomer.companyId,
       },
     });
     stripeCustomerId = customer.id;
@@ -183,8 +183,8 @@ export async function createLicenseCheckout(factoryCustomer, {
       email: factoryCustomer.email,
       name: factoryCustomer.name,
       metadata: {
-        twomiah-build_factory_customer_id: factoryCustomer.id,
-        twomiah-build_operator_company_id: factoryCustomer.companyId,
+        twomiah_build_factory_customer_id: factoryCustomer.id,
+        twomiah_build_operator_company_id: factoryCustomer.companyId,
       },
     });
     stripeCustomerId = customer.id;
