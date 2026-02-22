@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'io.buildpro.mobile'
+    namespace 'io.twomiah.build'
     defaultConfig {
-        applicationId 'io.buildpro.mobile'
+        applicationId 'io.twomiah.build'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
