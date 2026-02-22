@@ -8,6 +8,7 @@ export const FEATURE_CATEGORIES = [
     icon: 'Megaphone',
     description: 'Tools to attract and convert new customers',
     features: [
+      { id: 'paid_ads', name: 'Paid Ads Hub (Google + Meta)', description: 'Manage Google and Meta ad campaigns, track leads, and view monthly ROI reports' },
       { id: 'google_reviews', name: 'Google Reviews Automation', description: 'Automatically request and manage Google reviews from customers' },
       { id: 'email_marketing', name: 'Email Marketing Campaigns', description: 'Create and send targeted email campaigns to leads and customers' },
       { id: 'referral_program', name: 'Referral Program', description: 'Track and reward customer referrals with automated workflows' },
@@ -263,7 +264,7 @@ export const PRESET_PACKAGES = [
     features: [
       // All Project Pro features plus full construction PM
       'contact_database', 'client_history', 'communication_history', 'lead_management', 'client_portal', 'subcontractor_portal',
-      'google_reviews', 'email_marketing', 'referral_program',
+      'paid_ads', 'google_reviews', 'email_marketing', 'referral_program',
       'professional_quotes', 'quote_templates', 'optional_addons', 'cost_markups', 'online_approval', 'quote_followups', 'deposit_collection',
       'drag_drop_calendar', 'online_booking', 'service_dispatch', 'route_optimization', 'map_view', 'recurring_jobs', 'team_notifications', 'visit_reminders', 'gantt_schedules',
       'work_orders', 'job_forms', 'on_my_way', 'time_tracking', 'gps_tracking', 'photo_capture', 'daily_logs', 'job_followups',

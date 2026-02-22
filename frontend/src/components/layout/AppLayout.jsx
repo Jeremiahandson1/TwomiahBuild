@@ -12,39 +12,42 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSocket } from '../../contexts/SocketContext';
 import { SkipLink, RouteAnnouncer } from '../common/Accessibility';
 import { useIsMobile } from '../../hooks/useMediaQuery';
+import { useFeatureNavigation, FeatureProvider } from '../FeatureGate';
 
-const navItems = [
-  { to: '/', icon: Home, label: 'Dashboard', exact: true },
-  { to: '/contacts', icon: Users, label: 'Contacts' },
-  { to: '/projects', icon: FolderKanban, label: 'Projects' },
-  { to: '/jobs', icon: Briefcase, label: 'Jobs' },
-  { to: '/quotes', icon: FileText, label: 'Quotes' },
-  { to: '/invoices', icon: Receipt, label: 'Invoices' },
-  { to: '/schedule', icon: Calendar, label: 'Schedule' },
-  { to: '/time', icon: Clock, label: 'Time' },
-  { to: '/expenses', icon: DollarSign, label: 'Expenses' },
-  { to: '/documents', icon: FolderOpen, label: 'Documents' },
-  { to: '/team', icon: Users, label: 'Team' },
-  { to: '/rfis', icon: FileQuestion, label: 'RFIs' },
-  { to: '/change-orders', icon: ClipboardList, label: 'Change Orders' },
-  { to: '/punch-lists', icon: CheckSquare, label: 'Punch Lists' },
-  { to: '/daily-logs', icon: BookOpen, label: 'Daily Logs' },
-  { to: '/inspections', icon: ClipboardCheck, label: 'Inspections' },
-  { to: '/bids', icon: Target, label: 'Bids' },
-  { to: '/fleet', icon: Truck, label: 'Fleet' },
-  { to: '/inventory', icon: Warehouse, label: 'Inventory' },
-  { to: '/equipment', icon: Wrench, label: 'Equipment' },
-  { to: '/marketing', icon: Megaphone, label: 'Marketing' },
-  { to: '/pricebook', icon: CreditCard, label: 'Pricebook' },
-  { to: '/agreements', icon: ShieldCheck, label: 'Agreements' },
-  { to: '/warranties', icon: Star, label: 'Warranties' },
-  { to: '/call-tracking', icon: Phone, label: 'Call Tracking' },
-  { to: '/recurring', icon: Repeat, label: 'Recurring' },
-  { to: '/takeoffs', icon: Scissors, label: 'Takeoffs' },
-  { to: '/tasks', icon: ListTodo, label: 'Tasks' },
-  { to: '/messages', icon: MessageSquare, label: 'Messages' },
-  { to: '/reports', icon: BarChart3, label: 'Reports' },
-  { to: '/selections', icon: CheckSquare, label: 'Selections' },
+// Nav item definitions — `feature` maps to a feature ID in features.js
+// Items with no `feature` are always visible (core/admin)
+const ALL_NAV_ITEMS = [
+  { to: '/',              icon: Home,          label: 'Dashboard',     exact: true },
+  { to: '/contacts',      icon: Users,         label: 'Contacts',      feature: 'contact_database' },
+  { to: '/projects',      icon: FolderKanban,  label: 'Projects',      feature: 'projects' },
+  { to: '/jobs',          icon: Briefcase,     label: 'Jobs',          feature: 'jobs' },
+  { to: '/quotes',        icon: FileText,      label: 'Quotes',        feature: 'professional_quotes' },
+  { to: '/invoices',      icon: Receipt,       label: 'Invoices',      feature: 'invoice_generation' },
+  { to: '/schedule',      icon: Calendar,      label: 'Schedule',      feature: 'drag_drop_calendar' },
+  { to: '/time',          icon: Clock,         label: 'Time',          feature: 'time_tracking' },
+  { to: '/expenses',      icon: DollarSign,    label: 'Expenses',      feature: 'expense_tracking' },
+  { to: '/documents',     icon: FolderOpen,    label: 'Documents',     feature: 'documents' },
+  { to: '/team',          icon: Users,         label: 'Team',          feature: 'user_permissions' },
+  { to: '/rfis',          icon: FileQuestion,  label: 'RFIs',          feature: 'rfis' },
+  { to: '/change-orders', icon: ClipboardList, label: 'Change Orders', feature: 'change_orders' },
+  { to: '/punch-lists',   icon: CheckSquare,   label: 'Punch Lists',   feature: 'punch_lists' },
+  { to: '/daily-logs',    icon: BookOpen,      label: 'Daily Logs',    feature: 'daily_logs' },
+  { to: '/inspections',   icon: ClipboardCheck,label: 'Inspections',   feature: 'inspections' },
+  { to: '/bids',          icon: Target,        label: 'Bids',          feature: 'bid_management' },
+  { to: '/fleet',         icon: Truck,         label: 'Fleet',         feature: 'fleet' },
+  { to: '/inventory',     icon: Warehouse,     label: 'Inventory',     feature: 'inventory' },
+  { to: '/equipment',     icon: Wrench,        label: 'Equipment',     feature: 'equipment_tracking' },
+  { to: '/marketing',     icon: Megaphone,     label: 'Marketing',     feature: 'paid_ads' },
+  { to: '/pricebook',     icon: CreditCard,    label: 'Pricebook',     feature: 'pricebook' },
+  { to: '/agreements',    icon: ShieldCheck,   label: 'Agreements',    feature: 'service_agreements' },
+  { to: '/warranties',    icon: Star,          label: 'Warranties',    feature: 'warranties' },
+  { to: '/call-tracking', icon: Phone,         label: 'Call Tracking', feature: 'call_tracking' },
+  { to: '/recurring',     icon: Repeat,        label: 'Recurring',     feature: 'recurring_jobs' },
+  { to: '/takeoffs',      icon: Scissors,      label: 'Takeoffs',      feature: 'takeoff_tools' },
+  { to: '/tasks',         icon: ListTodo,      label: 'Tasks' },
+  { to: '/messages',      icon: MessageSquare, label: 'Messages',      feature: 'two_way_texting' },
+  { to: '/reports',       icon: BarChart3,     label: 'Reports',       feature: 'reports' },
+  { to: '/selections',    icon: CheckSquare,   label: 'Selections',    feature: 'selections' },
 ];
 
 export default function AppLayout() {
@@ -55,6 +58,16 @@ export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  // Filter nav to only show features the company has enabled.
+  // If enabledFeatures is null/empty (demo or fresh account), show everything.
+  const enabledFeatures = company?.enabledFeatures;
+  const navItemsWithFeatureContext = ALL_NAV_ITEMS.map(item => ({
+    ...item,
+    // If company has no feature list yet, treat all features as enabled
+    feature: (!enabledFeatures || enabledFeatures.length === 0) ? undefined : item.feature,
+  }));
+  const navItems = useFeatureNavigation(navItemsWithFeatureContext);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -85,6 +98,7 @@ export default function AppLayout() {
   };
 
   return (
+    <FeatureProvider features={company?.enabledFeatures || []}>
     <div className="min-h-screen bg-gray-50">
       {/* Skip Link */}
       <SkipLink />
@@ -288,6 +302,6 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
-    </div>
+    </FeatureProvider>
   );
 }

@@ -17,6 +17,7 @@ import factoryStripe from '../services/factory/stripe.js';
 import deployService from '../services/factory/deploy.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { prisma } from '../config/prisma.js';
+import { createMarketingTenant } from '../services/ads/factory.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -347,6 +348,7 @@ router.get('/features', (req, res) => {
       {
         category: 'Marketing',
         features: [
+          { id: 'paid_ads', name: 'Paid Ads Hub (Google + Meta)', description: 'Google & Meta campaign management, lead tracking, monthly ROI reports' },
           { id: 'google_reviews', name: 'Google Reviews', description: 'Review request automation' },
           { id: 'email_marketing', name: 'Email Marketing', description: 'Drip campaigns and newsletters' },
           { id: 'referral_program', name: 'Referral Program', description: 'Customer referral tracking' },
@@ -812,6 +814,27 @@ router.post('/customers/:id/deploy', async (req, res) => {
         where: { id: customer.id },
         data: updateData,
       });
+
+      // ── Spin up marketing tenant if paid_ads was selected ─────────────────
+      const customerFeatures = Array.isArray(customer.features) ? customer.features : [];
+      if (result.success && customerFeatures.includes('paid_ads')) {
+        try {
+          await createMarketingTenant(customer.id, {
+            client:      customer.slug,
+            vertical:    customer.industry || 'general_contractor',
+            city:        customer.city,
+            state:       customer.state,
+            websiteUrl:  result.siteUrl || customer.domain,
+            notifyPhone: customer.phone,
+            notifyEmail: customer.email,
+            tier:        customer.planId || 'starter',
+          });
+          logger.info(`[Factory] Marketing tenant created for ${customer.slug}`);
+        } catch (mktErr) {
+          // Non-fatal — marketing setup can be triggered manually from the hub
+          logger.error(`[Factory] Marketing tenant setup failed for ${customer.slug}:`, mktErr.message);
+        }
+      }
 
       logger.info(`Deploy ${customer.slug}:`, result.success ? 'SUCCESS' : 'PARTIAL', result.errors);
     } catch (deployErr) {
