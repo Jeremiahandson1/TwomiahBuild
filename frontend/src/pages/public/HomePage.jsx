@@ -248,8 +248,8 @@ function Hero() {
       <div style={{ position: 'absolute', top: '20%', left: '10%', width: 400, height: 400, background: 'radial-gradient(circle, rgba(249,115,22,0.12), transparent 70%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: 300, height: 300, background: 'radial-gradient(circle, rgba(249,115,22,0.08), transparent 70%)', pointerEvents: 'none' }} />
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 24px', position: 'relative', zIndex: 1, width: '100%' }}>
-        <div style={{ maxWidth: 800 }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 24px', position: 'relative', zIndex: 1, width: '100%', display: 'flex', alignItems: 'center', gap: 48 }}>
+        <div style={{ flex: '1 1 0', minWidth: 0 }}>
           {/* Badge */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: 100, padding: '6px 14px', marginBottom: 32 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f97316', display: 'inline-block', animation: 'pulse 2s infinite' }} />
@@ -333,8 +333,7 @@ function Hero() {
 
         {/* Dashboard preview card */}
         <div style={{
-          position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)',
-          width: '42%', maxWidth: 480,
+          flex: '0 0 420px', maxWidth: 420,
           background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(249,115,22,0.2)',
           borderRadius: 16, padding: 24,
           boxShadow: '0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(249,115,22,0.1)',
