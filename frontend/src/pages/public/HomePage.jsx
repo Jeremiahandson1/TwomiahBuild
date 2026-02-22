@@ -493,6 +493,37 @@ function Stats() {
   );
 }
 
+function FeatureCard({ cat, i, inView }) {
+  const Icon = cat.icon;
+  return (
+    <div style={{
+      background: '#1A1A1A',
+      border: '1px solid rgba(255,109,0,0.1)',
+      borderRadius: 12,
+      padding: 28,
+      opacity: inView ? 1 : 0,
+      transform: inView ? 'none' : 'translateY(24px)',
+      transition: `all 0.5s ease ${i * 0.05}s`,
+    }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,109,0,0.35)'; e.currentTarget.style.background = '#222'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,109,0,0.1)'; e.currentTarget.style.background = '#1A1A1A'; }}
+    >
+      <div style={{ width: 44, height: 44, borderRadius: 8, background: 'rgba(255,109,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+        <Icon size={22} color="#FF6D00" />
+      </div>
+      <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif", color: 'white', fontSize: 17, fontWeight: 700, marginBottom: 14, letterSpacing: '0.02em' }}>{cat.title}</h3>
+      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        {cat.features.map(f => (
+          <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 7, fontFamily: "'Barlow', sans-serif", fontSize: 13, color: '#666', lineHeight: 1.5 }}>
+            <span style={{ color: '#FF6D00', flexShrink: 0, fontWeight: 700 }}>›</span>
+            {f}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function Features() {
   const [ref, inView] = useInView(0.1);
   return (
@@ -513,35 +544,17 @@ function Features() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 2 }}>
-          {FEATURE_CATEGORIES.map((cat, i) => {
-            const Icon = cat.icon;
-            return (
-              <div key={cat.title} style={{
-                background: '#1A1A1A',
-                padding: 28,
-                opacity: inView ? 1 : 0,
-                transform: inView ? 'none' : 'translateY(24px)',
-                transition: `all 0.5s ease ${i * 0.06}s`,
-              }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#222'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#1A1A1A'; }}
-              >
-                <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(255,109,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-                  <Icon size={20} color="#FF6D00" />
-                </div>
-                <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif", color: 'white', fontSize: 18, fontWeight: 700, marginBottom: 14, letterSpacing: '0.02em' }}>{cat.title}</h3>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {cat.features.map(f => (
-                    <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 7, fontFamily: "'Barlow', sans-serif", fontSize: 13, color: '#777', lineHeight: 1.4 }}>
-                      <span style={{ color: '#FF6D00', marginTop: 2, flexShrink: 0 }}>›</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
+        {/* Row 1 — 4 cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 16 }}>
+          {FEATURE_CATEGORIES.slice(0, 4).map((cat, i) => <FeatureCard key={cat.title} cat={cat} i={i} inView={inView} />)}
+        </div>
+        {/* Row 2 — 4 cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 16 }}>
+          {FEATURE_CATEGORIES.slice(4, 8).map((cat, i) => <FeatureCard key={cat.title} cat={cat} i={i + 4} inView={inView} />)}
+        </div>
+        {/* Row 3 — 2 cards centered */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, maxWidth: 620, margin: '0 auto' }}>
+          {FEATURE_CATEGORIES.slice(8, 10).map((cat, i) => <FeatureCard key={cat.title} cat={cat} i={i + 8} inView={inView} />)}
         </div>
 
         {/* Feature count callout */}
