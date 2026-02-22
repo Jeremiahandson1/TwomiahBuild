@@ -24,26 +24,9 @@ export default function BuildsPage() {
       .catch(() => { setError('Failed to load builds'); setLoading(false); });
   }, []);
 
-  const handleDownload = async (build) => {
-    setDownloading(build.id);
-    try {
-      const token = api.accessToken;
-      const res = await fetch(
-        `${API_BASE}/api/v1/factory/download/${build.buildId}/${build.zipName}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      if (!res.ok) throw new Error('File not found — it may have expired');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = build.zipName;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      alert(err.message);
-    }
-    setDownloading(null);
+  const handleDownload = (build) => {
+    const token = api.accessToken;
+    window.location.href = `${API_BASE}/api/v1/factory/download/${build.buildId}/${build.zipName}?token=${token}`;
   };
 
   const handleDeploy = async (build) => {
