@@ -19,6 +19,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
+import AdmZip from 'adm-zip';
 
 const RENDER_API = 'https://api.render.com/v1';
 const GITHUB_API = 'https://api.github.com';
@@ -347,8 +348,8 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
     // ── Step 1: Extract zip ────────────────────────────
     const extractDir = path.join('/tmp', `deploy-${slug}-${Date.now()}`);
     fs.mkdirSync(extractDir, { recursive: true });
-
-    execSync(`unzip -o "${zipPath}" -d "${extractDir}"`, { stdio: 'pipe' });
+    const zip = new AdmZip(zipPath);
+    zip.extractAllTo(extractDir, true);
     results.steps.push({ step: 'extract', status: 'ok' });
 
     // ── Step 2: Create GitHub repo ─────────────────────
