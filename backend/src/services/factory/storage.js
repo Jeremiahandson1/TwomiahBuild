@@ -149,5 +149,21 @@ export async function deleteZip(storageKey, storageType) {
   }
 }
 
-export const factoryStorage = { uploadZip, getZipDownloadUrl, streamZipToResponse, deleteZip, USE_S3 };
+
+/**
+ * Download a zip from S3/R2 to a local temp path for processing.
+ */
+export async function downloadZip(storageKey, storageType) {
+  if (storageType === 's3' && s3Client) {
+    const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: storageKey });
+    const response = await s3Client.send(command);
+    const localPath = `/tmp/${path.basename(storageKey)}`;
+    const chunks = [];
+    for await (const chunk of response.Body) { chunks.push(chunk); }
+    fs.writeFileSync(localPath, Buffer.concat(chunks));
+    return localPath;
+  }
+  return storageKey;
+}
+export const factoryStorage = { uploadZip, getZipDownloadUrl, streamZipToResponse, deleteZip, downloadZip, USE_S3 };
 export default factoryStorage;

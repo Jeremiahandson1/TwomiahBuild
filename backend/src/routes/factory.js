@@ -794,6 +794,9 @@ router.post('/customers/:id/deploy', async (req, res) => {
 
     // Run deployment in background
     try {
+    // Download zip from R2 to local /tmp for deploy
+    const storageType = latestBuild.storageType || 's3';
+    zipPath = await factoryStorage.downloadZip(zipPath, storageType);
       const result = await deployService.deployCustomer(customer, zipPath, {
         region: region || 'ohio',
         plan: plan || 'free',
