@@ -749,7 +749,7 @@ router.post('/customers/:id/deploy', async (req, res) => {
     if (!existsSync(zipPath)) {
       logger.info(`[Deploy] Zip not on disk, regenerating for ${customer.slug}...`);
       try {
-        const { generatePackage } = await import('../services/factory/generator.js');
+        const { generate: generatePackage } = await import('../services/factory/generator.js');
         const regen = await generatePackage(customer.wizardConfig || {
           products: customer.products,
           company: {
