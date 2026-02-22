@@ -303,10 +303,9 @@ function Hero() {
             lineHeight: 0.95,
             letterSpacing: '0.04em',
             marginBottom: 0,
-            whiteSpace: 'nowrap',
           }}>
             <span style={{ color: '#FF6D00' }}>FOR </span>
-            <span style={{ display: 'inline-block', position: 'relative', minWidth: '5ch' }}>
+            <span style={{ display: 'inline-block', position: 'relative' }}>
               {/* Invisible spacer — widest word holds the space */}
               <span style={{ visibility: 'hidden', display: 'inline-block' }}>CONTRACTING</span>
               {/* All words stacked absolutely */}
