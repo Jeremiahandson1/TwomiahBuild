@@ -303,17 +303,26 @@ function Hero() {
             lineHeight: 0.95,
             letterSpacing: '0.04em',
             marginBottom: 0,
+            whiteSpace: 'nowrap',
           }}>
             <span style={{ color: '#FF6D00' }}>FOR </span>
-            <span style={{
-              background: 'linear-gradient(135deg, #FFAB00, #FF3D00)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              transition: 'opacity 0.3s ease',
-              opacity: fade ? 1 : 0,
-              display: 'inline-block',
-            }}>{words[wordIdx].toUpperCase()}</span>
+            <span style={{ display: 'inline-block', position: 'relative', minWidth: '5ch' }}>
+              {/* Invisible spacer — widest word holds the space */}
+              <span style={{ visibility: 'hidden', display: 'inline-block' }}>CONTRACTING</span>
+              {/* All words stacked absolutely */}
+              {words.map((w, i) => (
+                <span key={w} style={{
+                  position: 'absolute', left: 0, top: 0,
+                  background: 'linear-gradient(135deg, #FFAB00, #FF3D00)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  opacity: i === wordIdx ? (fade ? 1 : 0) : 0,
+                  transition: 'opacity 0.3s ease',
+                  whiteSpace: 'nowrap',
+                }}>{w.toUpperCase()}</span>
+              ))}
+            </span>
           </h1>
           <h1 style={{
             fontFamily: "'Bebas Neue', sans-serif",
