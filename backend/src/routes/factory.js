@@ -745,8 +745,7 @@ router.post('/customers/:id/deploy', async (req, res) => {
 
     // Check zip exists — if not, regenerate it
     const { existsSync } = await import('fs');
-    let zipPath = latestBuild.zipPath;
-    if (!existsSync(zipPath)) {
+    if (true) { // always regenerate for deploy to ensure latest template
       logger.info(`[Deploy] Zip not on disk, regenerating for ${customer.slug}...`);
       try {
         const { generate: generatePackage } = await import('../services/factory/generator.js');
