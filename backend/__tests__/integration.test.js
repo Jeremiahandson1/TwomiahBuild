@@ -80,7 +80,7 @@ async function seedTestData() {
   });
   userA = await prisma.user.create({
     data: {
-      email: `userA-${Date.now()}@test.buildpro.io`,
+      email: `user-a-${Date.now()}@test.buildpro.io`,
       passwordHash: hash,
       firstName: 'Test',
       lastName: 'UserA',
@@ -100,7 +100,7 @@ async function seedTestData() {
   });
   userB = await prisma.user.create({
     data: {
-      email: `userB-${Date.now()}@test.buildpro.io`,
+      email: `user-b-${Date.now()}@test.buildpro.io`,
       passwordHash: hash,
       firstName: 'Test',
       lastName: 'UserB',
