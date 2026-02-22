@@ -1060,7 +1060,7 @@ function ReviewStep({ config, registry, generating, result, error, onGenerate })
 
         {/* Download zip as fallback */}
         <a
-          href={`${API_BASE}${result.downloadUrl}`}
+          href={`${API_BASE}${result.downloadUrl}?token=${api.accessToken}`}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 24px',
             background: 'white', color: '#374151', borderRadius: 10, fontWeight: 600,
