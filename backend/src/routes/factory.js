@@ -154,7 +154,7 @@ router.post('/generate', async (req, res) => {
       zipName: result.zipName,
       slug: result.slug,
       customerId: customer?.id || null,
-      downloadUrl: `/api/factory/download/${result.buildId}/${result.zipName}`,
+      downloadUrl: `/api/v1/factory/download/${result.buildId}/${result.zipName}`,
       generatedIn: `${elapsed}s`,
     });
 
