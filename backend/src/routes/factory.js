@@ -845,7 +845,7 @@ router.post('/customers/:id/deploy', async (req, res) => {
         }
       }
 
-      logger.info(`Deploy ${customer.slug}:`, result.success ? 'SUCCESS' : 'PARTIAL', result.errors);
+      console.error('[Deploy Result]', JSON.stringify(result, null, 2));
     } catch (deployErr) {
       logger.error(`Deploy ${customer.slug} FAILED:`, deployErr);
       await prisma.factoryCustomer.update({
