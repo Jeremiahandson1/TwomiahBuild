@@ -267,11 +267,20 @@ router.post('/login', async (req, res, next) => {
     data.email = data.email.toLowerCase().trim();
 
     const user = await prisma.user.findFirst({ where: { email: data.email }, include: { company: true } });
-    if (!user) return res.status(401).json({ error: 'Invalid email or password' });
-    if (!user.isActive) return res.status(401).json({ error: 'Account is disabled' });
+    if (!user) {
+      if (process.env.NODE_ENV === 'test') logger.warn('Login failed: user not found', { email: data.email });
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    if (!user.isActive) {
+      if (process.env.NODE_ENV === 'test') logger.warn('Login failed: user inactive', { email: data.email, userId: user.id });
+      return res.status(401).json({ error: 'Account is disabled' });
+    }
 
     const valid = await bcrypt.compare(data.password, user.passwordHash);
-    if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
+    if (!valid) {
+      if (process.env.NODE_ENV === 'test') logger.warn('Login failed: invalid password', { email: data.email, userId: user.id, hashLength: user.passwordHash?.length });
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
 
     const tokens = generateTokens(user.id, user.companyId, user.email, user.role, user.agencyId);
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken), lastLogin: new Date() } });

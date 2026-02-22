@@ -49,6 +49,15 @@ beforeAll(async () => {
   request = supertest(app);
 
   await seedTestData();
+
+  // Acquire tokens immediately after seeding so failures are surfaced early
+  // and describe-level beforeAlls don't need to login again
+  try {
+    tokenA = await loginAs(userA);
+    tokenB = await loginAs(userB);
+  } catch (e) {
+    console.error('SEED LOGIN FAILED - check auth.js test logs for reason:', e.message);
+  }
 });
 
 afterAll(async () => {
@@ -146,9 +155,10 @@ describe('Authentication', () => {
       email: userA.email,
       password: 'TestPass123!',
     });
+    // If this fails, check the test logs above for "Login failed:" diagnostic entries
     expect(res.status).toBe(200);
-    expect(res.body.token || res.body.accessToken).toBeTruthy();
-    tokenA = res.body.token || res.body.accessToken;
+    expect(res.body.accessToken || res.body.token).toBeTruthy();
+    tokenA = res.body.accessToken || res.body.token;
   });
 
   it('rejects unauthenticated requests to protected routes', async () => {
@@ -173,8 +183,8 @@ describe('Invoice API', () => {
 
   beforeAll(async () => {
     if (!TEST_DB_URL) return;
-    tokenA = await loginAs(userA);
-    tokenB = await loginAs(userB);
+    if (!tokenA) tokenA = await loginAs(userA);
+    if (!tokenB) tokenB = await loginAs(userB);
   });
 
   it('creates an invoice for Company A', async () => {
