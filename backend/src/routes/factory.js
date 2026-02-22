@@ -11,6 +11,7 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import jwt from 'jsonwebtoken';
 import { fileURLToPath } from 'url';
 import { generate, listTemplates, cleanOldBuilds } from '../services/factory/generator.js';
 import factoryStripe from '../services/factory/stripe.js';
@@ -164,19 +165,32 @@ router.post('/generate', async (req, res) => {
 
 /**
  * GET /api/factory/download/:buildId/:filename
+ * Supports cookie auth and ?token= query param for direct browser downloads
  */
 router.get('/download/:buildId/:filename', async (req, res) => {
   const { buildId, filename } = req.params;
 
-  // Sanitize
-  if (!/^[a-f0-9-]+$/.test(buildId) || !/^[a-z0-9-]+\.zip$/.test(filename)) {
+  // Sanitize — allow uppercase and underscores in filename
+  if (!/^[a-f0-9-]+$/.test(buildId) || !/^[a-zA-Z0-9_-]+\.zip$/.test(filename)) {
     return res.status(400).json({ error: 'Invalid download parameters' });
   }
 
-  // Look up build scoped to requesting company — prevents cross-tenant downloads
-  
+  // Resolve companyId from cookie auth OR ?token= for direct browser links
+  let companyId = req.user?.companyId;
+  if (!companyId && req.query.token) {
+    try {
+      const decoded = jwt.verify(req.query.token, process.env.JWT_SECRET);
+      companyId = decoded.companyId;
+    } catch {
+      return res.status(401).json({ error: 'Invalid or expired download token' });
+    }
+  }
+  if (!companyId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
   const build = await prisma.factoryBuild.findFirst({
-    where: { buildId: buildId, companyId: req.user.companyId },
+    where: { buildId: buildId, companyId },
   });
 
   if (!build || !build.zipPath) {
