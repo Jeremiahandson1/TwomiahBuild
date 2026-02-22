@@ -429,6 +429,31 @@ function ProductSelector({ products, onToggle }) {
 
 // ─── STEP 2: COMPANY INFO ──────────────────────────────────────────
 
+const INDUSTRY_OPTIONS = [
+  // ── Contractor template (residential/commercial services) ──
+  { value: 'general_contractor',      label: 'General Contractor',          template: 'website-contractor' },
+  { value: 'roofing',                 label: 'Roofing',                     template: 'website-contractor' },
+  { value: 'hvac',                    label: 'HVAC',                        template: 'website-contractor' },
+  { value: 'plumbing',                label: 'Plumbing',                    template: 'website-contractor' },
+  { value: 'electrical',              label: 'Electrical',                  template: 'website-contractor' },
+  { value: 'remodeling',              label: 'Remodeling / Renovation',     template: 'website-contractor' },
+  { value: 'painting',                label: 'Painting',                    template: 'website-contractor' },
+  { value: 'landscaping',             label: 'Landscaping / Lawn Care',     template: 'website-contractor' },
+  { value: 'concrete',                label: 'Concrete / Masonry',          template: 'website-contractor' },
+  { value: 'flooring',                label: 'Flooring',                    template: 'website-contractor' },
+  { value: 'windows_doors',           label: 'Windows & Doors',             template: 'website-contractor' },
+  { value: 'siding',                  label: 'Siding / Gutters',            template: 'website-contractor' },
+  { value: 'insulation',              label: 'Insulation',                  template: 'website-contractor' },
+  { value: 'solar',                   label: 'Solar',                       template: 'website-contractor' },
+  { value: 'pool_spa',                label: 'Pool & Spa',                  template: 'website-contractor' },
+  { value: 'pest_control',            label: 'Pest Control',                template: 'website-contractor' },
+  { value: 'commercial_construction', label: 'Commercial Construction',     template: 'website-contractor' },
+  // ── Home care template ──
+  { value: 'home_care',               label: 'Home Care / Senior Care',     template: 'website-homecare' },
+  // ── General / blank slate ──
+  { value: 'other',                   label: 'Other (blank slate)',          template: 'website-general' },
+];
+
 function CompanyForm({ company, onChange, errors = {} }) {
   return (
     <div>
@@ -438,7 +463,7 @@ function CompanyForm({ company, onChange, errors = {} }) {
       <div style={{ display: 'grid', gap: 16 }}>
         <FormRow>
           <Field label="Company Name *" value={company.name} onChange={v => onChange('name', v)} placeholder="Acme Construction" error={errors.name} />
-          <Field label="Industry" value={company.industry} onChange={v => onChange('industry', v)} placeholder="General Contractor" />
+          <SelectField label="Industry" value={company.industry} onChange={v => onChange('industry', v)} options={INDUSTRY_OPTIONS} />
         </FormRow>
 
         <FormRow>
@@ -1147,6 +1172,25 @@ function Field({ label, value, onChange, placeholder, type = 'text', style = {},
         placeholder={placeholder}
         style={{ ...inputStyle, borderColor: error ? '#ef4444' : '#d1d5db' }}
       />
+      {error && <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: 2 }}>{error}</div>}
+    </div>
+  );
+}
+
+function SelectField({ label, value, onChange, options, style = {}, error }) {
+  return (
+    <div style={style}>
+      <label style={{ fontSize: '0.85rem', fontWeight: 500, color: '#374151', marginBottom: 4, display: 'block' }}>{label}</label>
+      <select
+        value={value || ''}
+        onChange={e => onChange(e.target.value)}
+        style={{ ...inputStyle, borderColor: error ? '#ef4444' : '#d1d5db', background: 'white', cursor: 'pointer' }}
+      >
+        <option value="">Select industry…</option>
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
       {error && <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: 2 }}>{error}</div>}
     </div>
   );

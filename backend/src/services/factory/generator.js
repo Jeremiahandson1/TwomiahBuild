@@ -68,7 +68,16 @@ export async function generate(config) {
     const products = config.products || [];
     
     if (products.includes('website')) {
-      copyTemplate('website', path.join(workDir, 'website'), tokens);
+      // Pick the right website template based on industry
+      const industry = config.company?.industry || '';
+      let websiteTemplate = 'website-general'; // blank slate default
+      if (industry === 'home_care') {
+        websiteTemplate = 'website-homecare';
+      } else if (industry && industry !== 'other') {
+        // All contractor/trade industries use the contractor template
+        websiteTemplate = 'website-contractor';
+      }
+      copyTemplate(websiteTemplate, path.join(workDir, 'website'), tokens);
       // Inject CSS custom property values
       injectCSSColors(path.join(workDir, 'website'), config.branding || {});
       // Strip disabled website features
