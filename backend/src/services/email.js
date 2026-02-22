@@ -576,5 +576,18 @@ const emailService = {
   sendDailyDigest: (to, data) => send(to, 'dailyDigest', data),
 };
 
+/**
+ * sendTransactionalEmail — send a raw HTML email without a named template.
+ * Used by lead notifications, ad reports, CPL alerts, and other ad-hoc emails.
+ */
+export async function sendTransactionalEmail({ to, subject, html, text, fromName }) {
+  const transporter = createTransporter();
+  const from = fromName
+    ? `${fromName} <${FROM_EMAIL}>`
+    : `${FROM_NAME} <${FROM_EMAIL}>`;
+
+  await transporter.sendMail({ from, to, subject, html, text: text || '' });
+}
+
 export default emailService;
 export { emailService, send, templates };

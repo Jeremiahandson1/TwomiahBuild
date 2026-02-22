@@ -8,7 +8,7 @@
  */
 
 import { prisma } from '../../config/prisma.js';
-import email from '../email.js';
+import { sendTransactionalEmail } from '../email.js';
 
 const APP_URL  = process.env.FRONTEND_URL || 'https://app.buildpro.io';
 const FROM     = process.env.FROM_EMAIL   || 'reports@buildpro.io';
@@ -173,7 +173,7 @@ export async function sendCPLAlert(campaign, currentCPL) {
     </div>
   `;
 
-  await email.sendTransactionalEmail({ to: recipientEmail, subject, html, fromName: FROM_NAME });
+  await sendTransactionalEmail({ to: recipientEmail, subject, html, fromName: FROM_NAME });
 }
 
 // ─── Admin dashboard aggregation ─────────────────────────────────────────────
@@ -384,7 +384,7 @@ async function sendMonthlyReportEmail(to, companyName, report, totals, campaigns
     </div>
   `;
 
-  await email.sendTransactionalEmail({ to, subject, html, fromName: FROM_NAME });
+  await sendTransactionalEmail({ to, subject, html, fromName: FROM_NAME });
 }
 
 export default {
