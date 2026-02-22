@@ -296,6 +296,23 @@ router.post('/login', async (req, res, next) => {
 });
 
 // Refresh token — reads from httpOnly cookie (web) or request body (mobile)
+// Support both GET (cookie-based) and POST (body-based) refresh
+router.get('/refresh', async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) return res.status(401).json({ error: 'Refresh token required' });
+    let decoded;
+    try { decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET); }
+    catch { return res.status(401).json({ error: 'Invalid or expired refresh token' }); }
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    if (!user || !user.refreshToken) return res.status(401).json({ error: 'Session expired' });
+    const tokens = generateTokens(user.id, user.companyId, user.email, user.role, user.agencyId);
+    await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
+    setAuthCookies(res, tokens);
+    res.json({ accessToken: tokens.accessToken });
+  } catch (err) { next(err); }
+});
+
 router.post('/refresh', async (req, res, next) => {
   try {
     // Web sends via httpOnly cookie, mobile sends in request body

@@ -18,6 +18,7 @@ import deployService from '../services/factory/deploy.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { prisma } from '../config/prisma.js';
 import { createMarketingTenant } from '../services/ads/factory.js';
+import logger from '../services/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
