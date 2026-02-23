@@ -66,7 +66,7 @@ export default function ContactsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, typeFilter, toast]);
+  }, [page, search, typeFilter]);
 
   useEffect(() => {
     loadContacts();

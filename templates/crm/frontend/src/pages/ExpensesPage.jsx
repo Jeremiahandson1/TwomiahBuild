@@ -28,7 +28,7 @@ export default function ExpensesPage() {
       setData(res.data); setPagination(res.pagination); setProjects(projRes.data);
     } catch (err) { toast.error('Failed to load expenses'); }
     finally { setLoading(false); }
-  }, [page, toast]);
+  }, [page]);
 
   useEffect(() => { load(); }, [load]);
 

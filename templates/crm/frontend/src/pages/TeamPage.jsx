@@ -23,7 +23,7 @@ export default function TeamPage() {
     try { const res = await api.team.list({ page, limit: 25 }); setData(res.data); setPagination(res.pagination); }
     catch (err) { toast.error('Failed to load team'); }
     finally { setLoading(false); }
-  }, [page, toast]);
+  }, [page]);
 
   useEffect(() => { load(); }, [load]);
 

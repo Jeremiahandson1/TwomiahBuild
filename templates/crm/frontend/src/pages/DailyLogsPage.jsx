@@ -26,7 +26,7 @@ export default function DailyLogsPage() {
       setData(res.data); setPagination(res.pagination); setProjects(projRes.data);
     } catch (err) { toast.error('Failed to load daily logs'); }
     finally { setLoading(false); }
-  }, [page, toast]);
+  }, [page]);
 
   useEffect(() => { load(); }, [load]);
 

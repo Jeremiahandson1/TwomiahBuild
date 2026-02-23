@@ -26,7 +26,7 @@ export default function TimePage() {
       setData(res.data); setPagination(res.pagination); setProjects(projRes.data);
     } catch (err) { toast.error('Failed to load time entries'); }
     finally { setLoading(false); }
-  }, [page, toast]);
+  }, [page]);
 
   useEffect(() => { load(); }, [load]);
 

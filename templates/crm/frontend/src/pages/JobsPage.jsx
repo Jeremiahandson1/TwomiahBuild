@@ -39,7 +39,7 @@ export default function JobsPage() {
       setContacts(contRes.data);
     } catch (err) { toast.error('Failed to load jobs'); }
     finally { setLoading(false); }
-  }, [page, search, statusFilter, toast]);
+  }, [page, search, statusFilter]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { setPage(1); }, [search, statusFilter]);

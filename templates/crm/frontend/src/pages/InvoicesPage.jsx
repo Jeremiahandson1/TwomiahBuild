@@ -36,7 +36,7 @@ export default function InvoicesPage() {
       setContacts(contRes.data);
     } catch (err) { toast.error('Failed to load invoices'); }
     finally { setLoading(false); }
-  }, [page, statusFilter, toast]);
+  }, [page, statusFilter]);
 
   useEffect(() => { load(); }, [load]);
 

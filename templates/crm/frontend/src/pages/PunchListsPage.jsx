@@ -26,7 +26,7 @@ export default function PunchListsPage() {
       setData(res.data); setPagination(res.pagination); setProjects(projRes.data);
     } catch (err) { toast.error('Failed to load punch list'); }
     finally { setLoading(false); }
-  }, [page, toast]);
+  }, [page]);
 
   useEffect(() => { load(); }, [load]);
 

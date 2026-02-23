@@ -40,7 +40,7 @@ export default function DocumentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, filter, toast]);
+  }, [page, filter]);
 
   useEffect(() => { load(); }, [load]);
 

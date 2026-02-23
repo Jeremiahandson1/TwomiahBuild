@@ -19,7 +19,7 @@ export default function SchedulePage() {
       .then(res => setJobs(res.data))
       .catch(() => toast.error('Failed to load schedule'))
       .finally(() => setLoading(false));
-  }, [currentDate, toast]);
+  }, [currentDate]);
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const startOfWeek = new Date(currentDate);

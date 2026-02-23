@@ -38,7 +38,7 @@ export default function ProjectsPage() {
       setContacts(contactsRes.data);
     } catch (err) { toast.error('Failed to load projects'); }
     finally { setLoading(false); }
-  }, [page, search, statusFilter, toast]);
+  }, [page, search, statusFilter]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { setPage(1); }, [search, statusFilter]);

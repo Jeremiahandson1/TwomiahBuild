@@ -28,7 +28,7 @@ export default function BidsPage() {
       setData(res.data); setPagination(res.pagination); setStats(statsRes);
     } catch (err) { toast.error('Failed to load bids'); }
     finally { setLoading(false); }
-  }, [page, toast]);
+  }, [page]);
 
   useEffect(() => { load(); }, [load]);
 

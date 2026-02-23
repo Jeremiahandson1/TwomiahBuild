@@ -35,7 +35,7 @@ export default function QuotesPage() {
       setProjects(projRes.data);
     } catch (err) { toast.error('Failed to load quotes'); }
     finally { setLoading(false); }
-  }, [page, statusFilter, toast]);
+  }, [page, statusFilter]);
 
   useEffect(() => { load(); }, [load]);
 
