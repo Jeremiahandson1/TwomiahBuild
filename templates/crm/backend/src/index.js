@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { syncFeatures } from './startup/featureSync.js';
 import { PrismaClient } from '@prisma/client';
 
 // Services
@@ -240,6 +241,10 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 
 // Start server
 const PORT = process.env.PORT || 3001;
+
+// Sync features from FEATURE_PACKAGE env var before accepting traffic
+await syncFeatures(prisma).catch(console.error);
+
 server.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`, {
     env: process.env.NODE_ENV || 'development',
