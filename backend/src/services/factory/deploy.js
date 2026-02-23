@@ -370,7 +370,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
       results.services.database = db;
 
       // Wait a moment for DB to initialize, then get connection info
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise(resolve => setTimeout(resolve, 30000));
       dbConnectionInfo = await getDatabaseConnectionInfo(db.id);
       dbInfo = dbConnectionInfo;
     } catch (dbErr) {
