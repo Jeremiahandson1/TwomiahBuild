@@ -183,15 +183,7 @@ export default function AppLayout() {
 
         {/* Settings */}
         <div className="border-t p-3">
-          <NavLink
-            className={({ isActive }) => `
-              flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium mb-1
-              ${isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100'}
-            `}
-          >
-            <Package className="w-5 h-5" aria-hidden="true" />
-            <span>Factory</span>
-          </NavLink>
+          
           <NavLink
             to="/settings"
             className={({ isActive }) => `
