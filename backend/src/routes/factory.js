@@ -934,6 +934,7 @@ router.post('/customers/:id/redeploy', async (req, res) => {
   }
 
 
+});
 // -----------------------------------------------------------------------------
 // PUSH UPDATE - regenerate and push latest templates to customer GitHub repo
 // -----------------------------------------------------------------------------

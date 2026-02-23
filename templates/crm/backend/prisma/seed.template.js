@@ -5,6 +5,9 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('Setting up your CRM...');
+  // Skip if already seeded
+  const existing = await prisma.company.findUnique({ where: { slug: "{{COMPANY_SLUG}}" } });
+  if (existing) { console.log("Already seeded, skipping."); return; }
 
   // Create company
   const company = await prisma.company.create({
