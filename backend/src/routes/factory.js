@@ -400,7 +400,7 @@ router.post('/cleanup', (req, res) => {
  */
 router.post('/admin/patch-repo-urls', async (req, res) => {
   try {
-    const customers = await prisma.factoryCustomer.findMany({ where: { repoUrl: null, slug: { not: null } } });
+    const customers = await prisma.factoryCustomer.findMany({ where: { repoUrl: null } });
     const updates = await Promise.all(customers.map(c =>
       prisma.factoryCustomer.update({
         where: { id: c.id },
