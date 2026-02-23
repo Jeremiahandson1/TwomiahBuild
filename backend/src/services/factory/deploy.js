@@ -387,6 +387,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
         const backendEnvVars = [
           { key: 'NODE_ENV', value: 'production' },
           { key: 'JWT_SECRET', value: jwtSecret },
+          { key: 'FRONTEND_URL', value: `https://${slug}-crm.onrender.com` },
           { key: 'JWT_REFRESH_SECRET', value: jwtRefreshSecret },
           { key: 'PORT', value: '10000' },
         ];
