@@ -398,6 +398,21 @@ router.post('/cleanup', (req, res) => {
  * GET /api/factory/stats
  * Dashboard stats for operator
  */
+router.post('/admin/patch-repo-urls', async (req, res) => {
+  try {
+    const customers = await prisma.factoryCustomer.findMany({ where: { repoUrl: null, slug: { not: null } } });
+    const updates = await Promise.all(customers.map(c =>
+      prisma.factoryCustomer.update({
+        where: { id: c.id },
+        data: { repoUrl: `https://github.com/Jeremiahandson1/${c.slug}` }
+      })
+    ));
+    res.json({ updated: updates.length, customers: updates.map(u => ({ slug: u.slug, repoUrl: u.repoUrl })) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/stats', async (req, res) => {
   try {
     
