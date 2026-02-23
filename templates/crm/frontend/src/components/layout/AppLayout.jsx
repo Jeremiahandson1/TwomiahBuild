@@ -117,7 +117,7 @@ export default function AppLayout() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed inset-y-0 left-0 z-50 w-64 bg-white border-r
+          fixed inset-y-0 left-0 z-50 w-64 bg-white border-r flex flex-col overflow-hidden
           transform transition-transform duration-200 ease-out
           lg:translate-x-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
