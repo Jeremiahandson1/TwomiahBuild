@@ -138,7 +138,7 @@ export default function ImportPage() {
         <h2 className="font-semibold text-gray-900 mb-4">Upload CSV File</h2>
         
         {!file ? (
-          <label className="block border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-colors">
+          <label className="block border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-colors text-gray-900">
             <Upload className="w-12 h-12 mx-auto text-gray-400 mb-3" />
             <p className="text-gray-600 mb-1">Drop your CSV file here or click to browse</p>
             <p className="text-sm text-gray-400">Maximum file size: 10MB</p>
@@ -215,7 +215,7 @@ export default function ImportPage() {
                 type="checkbox"
                 checked={options.skipDuplicates}
                 onChange={(e) => setOptions({ ...options, skipDuplicates: e.target.checked })}
-                className="w-4 h-4 rounded border-gray-300"
+                className="w-4 h-4 rounded border-gray-300 text-gray-900"
               />
               <span className="text-gray-700">Skip duplicate records</span>
             </label>
@@ -224,7 +224,7 @@ export default function ImportPage() {
                 type="checkbox"
                 checked={options.updateExisting}
                 onChange={(e) => setOptions({ ...options, updateExisting: e.target.checked })}
-                className="w-4 h-4 rounded border-gray-300"
+                className="w-4 h-4 rounded border-gray-300 text-gray-900"
               />
               <span className="text-gray-700">Update existing records if found</span>
             </label>
@@ -291,7 +291,7 @@ export default function ImportPage() {
           <div className="mt-6 flex gap-3">
             <button
               onClick={resetImport}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
             >
               Import More
             </button>

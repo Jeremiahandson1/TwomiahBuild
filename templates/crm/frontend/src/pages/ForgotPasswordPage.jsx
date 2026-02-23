@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
           <div className="space-y-3">
             <button
               onClick={() => setSent(false)}
-              className="w-full py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="w-full py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
             >
               Try another email
             </button>

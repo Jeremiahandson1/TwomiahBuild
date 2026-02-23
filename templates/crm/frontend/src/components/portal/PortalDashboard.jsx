@@ -49,7 +49,7 @@ export default function PortalDashboard() {
           <Link
             key={stat.label}
             to={stat.link}
-            className="bg-white rounded-xl p-6 border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all"
+            className="bg-white rounded-xl p-6 border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all text-gray-900"
           >
             <div className="flex items-center gap-4">
               <div className={`p-3 rounded-lg ${stat.color}`}>

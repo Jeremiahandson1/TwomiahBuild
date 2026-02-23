@@ -123,7 +123,7 @@ export default function PhotoGallery({ projectId, jobId, title = 'Photos', showU
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-gray-900"
           >
             <option value="">All Categories</option>
             {CATEGORIES.map(cat => (
@@ -168,7 +168,7 @@ export default function PhotoGallery({ projectId, jobId, title = 'Photos', showU
 
       {/* Empty state */}
       {!loading && photos.length === 0 && (
-        <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+        <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 text-gray-900">
           <Camera className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 mb-2">No photos yet</p>
           {showUpload && (

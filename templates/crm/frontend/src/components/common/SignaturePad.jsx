@@ -94,7 +94,7 @@ export default function SignaturePad({
 
   return (
     <div className="inline-block w-full">
-      <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
+      <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white text-gray-900">
         <canvas
           ref={canvasRef}
           width={width}
@@ -109,7 +109,7 @@ export default function SignaturePad({
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
         />
-        <div className="border-t border-gray-300 px-4 py-2 bg-gray-50 flex items-center justify-between">
+        <div className="border-t border-gray-300 px-4 py-2 bg-gray-50 flex items-center justify-between text-gray-900">
           <span className="text-xs text-gray-400">✕ Sign above this line</span>
           <span className="text-xs text-gray-400">{new Date().toLocaleDateString()}</span>
         </div>
@@ -207,7 +207,7 @@ export function SignatureModal({ isOpen, onClose, onSave, title = 'Sign Document
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter your full name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
             />
           </div>
 

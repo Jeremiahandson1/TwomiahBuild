@@ -80,7 +80,7 @@ export default function TimesheetPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowManualEntry(true)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
           >
             <Plus className="w-4 h-4" />
             Add Entry
@@ -469,7 +469,7 @@ function ManualEntryModal({ onClose, onSave }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
               >
                 Cancel
               </button>

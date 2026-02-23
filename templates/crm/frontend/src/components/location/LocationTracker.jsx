@@ -438,7 +438,7 @@ function LocationSettingsModal({ settings, onSave, onClose }) {
           <div className="flex gap-3 mt-6">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
             >
               Cancel
             </button>

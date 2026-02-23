@@ -316,7 +316,7 @@ export default function RecurringForm() {
                 type="checkbox"
                 checked={form.autoSend}
                 onChange={(e) => handleChange('autoSend', e.target.checked)}
-                className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                className="rounded border-gray-300 text-orange-500 focus:ring-orange-500 text-gray-900"
               />
               <span className="text-sm text-gray-700">
                 Automatically send invoice when generated
@@ -454,7 +454,7 @@ export default function RecurringForm() {
           <button
             type="button"
             onClick={() => navigate('/recurring')}
-            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
           >
             Cancel
           </button>

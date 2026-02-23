@@ -476,7 +476,7 @@ function CompanyInfo({ formData, updateForm }) {
             type="text"
             value={formData.companyName}
             onChange={(e) => updateForm('companyName', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
             placeholder="Acme Plumbing Co."
           />
         </div>
@@ -486,7 +486,7 @@ function CompanyInfo({ formData, updateForm }) {
           <select
             value={formData.industry}
             onChange={(e) => updateForm('industry', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
           >
             <option value="">Select your industry</option>
             {INDUSTRIES.map((ind) => (
@@ -501,7 +501,7 @@ function CompanyInfo({ formData, updateForm }) {
             type="tel"
             value={formData.phone}
             onChange={(e) => updateForm('phone', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
             placeholder="(555) 123-4567"
           />
         </div>
@@ -512,7 +512,7 @@ function CompanyInfo({ formData, updateForm }) {
             type="text"
             value={formData.address}
             onChange={(e) => updateForm('address', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
             placeholder="123 Main Street"
           />
         </div>
@@ -523,7 +523,7 @@ function CompanyInfo({ formData, updateForm }) {
             type="text"
             value={formData.city}
             onChange={(e) => updateForm('city', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
             placeholder="Austin"
           />
         </div>
@@ -535,7 +535,7 @@ function CompanyInfo({ formData, updateForm }) {
               type="text"
               value={formData.state}
               onChange={(e) => updateForm('state', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
               placeholder="TX"
             />
           </div>
@@ -545,7 +545,7 @@ function CompanyInfo({ formData, updateForm }) {
               type="text"
               value={formData.zip}
               onChange={(e) => updateForm('zip', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
               placeholder="78701"
             />
           </div>
@@ -557,7 +557,7 @@ function CompanyInfo({ formData, updateForm }) {
             type="url"
             value={formData.website}
             onChange={(e) => updateForm('website', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
             placeholder="https://acmeplumbing.com"
           />
         </div>
@@ -567,7 +567,7 @@ function CompanyInfo({ formData, updateForm }) {
           <select
             value={formData.employeeCount}
             onChange={(e) => updateForm('employeeCount', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
           >
             <option value="1-5">1-5</option>
             <option value="6-10">6-10</option>
@@ -595,7 +595,7 @@ function AccountInfo({ formData, updateForm, showPassword, setShowPassword, agre
             type="text"
             value={formData.firstName}
             onChange={(e) => updateForm('firstName', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
             placeholder="John"
           />
         </div>
@@ -606,7 +606,7 @@ function AccountInfo({ formData, updateForm, showPassword, setShowPassword, agre
             type="text"
             value={formData.lastName}
             onChange={(e) => updateForm('lastName', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
             placeholder="Smith"
           />
         </div>
@@ -617,7 +617,7 @@ function AccountInfo({ formData, updateForm, showPassword, setShowPassword, agre
             type="email"
             value={formData.email}
             onChange={(e) => updateForm('email', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
             placeholder="john@acmeplumbing.com"
           />
         </div>
@@ -629,7 +629,7 @@ function AccountInfo({ formData, updateForm, showPassword, setShowPassword, agre
               type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={(e) => updateForm('password', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 pr-12"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 pr-12 text-gray-900"
               placeholder="••••••••"
             />
             <button
@@ -649,7 +649,7 @@ function AccountInfo({ formData, updateForm, showPassword, setShowPassword, agre
             type={showPassword ? 'text' : 'password'}
             value={formData.confirmPassword}
             onChange={(e) => updateForm('confirmPassword', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
             placeholder="••••••••"
           />
         </div>
@@ -660,7 +660,7 @@ function AccountInfo({ formData, updateForm, showPassword, setShowPassword, agre
               type="checkbox"
               checked={agreedToTerms}
               onChange={(e) => setAgreedToTerms(e.target.checked)}
-              className="w-5 h-5 text-orange-500 border-gray-300 rounded focus:ring-orange-500 mt-0.5"
+              className="w-5 h-5 text-orange-500 border-gray-300 rounded focus:ring-orange-500 mt-0.5 text-gray-900"
             />
             <span className="text-sm text-gray-600">
               I agree to the{' '}

@@ -258,7 +258,7 @@ export default function BulkActionBar({
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowConfirm(null)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
                 >
                   Cancel
                 </button>
@@ -314,7 +314,7 @@ export function SelectAllCheckbox({ selectedIds, allIds, onSelectAll, onClearAll
           onClearAll();
         }
       }}
-      className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+      className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500 text-gray-900"
     />
   );
 }
