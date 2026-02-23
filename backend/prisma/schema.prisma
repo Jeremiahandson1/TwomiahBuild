@@ -2410,6 +2410,7 @@ model FactoryCustomer {
   notes            String?
   buildId          String?  // References the generated zip build ID
   renderServiceIds String?  // JSON: Render service IDs after deploy (backend, frontend, site, database)
+  repoUrl          String?  // GitHub repo URL after deploy
   adminEmail       String?
   adminPassword    String? // Stored temporarily, cleared after first login
 

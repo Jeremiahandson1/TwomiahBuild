@@ -820,6 +820,7 @@ router.post('/customers/:id/deploy', async (req, res) => {
           if (result.services.site?.id) serviceIds.site = result.services.site.id;
           if (result.services.database?.id) serviceIds.database = result.services.database.id;
           updateData.renderServiceIds = JSON.stringify(serviceIds);
+          if (result.repoUrl) updateData.repoUrl = result.repoUrl;
         }
 
       await prisma.factoryCustomer.update({
