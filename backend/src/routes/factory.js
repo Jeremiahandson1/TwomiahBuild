@@ -973,12 +973,6 @@ router.post('/customers/:id/push-update', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-    res.json(result);
-  } catch (err) {
-    logger.error('Redeploy error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 
 // ═══════════════════════════════════════════════════════════════════
