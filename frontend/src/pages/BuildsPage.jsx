@@ -205,6 +205,20 @@ export default function BuildsPage() {
                 </button>
               )}
               <button
+                onClick={() => handlePushUpdate(build)}
+                disabled={pushing === build.id}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "8px 16px", borderRadius: 8, border: "1px solid #d1fae5",
+                  background: pushing === build.id ? "#f0fdf4" : "white",
+                  color: pushing === build.id ? "#86efac" : "#16a34a",
+                  cursor: pushing === build.id ? "default" : "pointer",
+                  fontWeight: 600, fontSize: "0.85rem", whiteSpace: "nowrap",
+                }}
+              >
+                <Rocket size={14} />
+                {pushing === build.id ? "Pushing..." : "Push Update"}
+              </button>
                 onClick={() => handleDownload(build)}
                 disabled={downloading === build.id}
                 style={{
