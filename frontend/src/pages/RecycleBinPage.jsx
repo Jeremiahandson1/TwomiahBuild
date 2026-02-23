@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Trash2, RotateCcw, AlertTriangle, Search, RefreshCw } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -33,6 +33,12 @@ export default function RecycleBinPage() {
   const [restoring, setRestoring] = useState(null);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [notification, setNotification] = useState(null);
+
+  const notify = (msg, type = 'success') => {
+    setNotification({ msg, type });
+    setTimeout(() => setNotification(null), 4000);
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,7 +51,7 @@ export default function RecycleBinPage() {
       const data = await res.json();
       setItems(data.items || []);
     } catch {
-      toast.error('Could not load recycle bin');
+      notify('Could not load recycle bin', 'error');
     } finally {
       setLoading(false);
     }
@@ -63,10 +69,10 @@ export default function RecycleBinPage() {
         body: JSON.stringify({ type: item.type, id: item.id }),
       });
       if (!res.ok) throw new Error('Restore failed');
-      toast.success(`${item.label} "${item.displayName}" restored`);
+      notify(`${item.label} "${item.displayName}" restored`);
       setItems(prev => prev.filter(i => i.id !== item.id));
     } catch {
-      toast.error('Could not restore — please try again');
+      notify('Could not restore — please try again', 'error');
     } finally {
       setRestoring(null);
     }
@@ -82,6 +88,16 @@ export default function RecycleBinPage() {
 
   return (
     <div className="space-y-6">
+      {/* Inline notification */}
+      {notification && (
+        <div className={`px-4 py-3 rounded-lg text-sm font-medium ${
+          notification.type === 'error'
+            ? 'bg-red-500/15 border border-red-500/30 text-red-300'
+            : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
+        }`}>
+          {notification.msg}
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
