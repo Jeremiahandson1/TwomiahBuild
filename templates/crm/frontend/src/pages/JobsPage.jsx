@@ -16,6 +16,7 @@ export default function JobsPage() {
     const [data, setData] = useState([]);
   const [projects, setProjects] = useState([]);
   const [contacts, setContacts] = useState([]);
+  const [useAddressOnFile, setUseAddressOnFile] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState(null);
   const [search, setSearch] = useState('');
@@ -46,7 +47,7 @@ export default function JobsPage() {
   useEffect(() => { load(); }, [load]);
   useEffect(() => { setPage(1); }, [search, statusFilter]);
 
-  const openCreate = () => { setEditing(null); setForm(initialForm); setModalOpen(true); };
+  const openCreate = () => { setEditing(null); setForm(initialForm); setUseAddressOnFile(false); setModalOpen(true); };
   const openEdit = (item) => { setEditing(item); setForm({ ...initialForm, ...item, scheduledDate: item.scheduledDate?.split('T')[0] || '', estimatedHours: item.estimatedHours || '' }); setModalOpen(true); };
 
   const handleSave = async () => {
@@ -105,18 +106,51 @@ export default function JobsPage() {
           {statuses.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
         </select>
       </div>
-      <DataTable data={data} columns={columns} loading={loading} pagination={pagination} onPageChange={setPage} onRowClick={(row) => navigate(`jobs/${row.id}`)} actions={actions} />
+      <DataTable data={data} columns={columns} loading={loading} pagination={pagination} onPageChange={setPage} onRowClick={(row) => navigate(`/crm/jobs/${row.id}`)} actions={actions} />
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Job' : 'New Job'} size="lg">
         <div className="grid md:grid-cols-2 gap-4">
           <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Title *</label><input value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
           <div><label className="block text-sm font-medium mb-1">Status</label><select value={form.status} onChange={(e) => setForm({...form, status: e.target.value})} className="w-full px-3 py-2 border rounded-lg">{statuses.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}</select></div>
           <div><label className="block text-sm font-medium mb-1">Priority</label><select value={form.priority} onChange={(e) => setForm({...form, priority: e.target.value})} className="w-full px-3 py-2 border rounded-lg">{priorities.map(p => <option key={p} value={p}>{p}</option>)}</select></div>
           <div><label className="block text-sm font-medium mb-1">Project</label><select value={form.projectId} onChange={(e) => setForm({...form, projectId: e.target.value})} className="w-full px-3 py-2 border rounded-lg"><option value="">Select...</option>{projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
-          <div><label className="block text-sm font-medium mb-1">Contact</label><select value={form.contactId} onChange={(e) => setForm({...form, contactId: e.target.value})} className="w-full px-3 py-2 border rounded-lg"><option value="">Select...</option>{contacts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+          <div><label className="block text-sm font-medium mb-1">Contact</label><select value={form.contactId} onChange={(e) => {
+                const selectedContact = contacts.find(c => c.id === e.target.value);
+                const hasAddress = selectedContact?.address || selectedContact?.city;
+                setForm({
+                  ...form,
+                  contactId: e.target.value,
+                  ...(hasAddress ? {
+                    address: selectedContact.address || '',
+                    city: selectedContact.city || '',
+                    state: selectedContact.state || '',
+                    zip: selectedContact.zip || '',
+                  } : {})
+                });
+                setUseAddressOnFile(!!hasAddress);
+              }} className="w-full px-3 py-2 border rounded-lg text-gray-900"><option value="">Select...</option>{contacts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
           <div><label className="block text-sm font-medium mb-1">Scheduled Date</label><input type="date" value={form.scheduledDate} onChange={(e) => setForm({...form, scheduledDate: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
           <div><label className="block text-sm font-medium mb-1">Scheduled Time</label><input type="time" value={form.scheduledTime} onChange={(e) => setForm({...form, scheduledTime: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
           <div><label className="block text-sm font-medium mb-1">Estimated Hours</label><input type="number" value={form.estimatedHours} onChange={(e) => setForm({...form, estimatedHours: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-          <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Address</label><input value={form.address} onChange={(e) => setForm({...form, address: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
+          <div className="md:col-span-2">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium">Address</label>
+                  {useAddressOnFile && (
+                    <button
+                      type="button"
+                      onClick={() => setUseAddressOnFile(false)}
+                      className="text-xs text-orange-500 hover:text-orange-600"
+                    >
+                      Using address on file — Use different address?
+                    </button>
+                  )}
+                </div>
+                <input
+                  value={form.address}
+                  onChange={(e) => { setUseAddressOnFile(false); setForm({...form, address: e.target.value}); }}
+                  className="w-full px-3 py-2 border rounded-lg text-gray-900"
+                  placeholder={useAddressOnFile ? 'From contact on file' : 'Street address'}
+                />
+              </div>
           <div><label className="block text-sm font-medium mb-1">City</label><input value={form.city} onChange={(e) => setForm({...form, city: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
           <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm font-medium mb-1">State</label><input value={form.state} onChange={(e) => setForm({...form, state: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div><div><label className="block text-sm font-medium mb-1">ZIP</label><input value={form.zip} onChange={(e) => setForm({...form, zip: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div></div>
           <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Notes</label><textarea value={form.notes} onChange={(e) => setForm({...form, notes: e.target.value})} rows={3} className="w-full px-3 py-2 border rounded-lg" /></div>

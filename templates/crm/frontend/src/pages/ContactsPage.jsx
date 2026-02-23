@@ -248,7 +248,7 @@ export default function ContactsPage() {
 
       {/* Table */}
       <DataTable
-        onRowClick={(row) => navigate(`contacts/${row.id}`)}
+        onRowClick={(row) => navigate(`/crm/contacts/${row.id}`)}
         data={contacts}
         columns={columns}
         loading={loading}
