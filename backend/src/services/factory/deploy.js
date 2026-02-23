@@ -404,7 +404,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
           repoFullName: repo.full_name,
           rootDir: 'crm/backend',
           buildCommand: 'npm install && npx prisma generate',
-          startCommand: 'npx prisma db push && npm start',
+          startCommand: 'npx prisma db push && npm run db:seed && npm start',
           envVars: backendEnvVars,
           plan,
           region,
