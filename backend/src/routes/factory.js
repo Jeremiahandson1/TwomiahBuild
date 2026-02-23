@@ -928,6 +928,46 @@ router.post('/customers/:id/redeploy', async (req, res) => {
     }
 
     const result = await deployService.redeployCustomer({ renderServiceIds });
+
+// -----------------------------------------------------------------------------
+// PUSH UPDATE - regenerate and push latest templates to customer GitHub repo
+// -----------------------------------------------------------------------------
+router.post('/customers/:id/push-update', async (req, res) => {
+  try {
+    const customer = await prisma.factoryCustomer.findFirst({
+      where: { id: req.params.id, companyId: req.user.companyId },
+      include: { builds: { orderBy: { createdAt: 'desc' }, take: 1 } }
+    });
+    if (!customer) return res.status(404).json({ error: 'Customer not found' });
+    if (!customer.repoUrl) return res.status(400).json({ error: 'No GitHub repo found for this customer' });
+
+    res.json({ success: true, message: 'Update started' });
+
+    setImmediate(async () => {
+      try {
+        const { generate: generatePackage } = await import('../services/factory/generator.js');
+        const regen = await generatePackage(customer.wizardConfig || {
+          products: customer.products,
+          company: { name: customer.name, slug: customer.slug },
+        });
+        const zipPath = await factoryStorage.downloadZip(regen.zipPath, regen.storageType || 's3');
+        const extractDir = `/tmp/update-${customer.slug}-${Date.now()}`;
+        const AdmZip = (await import('adm-zip')).default;
+        const zip = new AdmZip(zipPath);
+        zip.extractAllTo(extractDir, true);
+        const repoFullName = customer.repoUrl.replace('https://github.com/', '');
+        const { deployCustomer } = await import('../services/factory/deploy.js');
+        const { pushToGitHub } = await import('../services/factory/deploy.js'); await pushToGitHub(repoFullName, extractDir);
+        logger.info(`[PushUpdate] Successfully pushed update to ${repoFullName}`);
+      } catch (err) {
+        logger.error('[PushUpdate] Failed:', err);
+      }
+    });
+  } catch (err) {
+    logger.error('Push update error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
     res.json(result);
   } catch (err) {
     logger.error('Redeploy error:', err);

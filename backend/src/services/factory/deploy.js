@@ -122,7 +122,7 @@ async function createGitHubRepo(slug, description) {
 /**
  * Push extracted zip contents to the GitHub repo
  */
-async function pushToGitHub(repoFullName, extractDir) {
+export async function pushToGitHub(repoFullName, extractDir) {
   const token = process.env.GITHUB_TOKEN;
   const remoteUrl = `https://${token}@github.com/${repoFullName}.git`;
 
