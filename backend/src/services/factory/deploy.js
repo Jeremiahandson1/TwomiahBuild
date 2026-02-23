@@ -392,6 +392,11 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
           { key: 'PORT', value: '10000' },
         ];
 
+        // If enterprise tier, enable all features on first boot
+        if (factoryCustomer.planId === 'enterprise') {
+          backendEnvVars.push({ key: 'FEATURE_PACKAGE', value: 'enterprise' });
+        }
+
         // Add database URL if we got it
         if (dbInfo?.internalConnectionString) {
           backendEnvVars.push({ key: 'DATABASE_URL', value: dbInfo.internalConnectionString });
