@@ -71,7 +71,7 @@ export function DataTable({
                   onClick={() => onRowClick?.(row)}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className={`px-4 py-3 ${col.cellClassName || ''}`}>
+                    <td key={col.key} className={`px-4 py-3 text-gray-700 ${col.cellClassName || ''}`}>
                       {col.render ? col.render(row[col.key], row) : row[col.key]}
                     </td>
                   ))}
@@ -83,7 +83,7 @@ export function DataTable({
                             e.stopPropagation();
                             setOpenMenu(openMenu === row.id ? null : row.id);
                           }}
-                          className="p-1 hover:bg-gray-100 rounded"
+                          className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-100 hover:border-gray-300 text-gray-500 hover:text-gray-700 transition-colors"
                         >
                           <MoreVertical className="w-4 h-4 text-gray-500" />
                         </button>

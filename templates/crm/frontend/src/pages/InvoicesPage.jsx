@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Edit, Trash2, Send, DollarSign } from 'lucide-react';
 import api from '../services/api';
@@ -9,7 +10,8 @@ const statuses = ['draft', 'sent', 'viewed', 'partial', 'paid', 'overdue'];
 
 export default function InvoicesPage() {
   const toast = useToast();
-  const [data, setData] = useState([]);
+  const navigate = useNavigate();
+    const [data, setData] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState(null);
@@ -85,7 +87,7 @@ export default function InvoicesPage() {
     <div>
       <PageHeader title="Invoices" action={<Button onClick={openCreate}><Plus className="w-4 h-4 mr-2 inline"/>New Invoice</Button>} />
       <div className="mb-4"><select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="px-4 py-2 border rounded-lg"><option value="">All Status</option>{statuses.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
-      <DataTable data={data} columns={columns} loading={loading} pagination={pagination} onPageChange={setPage} actions={[
+      <DataTable data={data} columns={columns} loading={loading} pagination={pagination} onPageChange={setPage} onRowClick={(row) => navigate(`invoices/${row.id}`)} actions={[
         { label: 'Edit', icon: Edit, onClick: openEdit },
         { label: 'Send', icon: Send, onClick: handleSend },
         { label: 'Record Payment', icon: DollarSign, onClick: openPayment },

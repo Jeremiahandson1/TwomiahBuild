@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Edit, Trash2, Search, Play, CheckCircle } from 'lucide-react';
 import api from '../services/api';
@@ -11,7 +12,8 @@ const initialForm = { title: '', description: '', status: 'scheduled', priority:
 
 export default function JobsPage() {
   const toast = useToast();
-  const [data, setData] = useState([]);
+  const navigate = useNavigate();
+    const [data, setData] = useState([]);
   const [projects, setProjects] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +105,7 @@ export default function JobsPage() {
           {statuses.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
         </select>
       </div>
-      <DataTable data={data} columns={columns} loading={loading} pagination={pagination} onPageChange={setPage} actions={actions} />
+      <DataTable data={data} columns={columns} loading={loading} pagination={pagination} onPageChange={setPage} onRowClick={(row) => navigate(`jobs/${row.id}`)} actions={actions} />
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Job' : 'New Job'} size="lg">
         <div className="grid md:grid-cols-2 gap-4">
           <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Title *</label><input value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>

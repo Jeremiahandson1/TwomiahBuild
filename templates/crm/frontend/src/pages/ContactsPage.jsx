@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, UserCheck, Search } from 'lucide-react';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
@@ -29,6 +30,7 @@ const initialFormData = {
 
 export default function ContactsPage() {
   const toast = useToast();
+  const navigate = useNavigate();
   const [contacts, setContacts] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -175,12 +177,12 @@ export default function ContactsPage() {
     {
       key: 'phone',
       label: 'Phone',
-      render: (val) => val || '-',
+      render: (val) => <span className="text-gray-700">{val || '-'}</span>,
     },
     {
       key: 'city',
       label: 'Location',
-      render: (val, row) => row.city && row.state ? `${row.city}, ${row.state}` : row.city || row.state || '-',
+      render: (val, row) => <span className="text-gray-700">{row.city && row.state ? `${row.city}, ${row.state}` : row.city || row.state || '-'}</span>,
     },
   ];
 
@@ -246,6 +248,7 @@ export default function ContactsPage() {
 
       {/* Table */}
       <DataTable
+        onRowClick={(row) => navigate(`contacts/${row.id}`)}
         data={contacts}
         columns={columns}
         loading={loading}
