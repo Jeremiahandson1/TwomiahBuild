@@ -5,7 +5,7 @@
     "_comment": "Always included — cannot be disabled",
     "features": ["contacts", "jobs", "quotes", "invoices", "scheduling", "team", "dashboard"],
     "backend": {
-      "routes": ["auth.js", "contacts.js", "jobs.js", "quotes.js", "invoices.js", "time.js", "team.js", "company.js", "dashboard.js"],
+      "routes": ["auth.js", "contacts.js", "jobs.js", "quotes.js", "invoices.js", "time.js", "team.js", "company.js", "dashboard.js", "projects.js", "expenses.js", "documents.js"],
       "services": ["audit.js", "email.js", "fileUpload.js", "logger.js", "socket.js", "pdf.js"],
       "middleware": ["auth.js", "featureGate.js", "permissions.js", "security.js"]
     },
