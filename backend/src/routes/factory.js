@@ -926,8 +926,13 @@ router.post('/customers/:id/redeploy', async (req, res) => {
     if (!renderServiceIds) {
       return res.status(400).json({ error: 'No deployed services found' });
     }
-
     const result = await deployService.redeployCustomer({ renderServiceIds });
+    res.json(result);
+  } catch (err) {
+    logger.error('Redeploy error:', err);
+    res.status(500).json({ error: err.message });
+  }
+
 
 // -----------------------------------------------------------------------------
 // PUSH UPDATE - regenerate and push latest templates to customer GitHub repo
