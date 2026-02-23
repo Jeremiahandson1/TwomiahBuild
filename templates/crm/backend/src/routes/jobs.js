@@ -10,9 +10,9 @@ router.use(authenticate);
 const schema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
-  projectId: z.string().optional(),
-  contactId: z.string().optional(),
-  assignedToId: z.string().optional(),
+  projectId: z.string().optional().transform(v => v === '' ? undefined : v),
+  contactId: z.string().optional().transform(v => v === '' ? undefined : v),
+  assignedToId: z.string().optional().transform(v => v === '' ? undefined : v),
   priority: z.enum(['low', 'normal', 'high', 'urgent']).default('normal'),
   scheduledDate: z.string().optional(),
   scheduledTime: z.string().optional(),

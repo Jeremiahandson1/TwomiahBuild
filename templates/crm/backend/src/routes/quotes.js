@@ -10,8 +10,8 @@ router.use(authenticate);
 const lineItemSchema = z.object({ description: z.string().min(1), quantity: z.number().default(1), unitPrice: z.number().default(0) });
 const schema = z.object({
   name: z.string().min(1),
-  contactId: z.string().optional(),
-  projectId: z.string().optional(),
+  contactId: z.string().optional().transform(v => v === '' ? undefined : v),
+  projectId: z.string().optional().transform(v => v === '' ? undefined : v),
   expiryDate: z.string().optional(),
   taxRate: z.number().default(0),
   discount: z.number().default(0),
