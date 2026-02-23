@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Download, Package, Plus, Trash2, Rocket } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { useToast } from '../contexts/ToastContext';
 import api from '../services/api';
 
 import { API_BASE_URL as API_BASE } from '../config/api.js';
 
 export default function BuildsPage() {
+  const toast = useToast();
   const [builds, setBuilds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(null);
