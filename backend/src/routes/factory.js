@@ -32,11 +32,11 @@ const OUTPUT_DIR = process.env.TWOMIAH_BUILD_OUTPUT_DIR || path.join(PROJECT_ROO
 
 // Skip auth for public endpoints
 router.use((req, res, next) => {
-  if (req.path === '/features' || req.path === '/templates') return next();
+  if (req.path === '/features' || req.path === '/templates' || req.path === '/admin/patch-repo-urls') return next();
   authenticate(req, res, next);
 });
 router.use((req, res, next) => {
-  if (req.path === '/features' || req.path === '/templates') return next();
+  if (req.path === '/features' || req.path === '/templates' || req.path === '/admin/patch-repo-urls') return next();
   requireRole('owner', 'admin')(req, res, next);
 });
 
