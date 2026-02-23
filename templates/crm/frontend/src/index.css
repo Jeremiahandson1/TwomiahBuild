@@ -11,6 +11,14 @@
     @apply bg-slate-950 text-slate-100 antialiased;
   }
 
+  /* Default input text to dark so white-background modal forms are readable.
+     The .input component class overrides this with text-slate-100 for dark fields. */
+  input,
+  select,
+  textarea {
+    @apply text-gray-900;
+  }
+
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
