@@ -291,11 +291,11 @@ export async function bulkDeleteTimeEntries(companyId, entryIds) {
 // ============================================
 
 const ENTITY_CONFIG = {
-  contacts: { model: 'contact', softDelete: false },
-  projects: { model: 'project', softDelete: false },
-  jobs: { model: 'job', softDelete: false },
-  invoices: { model: 'invoice', softDelete: false, restrictDelete: ['sent', 'paid', 'partial'] },
-  quotes: { model: 'quote', softDelete: false, restrictDelete: ['sent', 'approved'] },
+  contacts: { model: 'contact', softDelete: true },
+  projects: { model: 'project', softDelete: true },
+  jobs: { model: 'job', softDelete: true },
+  invoices: { model: 'invoice', softDelete: true, restrictDelete: ['sent', 'paid', 'partial'] },
+  quotes: { model: 'quote', softDelete: true, restrictDelete: ['sent', 'approved'] },
   timeEntries: { model: 'timeEntry', softDelete: false },
 };
 

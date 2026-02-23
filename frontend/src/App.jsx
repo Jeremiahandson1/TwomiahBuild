@@ -90,6 +90,7 @@ const MessagesPage          = lazy(() => import('./pages/messages/MessagesPage')
 const ReportsDashboard      = lazy(() => import('./pages/reports/ReportsDashboard'));
 const SelectionsPage        = lazy(() => import('./pages/selections/SelectionsPage'));
 const AuditPage             = lazy(() => import('./pages/AuditPage'));
+const RecycleBinPage        = lazy(() => import('./pages/RecycleBinPage'));
 
 // ── Loading fallback ──────────────────────────────────────────────────────────
 function PageLoader() {
@@ -189,6 +190,7 @@ function App() {
                       <Route path="reports"          element={<ReportsDashboard />} />
                       <Route path="selections"       element={<SelectionsPage />} />
                       <Route path="audit"            element={<AuditPage />} />
+                      <Route path="recycle-bin"     element={<RecycleBinPage />} />
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />

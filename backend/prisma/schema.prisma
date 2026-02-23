@@ -253,6 +253,7 @@ model Contact {
   customFields Json     @default("{}")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
 
   // Portal access
   portalEnabled    Boolean   @default(false)
@@ -308,7 +309,8 @@ model Project {
   progress       Int       @default(0)
   notes          String?
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   companyId String
   company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -366,7 +368,8 @@ model Job {
   internalNotes    String?
   completedAt      DateTime?
   createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   companyId    String
   company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -425,7 +428,8 @@ model Quote {
   rejectionReason String?
   validUntil DateTime?
   createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   companyId String
   company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -475,7 +479,8 @@ model Invoice {
   sentAt     DateTime?
   paidAt     DateTime?
   createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   // Stripe integration
   stripePaymentIntentId String? @unique
@@ -583,6 +588,7 @@ model Expense {
   approved     Boolean   @default(false)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   companyId String
   company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -860,7 +866,8 @@ model Document {
   thumbnailUrl String?
   description  String?
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   companyId    String
   company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -1486,7 +1493,8 @@ model Equipment {
   maintenanceLogs EquipmentMaintenance[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   @@index([companyId])
 }
@@ -1526,7 +1534,8 @@ model Vehicle {
   fuelLogs        FuelLog[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   @@index([companyId])
 }

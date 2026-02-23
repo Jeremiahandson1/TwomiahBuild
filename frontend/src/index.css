@@ -152,3 +152,45 @@
     box-shadow: 0 0 40px -10px theme('colors.brand.500');
   }
 }
+
+/* ─── Safari / Cross-browser fixes ─────────────────────────────── */
+
+@layer base {
+  /* iOS Safari: smooth scrolling in scrollable containers */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Safari: sticky positioning needs -webkit- prefix for older versions */
+  .sticky {
+    position: -webkit-sticky;
+    position: sticky;
+  }
+
+  /* iOS Safari: prevent auto-zoom on form inputs on touch devices only */
+  @media (hover: none) and (pointer: coarse) {
+    input, select, textarea {
+      font-size: max(16px, 1em);
+    }
+  }
+
+  /* Safari: smooth scroll */
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Safari: fix 100vh issue on mobile — falls back to 100vh on older Safari */
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
+
+@layer utilities {
+  /* Use this instead of min-h-screen for full-height layouts on mobile Safari */
+  .min-h-dynamic-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}

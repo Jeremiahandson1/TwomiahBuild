@@ -6,13 +6,14 @@ import {
   BookOpen, ClipboardCheck, Target, Settings, LogOut, Bell, Search,
   ChevronDown, Building, User, FolderOpen, Package, Truck, Warehouse,
   Wrench, Megaphone, CreditCard, Repeat, Scissors, ListTodo,
-  MessageSquare, BarChart3, Star, ShieldCheck, Phone
+  MessageSquare, BarChart3, Star, ShieldCheck, Phone, Trash2
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSocket } from '../../contexts/SocketContext';
 import { SkipLink, RouteAnnouncer } from '../common/Accessibility';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import { useFeatureNavigation, FeatureProvider } from '../FeatureGate';
+import StatusBanner from '../common/StatusBanner';
 
 const ALL_NAV_ITEMS = [
   { to: '/',              icon: Home,          label: 'Dashboard',     exact: true },
@@ -101,6 +102,7 @@ export default function AppLayout() {
         
         {/* Route Announcer */}
         <RouteAnnouncer />
+        <StatusBanner />
 
       {/* Mobile Overlay */}
       {sidebarOpen && isMobile && (

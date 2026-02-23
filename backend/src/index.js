@@ -80,6 +80,8 @@ import warrantiesRoutes from './routes/warranties.js';
 import weatherRoutes from './routes/weather.js';
 import wisetackRoutes from './routes/wisetack.js';
 import { bookingRoutes as gapBookingRoutes, jobCostingRoutes, customFormsRoutes, lienWaiverRoutes, drawScheduleRoutes } from './routes/gapFeatures.js';
+import statusRoutes from './routes/status.js';
+import recycleBinRoutes from './routes/recycleBin.js';
 
 dotenv.config();
 
@@ -262,6 +264,8 @@ app.use('/api/v1/lien-waivers', lienWaiverRoutes);
 app.use('/api/v1/draw-schedules', drawScheduleRoutes);
 
 // 404 handler
+app.use('/api/status', statusRoutes);
+app.use('/api/v1/recycle-bin', recycleBinRoutes);
 app.use(notFoundHandler);
 
 // Error handler (must be last)
