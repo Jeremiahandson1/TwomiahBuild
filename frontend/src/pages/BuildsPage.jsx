@@ -219,6 +219,7 @@ export default function BuildsPage() {
                 <Rocket size={14} />
                 {pushing === build.id ? "Pushing..." : "Push Update"}
               </button>
+              <button
                 onClick={() => handleDownload(build)}
                 disabled={downloading === build.id}
                 style={{
