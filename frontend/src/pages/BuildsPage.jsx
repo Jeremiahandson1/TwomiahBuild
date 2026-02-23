@@ -11,6 +11,7 @@ export default function BuildsPage() {
   const [downloading, setDownloading] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [deploying, setDeploying] = useState(null);
+  const [pushing, setPushing] = useState(null);
   const [deployedUrls, setDeployedUrls] = useState({});
   const [error, setError] = useState(null);
 
@@ -27,6 +28,29 @@ export default function BuildsPage() {
   const handleDownload = (build) => {
     const token = api.accessToken;
     window.location.href = `${API_BASE}/api/v1/factory/download/${build.buildId}/${build.zipName}?token=${token}`;
+  };
+
+  const handlePushUpdate = async (build) => {
+    try {
+      setPushing(build.id);
+      const token = api.accessToken;
+      const custRes = await fetch(`${API_BASE}/api/v1/factory/customers?search=${encodeURIComponent(build.companyName)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const custData = await custRes.json();
+      const customer = custData.find(c => c.slug === build.slug || c.name === build.companyName);
+      if (!customer) throw new Error('Customer not found');
+      const res = await fetch(`${API_BASE}/api/v1/factory/customers/${customer.id}/push-update`, {
+        method: 'POST', headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Push failed');
+      toast.success('Update pushed to GitHub - Render will redeploy shortly');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setPushing(null);
+    }
   };
 
   const handleDeploy = async (build) => {
