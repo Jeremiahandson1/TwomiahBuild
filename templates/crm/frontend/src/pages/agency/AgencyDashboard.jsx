@@ -30,8 +30,8 @@ export default function AgencyDashboard() {
     setLoading(true);
     try {
       const [statsData, customersData] = await Promise.all([
-        api.get('/agency/stats'),
-        api.get('/agency/customers'),
+        api.get('/api/agency/stats'),
+        api.get('/api/agency/customers'),
       ]);
       setStats(statsData);
       setCustomers(customersData.data || []);
@@ -210,7 +210,7 @@ function CustomerRow({ customer, onEditFeatures, onRefresh }) {
     }
 
     try {
-      await api.delete(`/agency/customers/${customer.id}`, {
+      await api.delete(`/api/agency/customers/${customer.id}`, {
         data: { confirmDelete: customer.slug },
       });
       onRefresh();

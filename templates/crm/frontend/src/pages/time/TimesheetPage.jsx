@@ -23,10 +23,10 @@ export default function TimesheetPage() {
     setLoading(true);
     try {
       if (view === 'week') {
-        const data = await api.get(`/time/weekly?weekStart=${weekStart}`);
+        const data = await api.get(`/api/time/weekly?weekStart=${weekStart}`);
         setTimesheet(data);
       } else {
-        const result = await api.get('/time?limit=50');
+        const result = await api.get('/api/time?limit=50');
         setEntries(result.data || []);
       }
     } catch (error) {
@@ -55,7 +55,7 @@ export default function TimesheetPage() {
   const handleDeleteEntry = async (entryId) => {
     if (!confirm('Delete this time entry?')) return;
     try {
-      await api.delete(`/time/${entryId}`);
+      await api.delete(`/api/time/${entryId}`);
       loadData();
     } catch (error) {
       alert('Failed to delete entry');
@@ -351,8 +351,8 @@ function ManualEntryModal({ onClose, onSave }) {
   const loadOptions = async () => {
     try {
       const [jobsRes, projectsRes] = await Promise.all([
-        api.get('/jobs?limit=100'),
-        api.get('/projects?limit=100'),
+        api.get('/api/jobs?limit=100'),
+        api.get('/api/projects?limit=100'),
       ]);
       setJobs(jobsRes.data || []);
       setProjects(projectsRes.data || []);
@@ -365,7 +365,7 @@ function ManualEntryModal({ onClose, onSave }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post('/time', form);
+      await api.post('/api/time', form);
       onSave();
     } catch (error) {
       alert(error.message || 'Failed to save entry');

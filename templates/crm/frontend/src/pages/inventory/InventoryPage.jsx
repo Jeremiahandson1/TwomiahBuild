@@ -32,9 +32,9 @@ export default function InventoryPage() {
     setLoading(true);
     try {
       const [itemsRes, locsRes, catsRes] = await Promise.all([
-        api.get(`/inventory/items?search=${search}&category=${category}&lowStock=${showLowStock}`),
-        api.get('/inventory/locations'),
-        api.get('/inventory/categories'),
+        api.get(`/api/inventory/items?search=${search}&category=${category}&lowStock=${showLowStock}`),
+        api.get('/api/inventory/locations'),
+        api.get('/api/inventory/categories'),
       ]);
       setItems(itemsRes.data || []);
       setLocations(locsRes || []);
@@ -310,7 +310,7 @@ function LocationsTab({ locations, onAddLocation, onRefresh }) {
   const loadLocationInventory = async (locationId) => {
     setLoading(true);
     try {
-      const data = await api.get(`/inventory/locations/${locationId}/inventory`);
+      const data = await api.get(`/api/inventory/locations/${locationId}/inventory`);
       setInventory(data);
       setSelectedLocation(locationId);
     } catch (error) {
@@ -412,7 +412,7 @@ function PurchaseOrdersTab({ locations }) {
 
   const loadOrders = async () => {
     try {
-      const data = await api.get('/inventory/purchase-orders');
+      const data = await api.get('/api/inventory/purchase-orders');
       setOrders(data.data || []);
     } catch (error) {
       console.error('Failed to load orders:', error);
@@ -483,9 +483,9 @@ function ItemFormModal({ item, onSave, onClose }) {
     setSaving(true);
     try {
       if (item) {
-        await api.put(`/inventory/items/${item.id}`, form);
+        await api.put(`/api/inventory/items/${item.id}`, form);
       } else {
-        await api.post('/inventory/items', form);
+        await api.post('/api/inventory/items', form);
       }
       onSave();
     } catch (error) {
@@ -609,7 +609,7 @@ function LocationFormModal({ onSave, onClose }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post('/inventory/locations', form);
+      await api.post('/api/inventory/locations', form);
       onSave();
     } catch (error) {
       alert('Failed to save location');
@@ -678,7 +678,7 @@ function TransferModal({ items, locations, onSave, onClose }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post('/inventory/transfer', form);
+      await api.post('/api/inventory/transfer', form);
       onSave();
     } catch (error) {
       alert(error.message || 'Failed to transfer');
@@ -778,7 +778,7 @@ function AdjustStockModal({ item, locations, onSave, onClose }) {
     setSaving(true);
     try {
       const quantity = adjustType === 'add' ? parseInt(form.quantity) : -parseInt(form.quantity);
-      await api.post('/inventory/adjust', {
+      await api.post('/api/inventory/adjust', {
         itemId: item.id,
         locationId: form.locationId,
         quantity,

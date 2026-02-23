@@ -56,8 +56,8 @@ export default function RecurringForm() {
   const loadContacts = async () => {
     try {
       const [contactsRes, projectsRes] = await Promise.all([
-        api.get('/contacts?type=client&limit=200'),
-        api.get('/projects?limit=200'),
+        api.get('/api/contacts?type=client&limit=200'),
+        api.get('/api/projects?limit=200'),
       ]);
       setContacts(contactsRes.data || []);
       setProjects(projectsRes.data || []);
@@ -68,7 +68,7 @@ export default function RecurringForm() {
 
   const loadRecurring = async () => {
     try {
-      const data = await api.get(`/recurring/${id}`);
+      const data = await api.get(`/api/recurring/${id}`);
       setForm({
         contactId: data.contactId || '',
         projectId: data.projectId || '',
@@ -156,9 +156,9 @@ export default function RecurringForm() {
       };
 
       if (isEdit) {
-        await api.put(`/recurring/${id}`, payload);
+        await api.put(`/api/recurring/${id}`, payload);
       } else {
-        await api.post('/recurring', payload);
+        await api.post('/api/recurring', payload);
       }
 
       navigate('/recurring');

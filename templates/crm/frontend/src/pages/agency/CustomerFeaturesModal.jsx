@@ -22,8 +22,8 @@ export default function CustomerFeaturesModal({ customer, onClose, onSaved }) {
   const loadData = async () => {
     try {
       const [featuresData, customerData] = await Promise.all([
-        api.get('/agency/features'),
-        api.get(`/agency/customers/${customer.id}`),
+        api.get('/api/agency/features'),
+        api.get(`/api/agency/customers/${customer.id}`),
       ]);
       
       setFeatureRegistry(featuresData.registry);
@@ -78,7 +78,7 @@ export default function CustomerFeaturesModal({ customer, onClose, onSaved }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.put(`/agency/customers/${customer.id}/features`, {
+      await api.put(`/api/agency/customers/${customer.id}/features`, {
         enabledFeatures: enabledFeatures.filter(f => !getCoreFeatureIds().includes(f)),
         packageId: selectedPackage,
       });

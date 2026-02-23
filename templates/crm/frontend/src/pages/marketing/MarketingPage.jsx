@@ -20,7 +20,7 @@ export default function MarketingPage() {
 
   const loadStats = async () => {
     try {
-      const data = await api.get('/marketing/stats');
+      const data = await api.get('/api/marketing/stats');
       setStats(data);
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -106,7 +106,7 @@ function CampaignsTab() {
 
   const loadCampaigns = async () => {
     try {
-      const data = await api.get('/marketing/campaigns');
+      const data = await api.get('/api/marketing/campaigns');
       setCampaigns(data.data || []);
     } catch (error) {
       console.error('Failed to load campaigns:', error);
@@ -118,7 +118,7 @@ function CampaignsTab() {
   const handleSend = async (campaignId) => {
     if (!confirm('Are you sure you want to send this campaign?')) return;
     try {
-      await api.post(`/marketing/campaigns/${campaignId}/send`);
+      await api.post(`/api/marketing/campaigns/${campaignId}/send`);
       loadCampaigns();
     } catch (error) {
       alert('Failed to send campaign');
@@ -228,7 +228,7 @@ function TemplatesTab() {
 
   const loadTemplates = async () => {
     try {
-      const data = await api.get('/marketing/templates');
+      const data = await api.get('/api/marketing/templates');
       setTemplates(data || []);
     } catch (error) {
       console.error('Failed to load templates:', error);
@@ -304,7 +304,7 @@ function SequencesTab() {
 
   const loadSequences = async () => {
     try {
-      const data = await api.get('/marketing/sequences');
+      const data = await api.get('/api/marketing/sequences');
       setSequences(data || []);
     } catch (error) {
       console.error('Failed to load sequences:', error);
@@ -416,9 +416,9 @@ function CampaignFormModal({ campaign, onSave, onClose }) {
     setSaving(true);
     try {
       if (campaign) {
-        await api.put(`/marketing/campaigns/${campaign.id}`, form);
+        await api.put(`/api/marketing/campaigns/${campaign.id}`, form);
       } else {
-        await api.post('/marketing/campaigns', form);
+        await api.post('/api/marketing/campaigns', form);
       }
       onSave();
     } catch (error) {
@@ -485,9 +485,9 @@ function TemplateFormModal({ template, onSave, onClose }) {
     setSaving(true);
     try {
       if (template) {
-        await api.put(`/marketing/templates/${template.id}`, form);
+        await api.put(`/api/marketing/templates/${template.id}`, form);
       } else {
-        await api.post('/marketing/templates', form);
+        await api.post('/api/marketing/templates', form);
       }
       onSave();
     } catch (error) {
@@ -571,7 +571,7 @@ function SequenceFormModal({ onSave, onClose }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post('/marketing/sequences', form);
+      await api.post('/api/marketing/sequences', form);
       onSave();
     } catch (error) {
       alert('Failed to save sequence');

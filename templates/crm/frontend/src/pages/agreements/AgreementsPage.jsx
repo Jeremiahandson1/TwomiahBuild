@@ -30,9 +30,9 @@ export default function AgreementsPage() {
     setLoading(true);
     try {
       const [agreementsRes, plansRes, statsRes] = await Promise.all([
-        api.get(`/agreements?status=${statusFilter}`),
-        api.get('/agreements/plans'),
-        api.get('/agreements/reports/stats'),
+        api.get(`/api/agreements?status=${statusFilter}`),
+        api.get('/api/agreements/plans'),
+        api.get('/api/agreements/reports/stats'),
       ]);
       setAgreements(agreementsRes.data || []);
       setPlans(plansRes || []);
@@ -232,7 +232,7 @@ export default function AgreementsPage() {
   async function handleRenew(agreementId) {
     if (!confirm('Renew this agreement for another term?')) return;
     try {
-      await api.post(`/agreements/${agreementId}/renew`);
+      await api.post(`/api/agreements/${agreementId}/renew`);
       loadData();
     } catch (error) {
       alert('Failed to renew agreement');
@@ -392,7 +392,7 @@ function VisitsTab() {
 
   const loadVisits = async () => {
     try {
-      const data = await api.get('/agreements/visits/upcoming');
+      const data = await api.get('/api/agreements/visits/upcoming');
       setVisits(data || []);
     } catch (error) {
       console.error('Failed to load visits:', error);
@@ -465,9 +465,9 @@ function PlanFormModal({ plan, onSave, onClose }) {
     setSaving(true);
     try {
       if (plan) {
-        await api.put(`/agreements/plans/${plan.id}`, form);
+        await api.put(`/api/agreements/plans/${plan.id}`, form);
       } else {
-        await api.post('/agreements/plans', form);
+        await api.post('/api/agreements/plans', form);
       }
       onSave();
     } catch (error) {
@@ -614,7 +614,7 @@ function AgreementFormModal({ agreement, plans, onSave, onClose }) {
 
   const loadContacts = async () => {
     try {
-      const data = await api.get('/contacts?limit=100');
+      const data = await api.get('/api/contacts?limit=100');
       setContacts(data.data || []);
     } catch (error) {
       console.error('Failed to load contacts:', error);
@@ -626,9 +626,9 @@ function AgreementFormModal({ agreement, plans, onSave, onClose }) {
     setSaving(true);
     try {
       if (agreement) {
-        await api.put(`/agreements/${agreement.id}`, form);
+        await api.put(`/api/agreements/${agreement.id}`, form);
       } else {
-        await api.post('/agreements', form);
+        await api.post('/api/agreements', form);
       }
       onSave();
     } catch (error) {

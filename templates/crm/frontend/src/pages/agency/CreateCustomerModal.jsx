@@ -56,7 +56,7 @@ export default function CreateCustomerModal({ onClose, onCreated }) {
 
   const loadFeatures = async () => {
     try {
-      const data = await api.get('/agency/features');
+      const data = await api.get('/api/agency/features');
       setFeatureRegistry(data.registry);
       setPackages(data.packages);
     } catch (error) {
@@ -113,7 +113,7 @@ export default function CreateCustomerModal({ onClose, onCreated }) {
   const handleCreate = async () => {
     setLoading(true);
     try {
-      const result = await api.post('/agency/customers', {
+      const result = await api.post('/api/agency/customers', {
         name: form.name,
         slug: form.slug,
         email: form.email,

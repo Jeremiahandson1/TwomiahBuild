@@ -27,7 +27,7 @@ export default function PricingPage() {
 
   const loadPricing = async () => {
     try {
-      const data = await api.get('/billing/pricing');
+      const data = await api.get('/api/billing/pricing');
       setPricing(data);
     } catch (error) {
       console.error('Failed to load pricing:', error);

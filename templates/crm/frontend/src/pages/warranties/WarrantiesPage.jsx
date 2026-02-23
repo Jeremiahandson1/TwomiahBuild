@@ -34,9 +34,9 @@ export default function WarrantiesPage() {
     setLoading(true);
     try {
       const [warrantiesRes, claimsRes, statsRes] = await Promise.all([
-        api.get(`/warranties?expiringSoon=${showExpiring}`),
-        api.get('/warranties/claims?status=open'),
-        api.get('/warranties/stats'),
+        api.get(`/api/warranties?expiringSoon=${showExpiring}`),
+        api.get('/api/warranties/claims?status=open'),
+        api.get('/api/warranties/stats'),
       ]);
       setWarranties(warrantiesRes.data || []);
       setClaims(claimsRes.data || []);
@@ -254,7 +254,7 @@ function ClaimsList({ claims, onRefresh }) {
     setLoading(true);
     try {
       const params = statusFilter ? `?status=${statusFilter}` : '';
-      const data = await api.get(`/warranties/claims${params}`);
+      const data = await api.get(`/api/warranties/claims${params}`);
       setAllClaims(data.data || []);
     } catch (error) {
       console.error('Failed to load claims:', error);
@@ -267,7 +267,7 @@ function ClaimsList({ claims, onRefresh }) {
     const date = prompt('Enter scheduled date (YYYY-MM-DD):');
     if (!date) return;
     try {
-      await api.post(`/warranties/claims/${claimId}/schedule`, { scheduledDate: date });
+      await api.post(`/api/warranties/claims/${claimId}/schedule`, { scheduledDate: date });
       loadClaims();
       onRefresh();
     } catch (error) {
@@ -277,7 +277,7 @@ function ClaimsList({ claims, onRefresh }) {
 
   const handleComplete = async (claimId) => {
     try {
-      await api.put(`/warranties/claims/${claimId}/status`, { status: 'completed' });
+      await api.put(`/api/warranties/claims/${claimId}/status`, { status: 'completed' });
       loadClaims();
       onRefresh();
     } catch (error) {
@@ -289,7 +289,7 @@ function ClaimsList({ claims, onRefresh }) {
     const reason = prompt('Enter denial reason:');
     if (!reason) return;
     try {
-      await api.post(`/warranties/claims/${claimId}/deny`, { reason });
+      await api.post(`/api/warranties/claims/${claimId}/deny`, { reason });
       loadClaims();
       onRefresh();
     } catch (error) {
@@ -418,7 +418,7 @@ function NewClaimModal({ warranties, onSave, onClose }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post('/warranties/claims', form);
+      await api.post('/api/warranties/claims', form);
       onSave();
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to create claim');

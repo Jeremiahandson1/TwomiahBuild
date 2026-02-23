@@ -29,8 +29,8 @@ export default function FleetPage() {
   const loadData = async () => {
     try {
       const [vehiclesRes, statsRes] = await Promise.all([
-        api.get('/fleet/vehicles'),
-        api.get('/fleet/stats'),
+        api.get('/api/fleet/vehicles'),
+        api.get('/api/fleet/stats'),
       ]);
       setVehicles(vehiclesRes || []);
       setStats(statsRes);
@@ -330,7 +330,7 @@ function TripsTab() {
 
   const loadTrips = async () => {
     try {
-      const data = await api.get('/fleet/trips');
+      const data = await api.get('/api/fleet/trips');
       setTrips(data.data || []);
     } catch (error) {
       console.error('Failed to load trips:', error);
@@ -404,9 +404,9 @@ function VehicleFormModal({ vehicle, onSave, onClose }) {
     setSaving(true);
     try {
       if (vehicle) {
-        await api.put(`/fleet/vehicles/${vehicle.id}`, form);
+        await api.put(`/api/fleet/vehicles/${vehicle.id}`, form);
       } else {
-        await api.post('/fleet/vehicles', form);
+        await api.post('/api/fleet/vehicles', form);
       }
       onSave();
     } catch (error) {
@@ -492,7 +492,7 @@ function FuelEntryModal({ vehicle, onSave, onClose }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post(`/fleet/vehicles/${vehicle.id}/fuel`, form);
+      await api.post(`/api/fleet/vehicles/${vehicle.id}/fuel`, form);
       onSave();
     } catch (error) {
       alert('Failed to save fuel entry');
@@ -566,7 +566,7 @@ function MaintenanceModal({ vehicle, onSave, onClose }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post(`/fleet/vehicles/${vehicle.id}/maintenance`, form);
+      await api.post(`/api/fleet/vehicles/${vehicle.id}/maintenance`, form);
       onSave();
     } catch (error) {
       alert('Failed to save maintenance');

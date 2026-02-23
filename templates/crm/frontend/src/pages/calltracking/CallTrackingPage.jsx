@@ -35,8 +35,8 @@ export default function CallTrackingPage() {
       if (filters.endDate) params.set('endDate', filters.endDate);
 
       const [callsRes, reportRes] = await Promise.all([
-        api.get(`/calltracking/calls?${params}`),
-        api.get(`/calltracking/reports/attribution?${params}`),
+        api.get(`/api/calltracking/calls?${params}`),
+        api.get(`/api/calltracking/reports/attribution?${params}`),
       ]);
       setCalls(callsRes.data || []);
       setReport(reportRes);
@@ -334,7 +334,7 @@ function TrackingNumbersTab() {
 
   const loadNumbers = async () => {
     try {
-      const data = await api.get('/calltracking/numbers');
+      const data = await api.get('/api/calltracking/numbers');
       setNumbers(data || []);
     } catch (error) {
       console.error('Failed to load numbers:', error);

@@ -32,8 +32,8 @@ export default function TakeoffsPage({ projectId }) {
     setLoading(true);
     try {
       const [sheetsRes, assembliesRes] = await Promise.all([
-        api.get(`/takeoffs/project/${projectId}`),
-        api.get('/takeoffs/assemblies'),
+        api.get(`/api/takeoffs/project/${projectId}`),
+        api.get('/api/takeoffs/assemblies'),
       ]);
       setSheets(sheetsRes || []);
       setAssemblies(assembliesRes || []);
@@ -51,7 +51,7 @@ export default function TakeoffsPage({ projectId }) {
 
   const loadSheet = async (sheetId) => {
     try {
-      const sheet = await api.get(`/takeoffs/sheets/${sheetId}`);
+      const sheet = await api.get(`/api/takeoffs/sheets/${sheetId}`);
       setSelectedSheet(sheet);
     } catch (error) {
       console.error('Failed to load sheet:', error);
@@ -193,7 +193,7 @@ function TakeoffItemCard({ item, onUpdate }) {
   const handleDelete = async () => {
     if (!confirm('Delete this measurement?')) return;
     try {
-      await api.delete(`/takeoffs/items/${item.id}`);
+      await api.delete(`/api/takeoffs/items/${item.id}`);
       onUpdate();
     } catch (error) {
       alert('Failed to delete');
@@ -323,7 +323,7 @@ function TotalsFooter({ sheetId }) {
 
   const loadTotals = async () => {
     try {
-      const data = await api.get(`/takeoffs/sheets/${sheetId}/totals`);
+      const data = await api.get(`/api/takeoffs/sheets/${sheetId}/totals`);
       setTotals(data);
     } catch (error) {
       console.error('Failed to load totals:', error);
@@ -370,7 +370,7 @@ function NewSheetModal({ projectId, onSave, onClose }) {
     e.preventDefault();
     setSaving(true);
     try {
-      const sheet = await api.post(`/takeoffs/project/${projectId}`, form);
+      const sheet = await api.post(`/api/takeoffs/project/${projectId}`, form);
       onSave(sheet);
     } catch (error) {
       alert('Failed to create sheet');
@@ -453,7 +453,7 @@ function AddItemModal({ sheetId, assemblies, onSave, onClose }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post(`/takeoffs/sheets/${sheetId}/items`, {
+      await api.post(`/api/takeoffs/sheets/${sheetId}/items`, {
         ...form,
         name: form.name || selectedAssembly?.name,
       });
