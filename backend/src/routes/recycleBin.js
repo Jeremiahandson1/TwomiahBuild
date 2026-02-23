@@ -5,10 +5,10 @@
  */
 import express from 'express';
 import { prisma } from '../config/prisma.js';
-import { requireAuth } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
-router.use(requireAuth);
+router.use(authenticate);
 
 const RESTORABLE = {
   contact:   { model: 'contact',   label: 'Contact' },
