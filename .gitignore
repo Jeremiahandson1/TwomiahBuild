@@ -31,3 +31,7 @@ templates/website-contractor/build/uploads/
 templates/website-homecare/build/uploads/
 templates/website-general/build/uploads/
 backend/uploads/
+
+BuildProMobile/android/app/build/
+BuildProMobile/android/.gradle/
+BuildProMobile/android/app/build/
