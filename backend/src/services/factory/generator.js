@@ -202,12 +202,6 @@ function buildTokenMap(config, slug) {
     // Generated secrets
     '{{JWT_SECRET}}': crypto.randomBytes(32).toString('hex'),
     '{{DATABASE_URL}}': c.databaseUrl || `postgresql://user:pass@localhost:5432/${slug}_crm`,
-
-    // Feature flag tokens — derived from wizard feature selections
-    // These populate the .env.template at build time
-    '{{ENABLE_SANDATA_EVV}}': (config.features?.crm || []).includes('evv_sandata') ? 'true' : 'false',
-    '{{ENABLE_GUSTO}}':       (config.features?.crm || []).includes('payroll_gusto') ? 'true' : 'false',
-    '{{ENABLE_WORCS}}':       (config.features?.crm || []).includes('evv_worcs') ? 'true' : 'false',
   };
 }
 
@@ -308,11 +302,15 @@ function processCRM(crmDir, config, tokens) {
   // 4. Generate frontend .env from template
   processEnvTemplate(path.join(crmDir, 'frontend'), tokens);
 
-  // 5. Generate render.yaml from template
+  // 5. Generate render.yaml from template and write to REPO ROOT for Render Blueprint
   const renderTemplatePath = path.join(crmDir, 'render.yaml.template');
   if (fs.existsSync(renderTemplatePath)) {
     let renderContent = fs.readFileSync(renderTemplatePath, 'utf8');
     renderContent = injectTokens(renderContent, tokens);
+    // Write to repo root so Render Blueprint discovers it automatically
+    const repoRootRenderYaml = path.join(path.dirname(crmDir), 'render.yaml');
+    fs.writeFileSync(repoRootRenderYaml, renderContent, 'utf8');
+    // Also keep one inside crm/ for reference
     fs.writeFileSync(path.join(crmDir, 'render.yaml'), renderContent, 'utf8');
     fs.unlinkSync(renderTemplatePath);
   }
@@ -464,7 +462,7 @@ function generateReadme(workDir, config, tokens) {
     readme += `# Edit .env — set DATABASE_URL to your PostgreSQL connection string\n\n`;
     readme += `# 3. Install & migrate\n`;
     readme += `npm install\n`;
-    readme += `npx prisma db push\n`;
+    readme += `npx prisma migrate deploy\n`;
     readme += `npx prisma db seed\n`;
     readme += `npm start\n\n`;
     readme += `# 4. Frontend (separate terminal)\n`;
@@ -536,7 +534,7 @@ function generateDeployScript(workDir, config, products) {
 
   if (products.includes('crm')) {
     script += `echo "Installing CRM backend..."\ncd crm/backend && npm install\n`;
-    script += `echo "Running database migrations..."\nnpx prisma db push\n`;
+    script += `echo "Running database migrations..."\nnpx prisma migrate deploy\n`;
     script += `echo "Seeding database..."\nnpx prisma db seed\n`;
     script += `echo "CRM backend ready!"\ncd ../..\n\n`;
     script += `echo "Installing CRM frontend..."\ncd crm/frontend && npm install && npm run build\n`;

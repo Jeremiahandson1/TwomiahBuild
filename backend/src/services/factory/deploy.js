@@ -337,6 +337,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
   } = options;
 
   const slug = factoryCustomer.slug;
+  const isHomeCare = factoryCustomer.industry === 'home_care' || factoryCustomer.config?.company?.industry === 'home_care';
   const results = { steps: [], services: {}, errors: [] };
 
   const generateJwtSecret = () => {
@@ -387,7 +388,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
         const backendEnvVars = [
           { key: 'NODE_ENV', value: 'production' },
           { key: 'JWT_SECRET', value: jwtSecret },
-          { key: 'FRONTEND_URL', value: `https://${slug}-crm.onrender.com` },
+          { key: 'FRONTEND_URL', value: isHomeCare ? `https://${slug}-care.onrender.com` : `https://${slug}-crm.onrender.com` },
           { key: 'JWT_REFRESH_SECRET', value: jwtRefreshSecret },
           { key: 'PORT', value: '10000' },
         ];
@@ -405,7 +406,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
         }
 
         const backend = await createRenderWebService({
-          name: `${slug}-api`,
+          name: isHomeCare ? `${slug}-care-api` : `${slug}-api`,
           repoFullName: repo.full_name,
           rootDir: 'crm/backend',
           buildCommand: 'npm install && npx prisma generate && npx prisma migrate deploy',
@@ -423,7 +424,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
 
         // ── Step 6: Create Frontend Service ───────────
         const frontend = await createRenderStaticSite({
-          name: `${slug}-crm`,
+          name: isHomeCare ? `${slug}-care` : `${slug}-crm`,
           repoFullName: repo.full_name,
           rootDir: 'crm/frontend',
           buildCommand: 'npm install && npm run build',
@@ -435,7 +436,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
 
         results.steps.push({ step: 'render_frontend', status: 'ok', serviceId: frontend.service?.id });
         results.services.frontend = frontend.service;
-        results.deployedUrl = `https://${slug}-crm.onrender.com`;
+        results.deployedUrl = isHomeCare ? `https://${slug}-care.onrender.com` : `https://${slug}-crm.onrender.com`;
 
         // Update backend with frontend URL for CORS
         // (would need to update env vars after creation)
@@ -452,7 +453,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
         const site = await createRenderWebService({
           name: `${slug}-site`,
           repoFullName: repo.full_name,
-          rootDir: 'site',
+          rootDir: 'website',
           buildCommand: 'npm install',
           startCommand: 'node server-static.js',
           envVars: [
