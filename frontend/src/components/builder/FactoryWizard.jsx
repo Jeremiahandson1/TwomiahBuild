@@ -690,9 +690,59 @@ function BrandingForm({ branding, onChange }) {
 
 // ─── STEP 4: FEATURES ──────────────────────────────────────────────
 
+const HOMECARE_MODULES = [
+  { icon: '👤', label: 'Client Management', desc: 'Profiles, onboarding checklist, emergency contacts, caregiver assignments' },
+  { icon: '🧑‍⚕️', label: 'Caregiver Management', desc: 'Certifications, NPI, EVV IDs, background checks, pay rates, availability' },
+  { icon: '📅', label: 'Scheduling', desc: 'Drag-and-drop calendar, recurring shifts, open shifts, shift swaps, time-off approvals' },
+  { icon: '🕐', label: 'Time Tracking & GPS', desc: 'Clock in/out, continuous GPS logging, geofencing, auto clock-in/out' },
+  { icon: '✅', label: 'EVV (Electronic Visit Verification)', desc: 'Sandata-ready fields, GPS coordinates, verification status tracking' },
+  { icon: '📋', label: 'Authorizations', desc: 'MIDAS auth tracking, units used vs authorized, expiry alerts' },
+  { icon: '💰', label: 'Billing & Invoicing', desc: 'Auto-generate invoices from time entries, payment workflow, payer management' },
+  { icon: '🏥', label: 'Claims & EDI 837', desc: 'Electronic claim submission, denial tracking, remittance matching' },
+  { icon: '💵', label: 'Payroll & Expenses', desc: 'Pay period summaries, Gusto sync, caregiver expense submissions' },
+  { icon: '🔒', label: 'Compliance & HIPAA', desc: 'Background checks, cert tracking, HIPAA login activity, full audit log' },
+  { icon: '💬', label: 'Communication', desc: 'Communication log, message board, SMS via Twilio, push notifications' },
+  { icon: '📝', label: 'Forms & Documents', desc: 'Drag-and-drop form builder, signature capture, file uploads' },
+  { icon: '📊', label: 'Reports & Analytics', desc: 'Hours by caregiver, revenue, payer mix, census, no-show rates, forecast' },
+  { icon: '🗺️', label: 'Optimizer Tools', desc: 'Understaffed client detection, route optimizer, roster optimizer' },
+  { icon: '👨‍👩‍👧', label: 'Family Portal', desc: 'Family-facing schedule view, visit history, invoices, caregiver profiles' },
+  { icon: '📱', label: 'Caregiver Portal', desc: 'Mobile-ready: clock in/out, open shift pickup, messages, mileage tracking' },
+];
+
+function HomeCareIncluded() {
+  return (
+    <div>
+      <div style={{ background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', border: '1px solid #6ee7b7', borderRadius: 12, padding: '20px 24px', marginBottom: 24, display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+        <div style={{ fontSize: 32, lineHeight: 1 }}>🏥</div>
+        <div>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#065f46', margin: '0 0 4px' }}>Twomiah Care — Everything Included</h2>
+          <p style={{ color: '#047857', margin: 0, fontSize: '0.95rem' }}>
+            The Home Care CRM is a complete, fixed platform. Every module below is included — nothing to pick, nothing to configure. Just fill in your agency details and deploy.
+          </p>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+        {HOMECARE_MODULES.map(m => (
+          <div key={m.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 10, padding: '12px 14px' }}>
+            <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{m.icon}</span>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#111827', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Check size={13} color="#10b981" strokeWidth={3} />
+                {m.label}
+              </div>
+              <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: 2 }}>{m.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FeatureStep({ config, setConfig, registry }) {
   const hasWebsite = config.products.includes('website');
   const hasCRM = config.products.includes('crm');
+  const isHomeCare = config.company?.industry === 'home_care';
   const [tab, setTab] = useState(hasCRM ? 'crm' : 'website');
 
   if (!hasWebsite && !hasCRM) {
@@ -705,12 +755,43 @@ function FeatureStep({ config, setConfig, registry }) {
     );
   }
 
+  // Home care CRM only — just show what's included, nothing to configure
+  if (isHomeCare && hasCRM && !hasWebsite) {
+    return <HomeCareIncluded />;
+  }
+
+  // Home care + website — CRM tab shows all-included, website tab has picker
+  if (isHomeCare && hasCRM && hasWebsite) {
+    return (
+      <div>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
+          <button onClick={() => setTab('crm')} style={{
+            padding: '8px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600,
+            background: tab === 'crm' ? '#10b981' : '#f3f4f6', color: tab === 'crm' ? 'white' : '#6b7280',
+          }}>Care CRM ✓ All Included</button>
+          <button onClick={() => setTab('website')} style={{
+            padding: '8px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600,
+            background: tab === 'website' ? '#3b82f6' : '#f3f4f6', color: tab === 'website' ? 'white' : '#6b7280',
+          }}>Website Features ({config.features.website.length})</button>
+        </div>
+        {tab === 'crm' && <HomeCareIncluded />}
+        {tab === 'website' && (
+          <WebsiteFeatures
+            selected={config.features.website}
+            onChange={features => setConfig(prev => ({ ...prev, features: { ...prev.features, website: features } }))}
+            registry={registry?.website || []}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Standard construction CRM flow
   return (
     <div>
       <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>Configure Features</h2>
       <p style={{ color: '#6b7280', marginBottom: 16 }}>Select which features to enable for each product.</p>
 
-      {/* Tabs if both products */}
       {hasWebsite && hasCRM && (
         <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
           <button onClick={() => setTab('crm')} style={{
