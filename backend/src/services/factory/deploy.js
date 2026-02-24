@@ -20,6 +20,7 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import AdmZip from 'adm-zip';
+import logger from '../logger.js';
 
 const RENDER_API = 'https://api.render.com/v1';
 const GITHUB_API = 'https://api.github.com';
