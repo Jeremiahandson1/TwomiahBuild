@@ -102,6 +102,7 @@ model User {
   openShiftsCreated    OpenShift[]
   loginActivities      LoginActivity[]
   noshowsResolved      NoshowAlert[]        @relation("NoshowResolvedBy")
+  noshowAlertsCaused   NoshowAlert[]        @relation("NoshowCaregiver")
   validationResolved   ValidationLog[]
   remittanceBatches    RemittanceBatch[]
   ediBatchesCreated    EdiBatch[]
@@ -1005,7 +1006,7 @@ model NoshowAlert {
   scheduleId     String?
   schedule       Schedule? @relation(fields: [scheduleId], references: [id])
   caregiverId    String?
-  caregiver      User?     @relation(fields: [caregiverId], references: [id])
+  caregiver      User?     @relation("NoshowCaregiver", fields: [caregiverId], references: [id])
   clientId       String?
   client         Client?   @relation(fields: [clientId], references: [id])
   shiftDate      DateTime  @db.Date
