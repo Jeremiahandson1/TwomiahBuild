@@ -123,6 +123,7 @@ router.post('/generate', async (req, res) => {
             monthlyAmount: config.billing?.monthlyAmount || null,
             oneTimeAmount: config.billing?.oneTimeAmount || null,
             planId: config.billing?.planId || null,
+            wizardConfig: config,
           }
         });
       }
@@ -970,7 +971,22 @@ router.post('/customers/:id/push-update', async (req, res) => {
         const { generate: generatePackage } = await import('../services/factory/generator.js');
         const regen = await generatePackage(customer.wizardConfig || {
           products: customer.products,
-          company: { name: customer.name, slug: customer.slug },
+          company: {
+            name: customer.name,
+            slug: customer.slug,
+            email: customer.email,
+            phone: customer.phone,
+            domain: customer.domain,
+            industry: customer.industry,
+            city: customer.city,
+            state: customer.state,
+            zip: customer.zip,
+          },
+          branding: {
+            primaryColor: customer.primaryColor || '#f97316',
+            secondaryColor: customer.secondaryColor || '#1e293b',
+          },
+          features: { crm: customer.features || [] },
         });
         const zipPath = await factoryStorage.downloadZip(regen.zipPath, regen.storageType || 's3');
         const extractDir = `/tmp/update-${customer.slug}-${Date.now()}`;
