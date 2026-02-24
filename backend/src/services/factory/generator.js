@@ -95,7 +95,10 @@ export async function generate(config) {
     }
 
     if (products.includes('crm')) {
-      copyTemplate('crm', path.join(workDir, 'crm'), tokens);
+      // Pick the right CRM template based on industry
+      const crmIndustry = config.company?.industry || '';
+      const crmTemplate = crmIndustry === 'home_care' ? 'crm-homecare' : 'crm';
+      copyTemplate(crmTemplate, path.join(workDir, 'crm'), tokens);
       // Process CRM-specific files
       processCRM(path.join(workDir, 'crm'), config, tokens);
       // Write logo to CRM frontend public dir
@@ -168,8 +171,8 @@ function buildTokenMap(config, slug) {
     // Domain / URLs
     '{{DOMAIN}}': c.domain || `${slug}.com`,
     '{{SITE_URL}}': c.siteUrl || `https://${c.domain || slug + '.com'}`,
-    '{{FRONTEND_URL}}': c.frontendUrl || `https://${slug}-crm.onrender.com`,
-    '{{BACKEND_URL}}': c.backendUrl || `https://${slug}-api.onrender.com`,
+    '{{FRONTEND_URL}}': c.frontendUrl || (c.industry === 'home_care' ? `https://${slug}-care.onrender.com` : `https://${slug}-crm.onrender.com`),
+    '{{BACKEND_URL}}': c.backendUrl || (c.industry === 'home_care' ? `https://${slug}-care-api.onrender.com` : `https://${slug}-api.onrender.com`),
 
     // Industry
     '{{INDUSTRY}}': c.industry || 'Contractor',
