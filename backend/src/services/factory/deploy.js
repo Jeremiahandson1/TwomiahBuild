@@ -366,7 +366,8 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
     let dbConnectionInfo = null;
 
     try {
-      const db = await createRenderDatabase(slug, region);
+      const dbSlug = isHomeCare ? `${slug}-care` : slug;
+      const db = await createRenderDatabase(dbSlug, region);
       results.steps.push({ step: 'render_db', status: 'ok', dbId: db.id });
       results.services.database = db;
 
@@ -374,7 +375,9 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
       await new Promise(resolve => setTimeout(resolve, 30000));
       dbConnectionInfo = await getDatabaseConnectionInfo(db.id);
       dbInfo = dbConnectionInfo;
+      logger.info(`[Deploy] DB created: ${dbSlug}-db, connectionInfo keys: ${Object.keys(dbConnectionInfo || {}).join(', ')}`);
     } catch (dbErr) {
+      logger.error(`[Deploy] DB creation failed for ${slug}:`, dbErr.message);
       results.steps.push({ step: 'render_db', status: 'error', error: dbErr.message });
       results.errors.push(`Database: ${dbErr.message}`);
     }

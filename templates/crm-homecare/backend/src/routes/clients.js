@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authenticate, requireAdmin } from '../middleware/auth.js';
-import { encrypt, maskedDecrypt } from '../utils/encryption.js';
 
 const router = Router();
 router.use(authenticate);
@@ -39,11 +38,8 @@ router.get('/', async (req, res, next) => {
       prisma.client.count({ where }),
     ]);
 
-    // Mask SSN in list view — never expose plaintext
-    const safeClients = clients.map(({ ssnEncrypted, ...c }) => ({
-      ...c,
-      ssnMasked: maskedDecrypt(ssnEncrypted),
-    }));
+    // Strip SSN from list view
+    const safeClients = clients.map(({ ssnEncrypted: _, ...c }) => c);
     res.json({ clients: safeClients, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) });
   } catch (err) { next(err); }
 });
@@ -62,19 +58,18 @@ router.get('/:id', async (req, res, next) => {
         authorizations: { where: { status: 'active' }, orderBy: { endDate: 'asc' } },
       },
     });
-    const { ssnEncrypted, ...safeClient } = client;
-    res.json({ ...safeClient, ssnMasked: maskedDecrypt(ssnEncrypted) });
+    const { ssnEncrypted: _, ...safeClient } = client;
+    res.json(safeClient);
   } catch (err) { next(err); }
 });
 
 // POST /api/clients
 router.post('/', requireAdmin, async (req, res, next) => {
   try {
-    const { emergencyContacts, ssn, ...data } = req.body;
+    const { emergencyContacts, ...data } = req.body;
     const client = await prisma.client.create({
       data: {
         ...data,
-        ssnEncrypted: encrypt(ssn),
         emergencyContacts: emergencyContacts?.length
           ? { create: emergencyContacts }
           : undefined,
@@ -82,23 +77,20 @@ router.post('/', requireAdmin, async (req, res, next) => {
       },
       include: { emergencyContacts: true, onboarding: true },
     });
-    const { ssnEncrypted, ...safe } = client;
-    res.status(201).json({ ...safe, ssnMasked: maskedDecrypt(ssnEncrypted) });
+    res.status(201).json(client);
   } catch (err) { next(err); }
 });
 
 // PUT /api/clients/:id
 router.put('/:id', requireAdmin, async (req, res, next) => {
   try {
-    const { emergencyContacts, onboarding, ssn, ...data } = req.body;
-    if (ssn !== undefined) data.ssnEncrypted = encrypt(ssn);
+    const { emergencyContacts, onboarding, ...data } = req.body;
     const client = await prisma.client.update({
       where: { id: req.params.id },
       data,
       include: { emergencyContacts: true, onboarding: true },
     });
-    const { ssnEncrypted, ...safe } = client;
-    res.json({ ...safe, ssnMasked: maskedDecrypt(ssnEncrypted) });
+    res.json(client);
   } catch (err) { next(err); }
 });
 

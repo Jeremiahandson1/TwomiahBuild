@@ -2,7 +2,6 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../index.js';
 import { authenticate, requireAdmin } from '../middleware/auth.js';
-import { encrypt, decrypt, maskedDecrypt } from '../utils/encryption.js';
 
 const router = Router();
 router.use(authenticate);
@@ -117,12 +116,8 @@ router.get('/:id/background-checks', requireAdmin, async (req, res, next) => {
       where: { caregiverId: req.params.id },
       orderBy: { createdAt: 'desc' },
     });
-    // Return masked SSN/license — never expose plaintext in list view
-    const safe = checks.map(({ ssnEncrypted, driversLicenseEncrypted, ...c }) => ({
-      ...c,
-      ssnMasked: maskedDecrypt(ssnEncrypted),
-      driversLicenseMasked: maskedDecrypt(driversLicenseEncrypted),
-    }));
+    // Strip encrypted fields
+    const safe = checks.map(({ ssnEncrypted: _, driversLicenseEncrypted: __, ...c }) => c);
     res.json(safe);
   } catch (err) { next(err); }
 });
@@ -130,22 +125,11 @@ router.get('/:id/background-checks', requireAdmin, async (req, res, next) => {
 // POST /api/caregivers/:id/background-checks
 router.post('/:id/background-checks', requireAdmin, async (req, res, next) => {
   try {
-    const { ssn, driversLicense, ...rest } = req.body;
     const check = await prisma.backgroundCheck.create({
-      data: {
-        ...rest,
-        caregiverId: req.params.id,
-        createdById: req.user.userId,
-        ssnEncrypted: encrypt(ssn),
-        driversLicenseEncrypted: encrypt(driversLicense),
-      },
+      data: { ...req.body, caregiverId: req.params.id, createdById: req.user.userId },
     });
-    const { ssnEncrypted, driversLicenseEncrypted, ...safe } = check;
-    res.status(201).json({
-      ...safe,
-      ssnMasked: maskedDecrypt(ssnEncrypted),
-      driversLicenseMasked: maskedDecrypt(driversLicenseEncrypted),
-    });
+    const { ssnEncrypted: _, driversLicenseEncrypted: __, ...safe } = check;
+    res.status(201).json(safe);
   } catch (err) { next(err); }
 });
 

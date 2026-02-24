@@ -5,9 +5,9 @@ import { API_BASE_URL } from '../../config';
 import { toast } from '../Toast';
 import CaregiverClientModal from '../CaregiverClientModal';
 import MileageTracker from './MileageTracker';
-import ShiftMissReport from './caregiver/ShiftMissReport';
-import CaregiverHelp from './caregiver/CaregiverHelp';
-import CaregiverMessages from './caregiver/CaregiverMessages';
+import ShiftMissReport from './ShiftMissReport';
+import CaregiverHelp from './CaregiverHelp';
+import CaregiverMessages from './CaregiverMessages';
 import { useGeolocation, useHaptics, useOfflineSync, useBackgroundGeolocation, isNative, platform } from '../../hooks/useNative';
 import OfflineBanner from '../OfflineBanner';
 
