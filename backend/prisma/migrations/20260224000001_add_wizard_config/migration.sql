@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "factory_customers" ADD COLUMN "wizardConfig" JSONB;
+ALTER TABLE "FactoryCustomer" ADD COLUMN "wizardConfig" JSONB;
