@@ -1,0 +1,1 @@
+C:\BuildproV3\buildpro-v7\BuildProMobile\android\app\build\intermediates\cxx\Debug\6l2vr58z\obj\arm64-v8a

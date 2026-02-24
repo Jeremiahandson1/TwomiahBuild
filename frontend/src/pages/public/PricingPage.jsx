@@ -1,817 +1,1165 @@
-import React, { useState } from 'react';
-import { Check, X, HelpCircle, ArrowRight, Zap, Building, Users, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
-// Pricing data (mirrors backend config)
-const SAAS_TIERS = {
-  starter: {
-    id: 'starter',
-    name: 'Starter',
-    description: 'Everything you need to run a service business',
-    price: 49,
-    priceAnnual: 39,
-    users: { included: 2, max: 2 },
-    highlight: false,
-  },
-  pro: {
-    id: 'pro',
-    name: 'Pro',
-    description: 'Scale your field operations',
-    price: 149,
-    priceAnnual: 119,
-    users: { included: 5, max: 10, additionalPrice: 29 },
-    highlight: true,
-  },
-  business: {
-    id: 'business',
-    name: 'Business',
-    description: 'Run your entire operation',
-    price: 299,
-    priceAnnual: 239,
-    users: { included: 15, max: 25, additionalPrice: 29 },
-    highlight: false,
-  },
-  construction: {
-    id: 'construction',
-    name: 'Construction',
-    description: 'Complete construction management',
-    price: 599,
-    priceAnnual: 479,
-    users: { included: 20, max: 50, additionalPrice: 29 },
-    highlight: false,
-  },
-  enterprise: {
-    id: 'enterprise',
-    name: 'Enterprise',
-    description: 'Unlimited scale, white-glove support',
-    price: 199,
-    priceAnnual: 159,
-    perUser: true,
-    users: { min: 10 },
-    highlight: false,
-  },
+const styles = `
+  .pricing-root {
+    background: #0a0a0a;
+    color: #d1d5db;
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  .pricing-root::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(249,115,22,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(249,115,22,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .pr-nav {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px;
+    border-bottom: 1px solid #2a2d35;
+  }
+
+  .pr-logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: 0.05em;
+    color: #f5f5f0;
+    text-decoration: none;
+  }
+
+  .pr-logo span { color: #f97316; }
+
+  .pr-nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+  }
+
+  .pr-nav-links a {
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    transition: color 0.2s;
+  }
+
+  .pr-nav-links a:hover { color: #f5f5f0; }
+
+  .pr-nav-cta {
+    background: #f97316 !important;
+    color: #0a0a0a !important;
+    padding: 8px 20px;
+    font-weight: 600 !important;
+    border-radius: 2px;
+  }
+
+  .pr-nav-cta:hover { background: #c45c0e !important; color: #f5f5f0 !important; }
+
+  /* HERO */
+  .pr-hero {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 80px 48px 60px;
+    animation: pr-fadeUp 0.6s ease forwards;
+  }
+
+  @keyframes pr-fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .pr-founding-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.3);
+    color: #f59e0b;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 2px;
+    margin-bottom: 28px;
+    animation: pr-pulse-border 2s ease-in-out infinite;
+  }
+
+  @keyframes pr-pulse-border {
+    0%, 100% { border-color: rgba(245,158,11,0.3); }
+    50% { border-color: rgba(245,158,11,0.7); }
+  }
+
+  .pr-badge-dot {
+    width: 6px;
+    height: 6px;
+    background: #f59e0b;
+    border-radius: 50%;
+    animation: pr-blink 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pr-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .pr-h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(52px, 7vw, 88px);
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    color: #f5f5f0;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .pr-h1 em {
+    font-style: normal;
+    color: #f97316;
+    display: block;
+  }
+
+  .pr-hero-sub {
+    font-size: 18px;
+    color: #6b7280;
+    max-width: 560px;
+    margin: 0 auto 40px;
+    font-weight: 300;
+  }
+
+  /* BILLING TOGGLE */
+  .pr-billing-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    background: #1e2025;
+    border: 1px solid #2a2d35;
+    border-radius: 2px;
+    padding: 6px;
+    margin-bottom: 64px;
+  }
+
+  .pr-toggle-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: #6b7280;
+  }
+
+  .pr-toggle-btn.active {
+    background: #f97316;
+    color: #0a0a0a;
+  }
+
+  .pr-save-badge {
+    font-size: 11px;
+    background: rgba(249,115,22,0.15);
+    color: #f97316;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  /* SECTION */
+  .pr-section {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 48px 80px;
+  }
+
+  /* PLANS GRID */
+  .pr-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: #2a2d35;
+    border: 1px solid #2a2d35;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .pr-plan {
+    background: #141414;
+    padding: 36px 28px;
+    position: relative;
+    transition: background 0.2s;
+  }
+
+  .pr-plan:hover { background: #1e2025; }
+
+  .pr-plan.featured {
+    background: #1e2025;
+    outline: 2px solid #f97316;
+    outline-offset: -2px;
+    z-index: 2;
+  }
+
+  .pr-plan.featured::before {
+    content: 'MOST POPULAR';
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f97316;
+    color: #0a0a0a;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    padding: 4px 14px;
+    border-radius: 0 0 4px 4px;
+    white-space: nowrap;
+  }
+
+  .pr-plan-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #f97316;
+    margin-bottom: 16px;
+  }
+
+  .pr-price-amount {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 56px;
+    line-height: 1;
+    color: #f5f5f0;
+    letter-spacing: -0.02em;
+  }
+
+  .pr-price-amount sup {
+    font-size: 24px;
+    vertical-align: top;
+    margin-top: 10px;
+    display: inline-block;
+  }
+
+  .pr-price-period {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .pr-price-setup {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+
+  .pr-price-setup span { color: #10b981; font-weight: 600; }
+
+  .pr-trial-badge {
+    display: inline-block;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.25);
+    color: #10b981;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin: 12px 0 20px;
+  }
+
+  .pr-divider {
+    height: 1px;
+    background: #2a2d35;
+    margin: 20px 0;
+  }
+
+  .pr-limits { margin-bottom: 20px; }
+
+  .pr-limit-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #d1d5db;
+    padding: 5px 0;
+    font-weight: 500;
+  }
+
+  .pr-limit-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 2px;
+    background: rgba(249,115,22,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 10px;
+    color: #f97316;
+  }
+
+  .pr-features-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 12px;
+  }
+
+  .pr-feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pr-feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: #d1d5db;
+    line-height: 1.4;
+  }
+
+  .pr-feature-list li::before {
+    content: '✓';
+    color: #f97316;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .pr-feature-list li.dim { color: #6b7280; }
+  .pr-feature-list li.dim::before { color: #2a2d35; }
+
+  .pr-cta {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    border: none;
+  }
+
+  .pr-cta-primary { background: #f97316; color: #0a0a0a; }
+  .pr-cta-primary:hover { background: #c45c0e; color: #f5f5f0; }
+
+  .pr-cta-outline { background: transparent; color: #d1d5db; border: 1px solid #2a2d35; }
+  .pr-cta-outline:hover { border-color: #f97316; color: #f97316; }
+
+  .pr-cta-gold { background: transparent; color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .pr-cta-gold:hover { background: rgba(245,158,11,0.1); border-color: #f59e0b; }
+
+  /* SECTION HEADER */
+  .pr-section-header {
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .pr-section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 36px;
+    text-transform: uppercase;
+    color: #f5f5f0;
+    line-height: 1;
+    margin: 0;
+  }
+
+  .pr-section-title span { color: #f97316; }
+
+  .pr-section-sub {
+    font-size: 14px;
+    color: #6b7280;
+    max-width: 480px;
+    padding-bottom: 2px;
+    margin: 0;
+  }
+
+  /* PERPETUAL GRID */
+  .pr-perpetual-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: #2a2d35;
+    border: 1px solid #2a2d35;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .pr-perp-card {
+    background: #141414;
+    padding: 32px 28px;
+    transition: background 0.2s;
+  }
+
+  .pr-perp-card:hover { background: #1e2025; }
+
+  .pr-perp-card.enterprise-perp {
+    background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, #141414 100%);
+    border-left: 2px solid rgba(245,158,11,0.2);
+  }
+
+  .pr-perp-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 12px;
+  }
+
+  .pr-perp-name.gold { color: #f59e0b; }
+
+  .pr-perp-price {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 44px;
+    color: #f5f5f0;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .pr-perp-price sup {
+    font-size: 20px;
+    vertical-align: top;
+    margin-top: 8px;
+    display: inline-block;
+  }
+
+  .pr-perp-price.custom {
+    font-size: 32px;
+    padding-top: 8px;
+    color: #f59e0b;
+    line-height: 1.2;
+  }
+
+  .pr-perp-note {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .pr-perp-note strong { color: #d1d5db; }
+
+  .pr-perp-includes {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .pr-perp-includes li {
+    font-size: 13px;
+    color: #d1d5db;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .pr-perp-includes li::before {
+    content: '→';
+    color: #f97316;
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* UNIVERSAL GRID */
+  .pr-universal-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: #2a2d35;
+    border: 1px solid #2a2d35;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .pr-universal-item {
+    background: #141414;
+    padding: 28px 24px;
+    transition: background 0.2s;
+  }
+
+  .pr-universal-item:hover { background: #1e2025; }
+
+  .pr-universal-icon { font-size: 24px; margin-bottom: 12px; }
+
+  .pr-universal-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #f5f5f0;
+    margin-bottom: 6px;
+  }
+
+  .pr-universal-desc { font-size: 13px; color: #6b7280; line-height: 1.5; }
+
+  /* OVERAGES */
+  .pr-overages-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: #2a2d35;
+    border: 1px solid #2a2d35;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .pr-overage-item {
+    background: #141414;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .pr-overage-label { font-size: 14px; color: #d1d5db; font-weight: 500; }
+  .pr-overage-sub { font-size: 12px; color: #6b7280; margin-top: 3px; }
+
+  .pr-overage-price {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: #f97316;
+    white-space: nowrap;
+  }
+
+  /* FOUNDING CARD */
+  .pr-founding-card {
+    background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(249,115,22,0.05) 100%);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 4px;
+    padding: 48px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 40px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pr-founding-card::before {
+    content: '10';
+    position: absolute;
+    right: -20px;
+    top: -40px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 200px;
+    color: rgba(245,158,11,0.04);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .pr-founding-card h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 36px;
+    text-transform: uppercase;
+    color: #f5f5f0;
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+
+  .pr-founding-card h2 span { color: #f59e0b; }
+
+  .pr-founding-card p {
+    font-size: 15px;
+    color: #6b7280;
+    max-width: 520px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .pr-spots-count {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 64px;
+    line-height: 1;
+    color: #f59e0b;
+    text-align: center;
+  }
+
+  .pr-spots-bar {
+    width: 120px;
+    height: 4px;
+    background: #2a2d35;
+    border-radius: 2px;
+    margin: 10px auto 6px;
+    overflow: hidden;
+  }
+
+  .pr-spots-fill {
+    height: 100%;
+    background: #f59e0b;
+    border-radius: 2px;
+    width: 0%;
+  }
+
+  .pr-spots-label {
+    font-size: 12px;
+    color: #6b7280;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  /* FAQ */
+  .pr-faq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: #2a2d35;
+    border: 1px solid #2a2d35;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .pr-faq-item {
+    background: #141414;
+    padding: 28px;
+    transition: background 0.2s;
+  }
+
+  .pr-faq-item:hover { background: #1e2025; }
+
+  .pr-faq-q {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: #f5f5f0;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 10px;
+  }
+
+  .pr-faq-a { font-size: 13px; color: #6b7280; line-height: 1.6; }
+
+  /* FOOTER */
+  .pr-footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid #2a2d35;
+    padding: 32px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .pr-footer p { font-size: 13px; color: #6b7280; margin: 0; }
+  .pr-footer a { color: #f97316; text-decoration: none; }
+
+  @media (max-width: 1100px) {
+    .pr-plans-grid { grid-template-columns: repeat(2, 1fr); }
+    .pr-perpetual-grid { grid-template-columns: repeat(2, 1fr); }
+    .pr-universal-grid { grid-template-columns: repeat(2, 1fr); }
+    .pr-overages-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    .pr-nav, .pr-hero, .pr-section, .pr-footer { padding-left: 20px; padding-right: 20px; }
+    .pr-plans-grid, .pr-perpetual-grid, .pr-universal-grid, .pr-faq-grid { grid-template-columns: 1fr; }
+    .pr-founding-card { grid-template-columns: 1fr; }
+    .pr-nav { flex-direction: column; gap: 16px; }
+    .pr-nav-links { flex-wrap: wrap; justify-content: center; }
+  }
+`;
+
+const PLANS = {
+  monthly: [
+    {
+      name: 'Solo',
+      price: '$49',
+      period: 'per month',
+      setup: '$299',
+      limits: ['2 admin users', 'Unlimited field users', '5 active projects', '10 GB storage'],
+      featuresLabel: 'Includes',
+      features: [
+        { text: 'Contacts & lead management' },
+        { text: 'Quotes with PDF generation' },
+        { text: 'Invoices & payment tracking' },
+        { text: 'QuickBooks integration' },
+        { text: 'Mobile app (iOS & Android)' },
+        { text: 'Data migration assistance' },
+        { text: 'Jobs & scheduling', dim: true },
+        { text: 'RFIs, change orders, punch lists', dim: true },
+        { text: 'Time tracking & expenses', dim: true },
+      ],
+      cta: 'Start Free Trial',
+      ctaClass: 'pr-cta-outline',
+      ctaTo: '/signup',
+    },
+    {
+      name: 'Starter',
+      price: '$129',
+      period: 'per month',
+      setup: '$499',
+      limits: ['5 admin users', 'Unlimited field users', '20 active projects', '25 GB storage'],
+      featuresLabel: 'Everything in Solo, plus',
+      features: [
+        { text: 'Jobs, dispatch & scheduling' },
+        { text: 'Drag-and-drop calendar' },
+        { text: 'Document management' },
+        { text: 'Free data migration from Jobber, Procore & others' },
+        { text: 'Real-time WebSocket updates' },
+        { text: 'RFIs, change orders, punch lists', dim: true },
+        { text: 'Time tracking & expenses', dim: true },
+        { text: 'Bid pipeline & win rate analytics', dim: true },
+      ],
+      cta: 'Start Free Trial',
+      ctaClass: 'pr-cta-outline',
+      ctaTo: '/signup',
+    },
+    {
+      name: 'Pro',
+      price: '$299',
+      period: 'per month',
+      setup: '$999',
+      featured: true,
+      limits: ['15 admin users', 'Unlimited field users', 'Unlimited projects', '100 GB storage'],
+      featuresLabel: 'Everything in Starter, plus',
+      features: [
+        { text: 'RFIs with response workflow' },
+        { text: 'Change orders & approvals' },
+        { text: 'Punch lists & verification' },
+        { text: 'Daily logs — weather, crew, work' },
+        { text: 'Inspections (pass/fail workflow)' },
+        { text: 'Time tracking & billable hours' },
+        { text: 'Expenses & receipts' },
+        { text: 'Bid pipeline & win rate analytics' },
+        { text: 'Free white-glove data migration' },
+      ],
+      cta: 'Start Free Trial',
+      ctaClass: 'pr-cta-primary',
+      ctaTo: '/signup',
+    },
+    {
+      name: 'Enterprise',
+      price: '$85',
+      priceSuffix: '/user',
+      period: 'per month · 15 user minimum',
+      setup: '$1,999',
+      setupNote: 'Perpetual license: call us',
+      limits: ['Unlimited admin users', 'Unlimited field users', 'Unlimited projects', '500 GB storage'],
+      featuresLabel: 'Everything in Pro, plus',
+      features: [
+        { text: 'Custom branding & white-label' },
+        { text: 'API access' },
+        { text: 'Dedicated onboarding specialist' },
+        { text: 'Priority support' },
+        { text: 'Free white-glove data migration' },
+        { text: 'Perpetual license available' },
+        { text: 'Volume pricing available' },
+      ],
+      cta: 'Contact Sales',
+      ctaClass: 'pr-cta-gold',
+      ctaTo: '/signup',
+      gold: true,
+    },
+  ],
+  annual: [
+    { price: '$539', period: 'per year' },
+    { price: '$1,419', period: 'per year' },
+    { price: '$3,289', period: 'per year' },
+    { price: '$935', priceSuffix: '/user', period: 'per year · 15 user minimum' },
+  ],
 };
 
-const SELF_HOSTED = {
-  starter: { name: 'Starter License', price: 997 },
-  pro: { name: 'Pro License', price: 2497 },
-  business: { name: 'Business License', price: 4997 },
-  construction: { name: 'Construction License', price: 9997 },
-  full: { name: 'Full Platform', price: 14997 },
-};
+const PERPETUAL = [
+  {
+    name: 'Solo — Perpetual',
+    price: '$1,764',
+    note: 'One-time purchase. Own it forever. No setup fee for self-hosters. Optional: Updates sub $99/yr · Managed hosting $29/mo',
+    includes: [
+      'This version of the software, permanently',
+      'Self-host on your own server — free',
+      'New versions available as optional paid upgrades',
+      'No recurring fees unless you choose them',
+    ],
+  },
+  {
+    name: 'Starter — Perpetual',
+    price: '$4,644',
+    note: 'One-time purchase. Own it forever. No setup fee for self-hosters. Optional: Updates sub $99/yr · Managed hosting $29/mo',
+    includes: [
+      'This version of the software, permanently',
+      'Self-host on your own server — free',
+      'New versions available as optional paid upgrades',
+      'No recurring fees unless you choose them',
+    ],
+  },
+  {
+    name: 'Pro — Perpetual',
+    price: '$10,764',
+    note: 'One-time purchase. Own it forever. No setup fee for self-hosters. Optional: Updates sub $149/yr · Managed hosting $29/mo',
+    includes: [
+      'This version of the software, permanently',
+      'Self-host on your own server — free',
+      'New versions available as optional paid upgrades',
+      'No recurring fees unless you choose them',
+    ],
+  },
+  {
+    name: 'Enterprise — Perpetual',
+    custom: true,
+    note: 'Priced for your operation. Built to your scale, your headcount, your needs. No setup fee for self-hosters. On-premise deployment available.',
+    includes: [
+      'Fully custom license quote',
+      'On-premise or self-hosted deployment',
+      'Commercial license with source access option',
+      'Annual maintenance plan available',
+    ],
+  },
+];
 
-const FEATURES = {
-  core: {
-    name: 'Core Features',
-    items: [
-      { name: 'Contacts / CRM', starter: true, pro: true, business: true, construction: true },
-      { name: 'Jobs / Work Orders', starter: true, pro: true, business: true, construction: true },
-      { name: 'Quotes & Estimates', starter: true, pro: true, business: true, construction: true },
-      { name: 'Invoicing', starter: true, pro: true, business: true, construction: true },
-      { name: 'Payment Processing', starter: true, pro: true, business: true, construction: true },
-      { name: 'Time Tracking', starter: true, pro: true, business: true, construction: true },
-      { name: 'Expense Tracking', starter: true, pro: true, business: true, construction: true },
-      { name: 'Documents', starter: true, pro: true, business: true, construction: true },
-      { name: 'Customer Portal', starter: true, pro: true, business: true, construction: true },
-      { name: 'Mobile App', starter: true, pro: true, business: true, construction: true },
-    ],
-  },
-  field: {
-    name: 'Field Operations',
-    items: [
-      { name: 'Team Management', starter: false, pro: true, business: true, construction: true },
-      { name: 'Two-Way SMS', starter: false, pro: true, business: true, construction: true },
-      { name: 'GPS Tracking', starter: false, pro: true, business: true, construction: true },
-      { name: 'Geofencing & Auto Clock', starter: false, pro: true, business: true, construction: true },
-      { name: 'Route Optimization', starter: false, pro: true, business: true, construction: true },
-      { name: 'Online Booking', starter: false, pro: true, business: true, construction: true },
-      { name: 'Review Requests', starter: false, pro: true, business: true, construction: true },
-      { name: 'Service Agreements', starter: false, pro: true, business: true, construction: true },
-      { name: 'Pricebook / Flat Rate', starter: false, pro: true, business: true, construction: true },
-      { name: 'QuickBooks Sync', starter: false, pro: true, business: true, construction: true },
-      { name: 'Recurring Jobs', starter: false, pro: true, business: true, construction: true },
-      { name: 'Job Costing Reports', starter: false, pro: true, business: true, construction: true },
-    ],
-  },
-  operations: {
-    name: 'Operations',
-    items: [
-      { name: 'Inventory Management', starter: false, pro: false, business: true, construction: true },
-      { name: 'Purchase Orders', starter: false, pro: false, business: true, construction: true },
-      { name: 'Equipment Tracking', starter: false, pro: false, business: true, construction: true },
-      { name: 'Fleet Management', starter: false, pro: false, business: true, construction: true },
-      { name: 'Warranties', starter: false, pro: false, business: true, construction: true },
-      { name: 'Email Campaigns', starter: false, pro: false, business: true, construction: true },
-      { name: 'Call Tracking', starter: false, pro: false, business: true, construction: true },
-      { name: 'Automations', starter: false, pro: false, business: true, construction: true },
-      { name: 'Custom Forms', starter: false, pro: false, business: true, construction: true },
-      { name: 'Consumer Financing', starter: false, pro: false, business: true, construction: true },
-    ],
-  },
-  construction: {
-    name: 'Construction Management',
-    items: [
-      { name: 'Projects & Phases', starter: false, pro: false, business: false, construction: true },
-      { name: 'Change Orders', starter: false, pro: false, business: false, construction: true },
-      { name: 'RFIs', starter: false, pro: false, business: false, construction: true },
-      { name: 'Submittals', starter: false, pro: false, business: false, construction: true },
-      { name: 'Daily Logs', starter: false, pro: false, business: false, construction: true },
-      { name: 'Punch Lists', starter: false, pro: false, business: false, construction: true },
-      { name: 'Inspections', starter: false, pro: false, business: false, construction: true },
-      { name: 'Bid Management', starter: false, pro: false, business: false, construction: true },
-      { name: 'Gantt Charts', starter: false, pro: false, business: false, construction: true },
-      { name: 'Selections Portal', starter: false, pro: false, business: false, construction: true },
-      { name: 'Takeoffs', starter: false, pro: false, business: false, construction: true },
-      { name: 'Lien Waivers', starter: false, pro: false, business: false, construction: true },
-      { name: 'Draw Schedules (AIA)', starter: false, pro: false, business: false, construction: true },
-    ],
-  },
-};
+const UNIVERSAL = [
+  { icon: '🛡️', title: 'Universal Support', desc: "Same support for every customer, regardless of plan. No second-class treatment." },
+  { icon: '📦', title: 'Data Migration', desc: "We'll move your data from Jobber, Procore, Buildertrend, or spreadsheets. Free on Starter and above." },
+  { icon: '🔄', title: '30-Day Money Back', desc: "Not the right fit? Full refund within 30 days, no questions asked, no hassle." },
+  { icon: '🤝', title: 'Referral Program', desc: "Refer a contractor who signs up — you both get a free month. No limits on referrals." },
+  { icon: '📱', title: 'Mobile App', desc: "iOS and Android apps included. Your whole crew in the system from the field." },
+  { icon: '📊', title: 'QuickBooks Sync', desc: "Two-way QuickBooks integration keeps your books and your jobs in sync automatically." },
+  { icon: '🔒', title: 'Security Included', desc: "JWT auth, bcrypt encryption, rate limiting, audit logs, and SQL injection protection — standard." },
+  { icon: '⚡', title: 'Real-Time Updates', desc: "WebSocket-powered live sync. Everyone on your team sees changes the moment they happen." },
+];
 
-const ADDONS = [
-  { name: 'SMS Communication', price: 39, description: 'Two-way texting, templates, scheduling' },
-  { name: 'GPS & Field', price: 49, description: 'Tracking, geofencing, route optimization' },
-  { name: 'Inventory', price: 49, description: 'Items, locations, transfers, POs' },
-  { name: 'Fleet Management', price: 39, description: 'Vehicles, maintenance, fuel logs' },
-  { name: 'Marketing Suite', price: 59, description: 'Reviews, campaigns, call tracking' },
-  { name: 'Construction PM', price: 149, description: 'Projects, COs, RFIs, punch lists' },
-  { name: 'Compliance & Draws', price: 79, description: 'Lien waivers, draw schedules, AIA' },
+const FAQS = [
+  {
+    q: "What's the difference between admin and field users?",
+    a: "Admin users have full platform access — project management, invoicing, reporting, settings. Field users can clock in, update job status, upload photos, view their schedule, and complete punch list items. Field users are always free, unlimited on every plan.",
+  },
+  {
+    q: 'What does "own it forever" actually mean?',
+    a: "You buy the software as it exists today. It runs on your infrastructure forever, with no ongoing fees required. When new versions release, you can buy the upgrade if you want it — or keep running what you have. No subscription, no renting, no gotchas.",
+  },
+  {
+    q: 'Can you migrate our data from Jobber or Procore?',
+    a: "Yes. We handle migrations from Jobber, Procore, Buildertrend, Housecall Pro, and most spreadsheet-based systems. Migration is free on Starter and above. Solo customers can reach out for a custom quote.",
+  },
+  {
+    q: 'What happens if we need more users or projects?',
+    a: "You pay a simple overage rate — $25/month per extra admin user, $10/month per extra active project. You don't have to upgrade your whole plan just because you hired one more person.",
+  },
+  {
+    q: 'Is the annual plan a real commitment?',
+    a: "Yes, annual plans are billed upfront and aren't refundable after 30 days. But you get one full month free. If you're unsure, start monthly and switch to annual once you know it's right for your operation.",
+  },
+  {
+    q: 'What does the 30-day money back guarantee cover?',
+    a: "Everything — monthly, annual, and perpetual purchases. Within 30 days of your first payment, if Twomiah Build isn't the right fit, we'll refund 100% with no questions asked. That includes the setup fee.",
+  },
+  {
+    q: 'How does Enterprise per-user pricing work?',
+    a: "Enterprise is $85 per admin user per month with a 15-user minimum, putting the floor at $1,275/month. Field workers remain free and unlimited. As your team grows, your cost scales with it.",
+  },
+  {
+    q: 'Is a perpetual license available for Enterprise?',
+    a: "Yes, and it's priced based on your specific headcount and requirements. Call us for a quote. Enterprise perpetual customers also have the option for on-premise deployment with full source access under a commercial license agreement.",
+  },
 ];
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState('monthly');
-  const [pricingModel, setPricingModel] = useState('saas');
-  const [showFeatures, setShowFeatures] = useState(false);
+  const [billing, setBilling] = useState('monthly');
 
-  const isAnnual = billingCycle === 'annual';
+  // Inject Google Fonts
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+    return () => document.head.removeChild(link);
+  }, []);
+
+  const plans = PLANS.monthly;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                <Building className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">Twomiah Build</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <a href="/login" className="text-gray-600 hover:text-gray-900">Log In</a>
-              <a href="/signup" className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600">
-                Start Free Trial
-              </a>
-            </div>
-          </div>
-        </div>
-      </header>
+    <>
+      <style>{styles}</style>
+      <div className="pricing-root">
 
-      {/* Hero */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Choose the plan that fits your business. No hidden fees. No long-term contracts.
+        {/* NAV */}
+        <nav className="pr-nav">
+          <Link to="/home" className="pr-logo">TWOMIAH <span>BUILD</span></Link>
+          <ul className="pr-nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><Link to="/demo">Demo</Link></li>
+            <li><Link to="/pricing">Pricing</Link></li>
+            <li><Link to="/signup" className="pr-nav-cta">Start Free Trial</Link></li>
+          </ul>
+        </nav>
+
+        {/* HERO */}
+        <section className="pr-hero">
+          <div className="pr-founding-badge">
+            <span className="pr-badge-dot" />
+            Founding Member Spots Available — First 10 Customers Lock Price Forever
+          </div>
+          <h1 className="pr-h1">Software Built<em>For Builders</em></h1>
+          <p className="pr-hero-sub">
+            All of Procore's power. None of the enterprise price tag. Built for the contractor who actually does the work.
           </p>
 
-          {/* Model Toggle */}
-          <div className="flex justify-center mb-8">
-            <div className="bg-gray-100 p-1 rounded-lg inline-flex">
-              <button
-                onClick={() => setPricingModel('saas')}
-                className={`px-6 py-2 rounded-md text-sm font-medium transition ${
-                  pricingModel === 'saas'
-                    ? 'bg-white text-gray-900 shadow'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Monthly Subscription
-              </button>
-              <button
-                onClick={() => setPricingModel('selfhosted')}
-                className={`px-6 py-2 rounded-md text-sm font-medium transition ${
-                  pricingModel === 'selfhosted'
-                    ? 'bg-white text-gray-900 shadow'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Self-Hosted License
-              </button>
-            </div>
+          <div className="pr-billing-toggle">
+            <button
+              className={`pr-toggle-btn${billing === 'monthly' ? ' active' : ''}`}
+              onClick={() => setBilling('monthly')}
+            >
+              Monthly
+            </button>
+            <button
+              className={`pr-toggle-btn${billing === 'annual' ? ' active' : ''}`}
+              onClick={() => setBilling('annual')}
+            >
+              Annual <span className="pr-save-badge">1 MONTH FREE</span>
+            </button>
           </div>
+        </section>
 
-          {/* Billing Toggle (SaaS only) */}
-          {pricingModel === 'saas' && (
-            <div className="flex justify-center items-center gap-4 mb-8">
-              <span className={billingCycle === 'monthly' ? 'text-gray-900 font-medium' : 'text-gray-500'}>
-                Monthly
-              </span>
-              <button
-                onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annual' : 'monthly')}
-                className={`relative w-14 h-7 rounded-full transition ${
-                  isAnnual ? 'bg-orange-500' : 'bg-gray-300'
-                }`}
-              >
-                <span
-                  className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                    isAnnual ? 'translate-x-8' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-              <span className={billingCycle === 'annual' ? 'text-gray-900 font-medium' : 'text-gray-500'}>
-                Annual
-              </span>
-              {isAnnual && (
-                <span className="bg-green-100 text-green-700 text-sm px-2 py-1 rounded-full">
-                  Save 20%
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
+        {/* PLANS */}
+        <div className="pr-section">
+          <div className="pr-plans-grid">
+            {plans.map((plan, i) => {
+              const annualOverride = PLANS.annual[i];
+              const displayPrice = billing === 'annual' ? annualOverride.price : plan.price;
+              const displaySuffix = billing === 'annual' ? (annualOverride.priceSuffix || '') : (plan.priceSuffix || '');
+              const displayPeriod = billing === 'annual' ? annualOverride.period : plan.period;
 
-      {/* Pricing Cards */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          {pricingModel === 'saas' ? (
-            <SaaSPricing isAnnual={isAnnual} />
-          ) : (
-            <SelfHostedPricing />
-          )}
-        </div>
-      </section>
+              return (
+                <div key={plan.name} className={`pr-plan${plan.featured ? ' featured' : ''}`}>
+                  <div className="pr-plan-name" style={plan.gold ? { color: '#f59e0b' } : {}}>
+                    {plan.name}
+                  </div>
 
-      {/* Feature Comparison */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Compare All Features</h2>
-            <p className="text-gray-600">See exactly what's included in each plan</p>
-          </div>
+                  <div>
+                    <div className="pr-price-amount" style={plan.gold ? { fontSize: 38, paddingTop: 9 } : {}}>
+                      <sup>$</sup>{displayPrice.replace('$', '')}
+                      {displaySuffix && (
+                        <span style={{ fontSize: 18, color: '#6b7280' }}>{displaySuffix}</span>
+                      )}
+                    </div>
+                    <div className="pr-price-period">{displayPeriod}</div>
+                  </div>
 
-          <button
-            onClick={() => setShowFeatures(!showFeatures)}
-            className="w-full mb-8 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2"
-          >
-            {showFeatures ? 'Hide' : 'Show'} Full Feature Comparison
-            <ArrowRight className={`w-4 h-4 transition ${showFeatures ? 'rotate-90' : ''}`} />
-          </button>
+                  <div className="pr-price-setup">
+                    Setup fee: {plan.setup}
+                    {plan.setupNote
+                      ? <> · <span>{plan.setupNote}</span></>
+                      : <> · <span>Free for self-hosters</span></>
+                    }
+                  </div>
+                  <div className="pr-trial-badge">30-Day Free Trial</div>
 
-          {showFeatures && <FeatureComparison />}
-        </div>
-      </section>
+                  <div className="pr-limits">
+                    {plan.limits.map(l => (
+                      <div key={l} className="pr-limit-item">
+                        <span className="pr-limit-icon"
+                          style={plan.gold ? { background: 'rgba(245,158,11,0.1)', color: '#f59e0b' } : {}}
+                        >■</span>
+                        {l}
+                      </div>
+                    ))}
+                  </div>
 
-      {/* Add-ons Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">À La Carte Add-Ons</h2>
-            <p className="text-gray-600">Need just one feature? Add it to any plan.</p>
-          </div>
+                  <div className="pr-divider" />
+                  <div className="pr-features-label">{plan.featuresLabel}</div>
+                  <ul className="pr-feature-list">
+                    {plan.features.map(f => (
+                      <li key={f.text} className={f.dim ? 'dim' : ''}>{f.text}</li>
+                    ))}
+                  </ul>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ADDONS.map((addon) => (
-              <div key={addon.name} className="bg-white rounded-lg border p-6">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-gray-900">{addon.name}</h3>
-                  <span className="text-orange-500 font-bold">${addon.price}/mo</span>
+                  <Link to={plan.ctaTo} className={`pr-cta ${plan.ctaClass}`}>
+                    {plan.cta}
+                  </Link>
                 </div>
-                <p className="text-gray-600 text-sm">{addon.description}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-center text-gray-500 mt-8">
-            Bundle multiple features for additional savings. Individual sub-features also available.
-          </p>
-        </div>
-      </section>
-
-      {/* Data Ownership Callout — competitive differentiator vs Buildertrend */}
-      <section style={{ padding: '48px 16px', background: '#1e293b', color: '#fff' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>🔓</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 12 }}>Your data is yours. Always.</h2>
-          <p style={{ fontSize: 15, color: '#94a3b8', marginBottom: 28, lineHeight: 1.7 }}>
-            Buildertrend has no bulk export. Customers who want to leave are stuck.{' '}
-            <strong style={{ color: '#fff' }}>Twomiah Build is the opposite.</strong>{' '}
-            Every plan includes a one-click full export — contacts, jobs, projects, invoices, quotes, expenses — as a ZIP you download any time, no support ticket required.
-            Switching away is always an option. That's why most people don't.
-          </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <div style={{ background: '#334155', borderRadius: 8, padding: '12px 20px', fontSize: 13 }}>
-              ✅ One-click full ZIP export
-            </div>
-            <div style={{ background: '#334155', borderRadius: 8, padding: '12px 20px', fontSize: 13 }}>
-              ✅ Buildertrend migration wizard
-            </div>
-            <div style={{ background: '#334155', borderRadius: 8, padding: '12px 20px', fontSize: 13 }}>
-              ✅ Data deleted within 30 days of cancel
-            </div>
-            <div style={{ background: '#334155', borderRadius: 8, padding: '12px 20px', fontSize: 13 }}>
-              ✅ No "contact sales to export"
-            </div>
+              );
+            })}
           </div>
         </div>
-      </section>
 
-      {/* White-Label Agency Program */}
-      <section style={{ padding: '64px 16px', background: '#f8fafc' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 36 }}>
-            <span style={{ background: '#dbeafe', color: '#1d4ed8', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Agency Program</span>
-            <h2 style={{ fontSize: 28, fontWeight: 700, margin: '12px 0 8px' }}>Resell Twomiah Build Under Your Brand</h2>
-            <p style={{ color: '#64748b', fontSize: 15, lineHeight: 1.7 }}>
-              None of our competitors offer this. The Twomiah Build Factory is available as a white-label agency program —
-              deploy fully branded instances for your clients under your own domain and logo.
+        {/* PERPETUAL */}
+        <div className="pr-section">
+          <div className="pr-section-header">
+            <div>
+              <h2 className="pr-section-title">Own It.<span> Forever.</span></h2>
+            </div>
+            <p className="pr-section-sub">
+              Buy it once, run it forever. No subscriptions, no renting your tools. That version is yours permanently.
             </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
-            {[
-              { icon: '🏭', title: 'Factory Access', desc: 'Generate complete client sites in minutes. CMS, CRM, analytics — all pre-built.' },
-              { icon: '🎨', title: 'Your Branding', desc: 'Your logo, your domain, your colors. Clients never see Twomiah Build.' },
-              { icon: '💰', title: 'Your Pricing', desc: 'Charge what the market will bear. We charge you wholesale.' },
-              { icon: '🔧', title: 'Full Source Code', desc: 'Self-hosted license includes everything. Customize as needed for clients.' },
-            ].map(item => (
-              <div key={item.title} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '20px' }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>{item.icon}</div>
-                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{item.title}</h3>
-                <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{item.desc}</p>
+
+          <div className="pr-perpetual-grid">
+            {PERPETUAL.map(p => (
+              <div key={p.name} className={`pr-perp-card${p.custom ? ' enterprise-perp' : ''}`}>
+                <div className={`pr-perp-name${p.custom ? ' gold' : ''}`}>{p.name}</div>
+                {p.custom
+                  ? <div className="pr-perp-price custom">Custom<br />Made</div>
+                  : <div className="pr-perp-price"><sup>$</sup>{p.price.replace('$', '')}</div>
+                }
+                <div className="pr-perp-note">
+                  {p.note.split('Own it forever.').length > 1
+                    ? <>{p.note.split('Own it forever.')[0]}<strong>Own it forever.</strong>{p.note.split('Own it forever.')[1]}</>
+                    : p.note
+                  }
+                </div>
+                <ul className="pr-perp-includes">
+                  {p.includes.map(inc => <li key={inc}>{inc}</li>)}
+                </ul>
+                {p.custom
+                  ? <a href="mailto:sales@twomiah.com" className="pr-cta pr-cta-gold">Get a Quote</a>
+                  : <Link to="/signup" className="pr-cta pr-cta-outline">Buy Outright</Link>
+                }
               </div>
             ))}
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <a href="/contact?agency=true" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', padding: '12px 28px', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
-              Talk to Us About the Agency Program
-            </a>
+        </div>
+
+        {/* ALL PLANS INCLUDE */}
+        <div className="pr-section">
+          <div className="pr-section-header">
+            <h2 className="pr-section-title">Every Plan.<span> Every Customer.</span></h2>
+            <p className="pr-section-sub">We don't tier our support. Everyone gets the same treatment.</p>
           </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">
-            Frequently Asked Questions
-          </h2>
-          <FAQ />
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 bg-orange-500">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to streamline your business?
-          </h2>
-          <p className="text-orange-100 mb-8">
-            Start your 14-day free trial. No credit card required.
-          </p>
-          <div className="flex justify-center gap-4">
-            <a
-              href="/signup"
-              className="bg-white text-orange-500 px-8 py-3 rounded-lg font-semibold hover:bg-orange-50"
-            >
-              Start Free Trial
-            </a>
-            <a
-              href="/demo"
-              className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600"
-            >
-              Request Demo
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                  <Building className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg font-bold text-white">Twomiah Build</span>
+          <div className="pr-universal-grid">
+            {UNIVERSAL.map(u => (
+              <div key={u.title} className="pr-universal-item">
+                <div className="pr-universal-icon">{u.icon}</div>
+                <div className="pr-universal-title">{u.title}</div>
+                <div className="pr-universal-desc">{u.desc}</div>
               </div>
-              <p className="text-sm">
-                The complete platform for contractors and service businesses.
+            ))}
+          </div>
+        </div>
+
+        {/* OVERAGES */}
+        <div className="pr-section">
+          <div className="pr-section-header">
+            <h2 className="pr-section-title">Overage <span>Rates</span></h2>
+            <p className="pr-section-sub">Scale beyond your plan without upgrading. Pay only for what you use.</p>
+          </div>
+          <div className="pr-overages-grid">
+            <div className="pr-overage-item">
+              <div>
+                <div className="pr-overage-label">Extra Admin User</div>
+                <div className="pr-overage-sub">Beyond your plan's included seats</div>
+              </div>
+              <div className="pr-overage-price">$25 / user / mo</div>
+            </div>
+            <div className="pr-overage-item">
+              <div>
+                <div className="pr-overage-label">Extra Active Project</div>
+                <div className="pr-overage-sub">Beyond your plan's project limit</div>
+              </div>
+              <div className="pr-overage-price">$10 / project / mo</div>
+            </div>
+            <div className="pr-overage-item">
+              <div>
+                <div className="pr-overage-label">Extra Storage</div>
+                <div className="pr-overage-sub">Beyond included GB limit</div>
+              </div>
+              <div className="pr-overage-price">$10 / 10 GB / mo</div>
+            </div>
+          </div>
+        </div>
+
+        {/* FOUNDING MEMBER */}
+        <div className="pr-section">
+          <div className="pr-founding-card">
+            <div>
+              <h2>Founding Member <span>Status</span></h2>
+              <p>
+                The first 10 contractors to sign up lock their price permanently — forever, as long as you stay subscribed.
+                This isn't a promotional discount. It's a thank you for betting on us early. Your price will never increase, ever.
               </p>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/features" className="hover:text-white">Features</a></li>
-                <li><a href="/pricing" className="hover:text-white">Pricing</a></li>
-                <li><a href="/industries" className="hover:text-white">Industries</a></li>
-                <li><a href="/integrations" className="hover:text-white">Integrations</a></li>
-              </ul>
+              <div className="pr-spots-count">10</div>
+              <div className="pr-spots-bar"><div className="pr-spots-fill" /></div>
+              <div className="pr-spots-label">Spots Remaining</div>
             </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/docs" className="hover:text-white">Documentation</a></li>
-                <li><a href="/blog" className="hover:text-white">Blog</a></li>
-                <li><a href="/support" className="hover:text-white">Support</a></li>
-                <li><a href="/api" className="hover:text-white">API</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/about" className="hover:text-white">About</a></li>
-                <li><a href="/contact" className="hover:text-white">Contact</a></li>
-                <li><a href="/privacy" className="hover:text-white">Privacy</a></li>
-                <li><a href="/terms" className="hover:text-white">Terms</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
-            © {new Date().getFullYear()} Twomiah Build. All rights reserved.
           </div>
         </div>
-      </footer>
-    </div>
-  );
-}
 
-// SaaS Pricing Cards
-function SaaSPricing({ isAnnual }) {
-  const tiers = ['starter', 'pro', 'business', 'construction', 'enterprise'];
-
-  return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
-      {tiers.map((tierId) => {
-        const tier = SAAS_TIERS[tierId];
-        const price = isAnnual ? tier.priceAnnual : tier.price;
-
-        return (
-          <div
-            key={tierId}
-            className={`bg-white rounded-xl border-2 p-6 relative ${
-              tier.highlight
-                ? 'border-orange-500 shadow-lg'
-                : 'border-gray-200'
-            }`}
-          >
-            {tier.highlight && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                Most Popular
+        {/* FAQ */}
+        <div className="pr-section">
+          <div className="pr-section-header">
+            <h2 className="pr-section-title">Common <span>Questions</span></h2>
+          </div>
+          <div className="pr-faq-grid">
+            {FAQS.map(f => (
+              <div key={f.q} className="pr-faq-item">
+                <div className="pr-faq-q">{f.q}</div>
+                <div className="pr-faq-a">{f.a}</div>
               </div>
-            )}
-
-            <h3 className="text-xl font-bold text-gray-900 mb-1">{tier.name}</h3>
-            <p className="text-gray-500 text-sm mb-4 h-10">{tier.description}</p>
-
-            <div className="mb-4">
-              <span className="text-4xl font-bold text-gray-900">${price}</span>
-              <span className="text-gray-500">
-                {tier.perUser ? '/user' : ''}/mo
-              </span>
-              {isAnnual && !tier.perUser && (
-                <div className="text-green-600 text-sm">
-                  Save ${(tier.price - tier.priceAnnual) * 12}/year
-                </div>
-              )}
-            </div>
-
-            <div className="text-sm text-gray-600 mb-6">
-              {tier.perUser ? (
-                <span>Minimum {tier.users.min} users</span>
-              ) : (
-                <span>
-                  {tier.users.included} users included
-                  {tier.users.additionalPrice && (
-                    <span className="block">+${tier.users.additionalPrice}/user after</span>
-                  )}
-                </span>
-              )}
-            </div>
-
-            <a
-              href={tierId === 'enterprise' ? '/contact' : '/signup?plan=' + tierId}
-              className={`block w-full text-center py-3 rounded-lg font-semibold ${
-                tier.highlight
-                  ? 'bg-orange-500 text-white hover:bg-orange-600'
-                  : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-              }`}
-            >
-              {tierId === 'enterprise' ? 'Contact Sales' : 'Start Free Trial'}
-            </a>
-
-            <ul className="mt-6 space-y-2">
-              {getTierHighlights(tierId).map((feature, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm">
-                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-600">{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// Self-Hosted Pricing Cards
-function SelfHostedPricing() {
-  const packages = Object.entries(SELF_HOSTED);
-
-  return (
-    <div>
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 max-w-3xl mx-auto">
-        <div className="flex gap-3">
-          <Shield className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <h4 className="font-semibold text-blue-900">Own Your Software</h4>
-            <p className="text-blue-700 text-sm">
-              One-time purchase. Full source code. Deploy on your servers. No monthly fees.
-            </p>
+            ))}
           </div>
         </div>
+
+        {/* FOOTER */}
+        <footer className="pr-footer">
+          <p>© 2025 Twomiah Build · A Twomiah Company · Eau Claire, WI</p>
+          <p>Questions? <a href="mailto:sales@twomiah.com">sales@twomiah.com</a></p>
+        </footer>
+
       </div>
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
-        {packages.map(([id, pkg]) => (
-          <div key={id} className="bg-white rounded-xl border-2 border-gray-200 p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-1">{pkg.name}</h3>
-
-            <div className="my-4">
-              <span className="text-4xl font-bold text-gray-900">
-                ${pkg.price.toLocaleString()}
-              </span>
-              <span className="text-gray-500 block text-sm">one-time</span>
-            </div>
-
-            <a
-              href={'/purchase?license=' + id}
-              className="block w-full text-center py-3 rounded-lg font-semibold bg-gray-100 text-gray-900 hover:bg-gray-200"
-            >
-              Buy License
-            </a>
-
-            <ul className="mt-6 space-y-2">
-              {getSelfHostedIncludes(id).map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm">
-                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-600">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-12 grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg border p-6 text-center">
-          <h4 className="font-semibold text-gray-900 mb-2">Installation Service</h4>
-          <p className="text-2xl font-bold text-gray-900 mb-2">$500</p>
-          <p className="text-gray-500 text-sm">We deploy it on your server</p>
-        </div>
-        <div className="bg-white rounded-lg border p-6 text-center">
-          <h4 className="font-semibold text-gray-900 mb-2">Update Subscription</h4>
-          <p className="text-2xl font-bold text-gray-900 mb-2">$999/year</p>
-          <p className="text-gray-500 text-sm">Get all new features & fixes</p>
-        </div>
-        <div className="bg-white rounded-lg border p-6 text-center">
-          <h4 className="font-semibold text-gray-900 mb-2">Support Contract</h4>
-          <p className="text-2xl font-bold text-gray-900 mb-2">$199/month</p>
-          <p className="text-gray-500 text-sm">Email & phone support</p>
-        </div>
-      </div>
-    </div>
+    </>
   );
-}
-
-// Feature Comparison Table
-function FeatureComparison() {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b">
-            <th className="text-left py-4 px-4 font-semibold text-gray-900">Features</th>
-            <th className="text-center py-4 px-2 font-semibold text-gray-900">Starter</th>
-            <th className="text-center py-4 px-2 font-semibold text-gray-900 bg-orange-50">Pro</th>
-            <th className="text-center py-4 px-2 font-semibold text-gray-900">Business</th>
-            <th className="text-center py-4 px-2 font-semibold text-gray-900">Construction</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(FEATURES).map(([categoryKey, category]) => (
-            <React.Fragment key={categoryKey}>
-              <tr className="bg-gray-50">
-                <td colSpan={5} className="py-3 px-4 font-semibold text-gray-700">
-                  {category.name}
-                </td>
-              </tr>
-              {category.items.map((feature, i) => (
-                <tr key={i} className="border-b border-gray-100">
-                  <td className="py-3 px-4 text-gray-600">{feature.name}</td>
-                  <td className="text-center py-3 px-2">
-                    {feature.starter ? (
-                      <Check className="w-5 h-5 text-green-500 mx-auto" />
-                    ) : (
-                      <X className="w-5 h-5 text-gray-300 mx-auto" />
-                    )}
-                  </td>
-                  <td className="text-center py-3 px-2 bg-orange-50">
-                    {feature.pro ? (
-                      <Check className="w-5 h-5 text-green-500 mx-auto" />
-                    ) : (
-                      <X className="w-5 h-5 text-gray-300 mx-auto" />
-                    )}
-                  </td>
-                  <td className="text-center py-3 px-2">
-                    {feature.business ? (
-                      <Check className="w-5 h-5 text-green-500 mx-auto" />
-                    ) : (
-                      <X className="w-5 h-5 text-gray-300 mx-auto" />
-                    )}
-                  </td>
-                  <td className="text-center py-3 px-2">
-                    {feature.construction ? (
-                      <Check className="w-5 h-5 text-green-500 mx-auto" />
-                    ) : (
-                      <X className="w-5 h-5 text-gray-300 mx-auto" />
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// FAQ Component
-function FAQ() {
-  const faqs = [
-    {
-      q: 'Is there a free trial?',
-      a: 'Yes! All plans include a 14-day free trial with full access to all features. No credit card required to start.',
-    },
-    {
-      q: 'Can I change plans later?',
-      a: 'Absolutely. You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we\'ll prorate any differences.',
-    },
-    {
-      q: 'What payment methods do you accept?',
-      a: 'We accept all major credit cards (Visa, Mastercard, American Express) and ACH bank transfers for annual plans.',
-    },
-    {
-      q: 'Is there a contract or commitment?',
-      a: 'No long-term contracts. Monthly plans can be canceled anytime. Annual plans are paid upfront for the year.',
-    },
-    {
-      q: 'What\'s included in the self-hosted license?',
-      a: 'You get the complete source code, database schema, deployment documentation, and 90 days of email support. You deploy and run it on your own servers.',
-    },
-    {
-      q: 'Can I add features without upgrading?',
-      a: 'Yes! You can add individual feature bundles à la carte to any plan. This is great if you only need one or two features from a higher tier.',
-    },
-    {
-      q: 'Do you offer discounts for non-profits or startups?',
-      a: 'Yes, we offer special pricing for registered non-profits and early-stage startups. Contact us to learn more.',
-    },
-    {
-      q: 'How does user pricing work?',
-      a: 'Each plan includes a set number of users. If you need more, you can add them for $29/user/month. Enterprise plans are priced per-user from the start.',
-    },
-    {
-      q: 'Do I own my data? Can I export everything?',
-      a: 'Yes — completely. Every plan includes a one-click full data export: all contacts, jobs, projects, invoices, quotes, and expenses in a ZIP file you can download any time. No gating, no "contact support to export," no data hostage. You own it.',
-    },
-    {
-      q: 'Can I migrate from Buildertrend?',
-      a: 'Yes. Twomiah Build includes a Buildertrend migration wizard that maps your exported contacts and jobs directly into Twomiah Build. Export your data from Buildertrend, upload the CSV, and we handle the field mapping automatically. White-glove migration service is also available — we\'ll move everything for you.',
-    },
-    {
-      q: 'What happens to my data if I cancel?',
-      a: 'Download your full export before you cancel and you have everything. We hold your data for 30 days after cancellation in case you change your mind, then it\'s permanently deleted from our servers.',
-    },
-  ];
-
-  const [openIndex, setOpenIndex] = useState(null);
-
-  return (
-    <div className="space-y-4">
-      {faqs.map((faq, i) => (
-        <div key={i} className="border rounded-lg">
-          <button
-            onClick={() => setOpenIndex(openIndex === i ? null : i)}
-            className="w-full flex justify-between items-center p-4 text-left"
-          >
-            <span className="font-medium text-gray-900">{faq.q}</span>
-            <ArrowRight
-              className={`w-5 h-5 text-gray-400 transition ${
-                openIndex === i ? 'rotate-90' : ''
-              }`}
-            />
-          </button>
-          {openIndex === i && (
-            <div className="px-4 pb-4 text-gray-600">{faq.a}</div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Helper: Get tier highlights for cards
-function getTierHighlights(tierId) {
-  const highlights = {
-    starter: [
-      'CRM & Contact Management',
-      'Quotes & Invoicing',
-      'Payment Processing',
-      'Time & Expense Tracking',
-      'Customer Portal',
-      'Mobile App',
-    ],
-    pro: [
-      'Everything in Starter',
-      'Two-Way SMS',
-      'GPS & Geofencing',
-      'Route Optimization',
-      'Online Booking',
-      'QuickBooks Sync',
-      'Job Costing Reports',
-    ],
-    business: [
-      'Everything in Pro',
-      'Inventory Management',
-      'Fleet Management',
-      'Equipment Tracking',
-      'Email Campaigns',
-      'Automations',
-      'Consumer Financing',
-    ],
-    construction: [
-      'Everything in Business',
-      'Project Management',
-      'Change Orders',
-      'RFIs & Submittals',
-      'Gantt Charts',
-      'Lien Waivers',
-      'Draw Schedules (AIA)',
-    ],
-    enterprise: [
-      'Everything Included',
-      'Unlimited Users',
-      'API Access',
-      'White-Label Options',
-      'Custom Domain',
-      'SSO Integration',
-      'Priority Support',
-      'Dedicated Account Manager',
-    ],
-  };
-  return highlights[tierId] || [];
-}
-
-// Helper: Get self-hosted includes
-function getSelfHostedIncludes(packageId) {
-  const includes = {
-    starter: [
-      'Full source code',
-      'Core CRM features',
-      'Deployment docs',
-      '90 days email support',
-    ],
-    pro: [
-      'Full source code',
-      'All field service features',
-      'Docker configuration',
-      '90 days email support',
-    ],
-    business: [
-      'Full source code',
-      'All operations features',
-      'CI/CD templates',
-      '90 days email support',
-    ],
-    construction: [
-      'Full source code',
-      'All construction features',
-      '1 hour setup call',
-      '90 days email support',
-    ],
-    full: [
-      'Complete source code',
-      'Every feature included',
-      'Multi-tenant support',
-      'White-label ready',
-      '2 hour setup call',
-    ],
-  };
-  return includes[packageId] || [];
 }
