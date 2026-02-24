@@ -459,6 +459,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
           envVars: [
             { key: 'NODE_ENV', value: 'production' },
             { key: 'PORT', value: '10000' },
+            { key: 'JWT_SECRET', value: jwtSecret },
           ],
           plan,
           region,
