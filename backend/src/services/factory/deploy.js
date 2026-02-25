@@ -158,16 +158,31 @@ export async function pushToGitHub(repoFullName, extractDir) {
 /**
  * Create a Render Postgres database
  */
+async function findExistingDatabase(name) {
+  const res = await fetch(`${RENDER_API}/postgres?limit=20`, {
+    headers: renderHeaders(),
+  });
+  if (!res.ok) return null;
+  const list = await res.json();
+  const match = (Array.isArray(list) ? list : []).find(item => {
+    const db = item.postgres || item;
+    return db.name === name;
+  });
+  return match ? (match.postgres || match) : null;
+}
+
 async function createRenderDatabase(slug, region = 'ohio') {
+  const dbName = `${slug}-db`;
+
   const res = await fetch(`${RENDER_API}/postgres`, {
     method: 'POST',
     headers: renderHeaders(),
     body: JSON.stringify({
       databaseName: slug.replace(/-/g, '_'),
       databaseUser: slug.replace(/-/g, '_'),
-      name: `${slug}-db`,
+      name: dbName,
       ownerId: process.env.RENDER_OWNER_ID,
-      plan: 'free', // Start free, customer can upgrade
+      plan: 'free',
       region: region,
       version: '16',
     }),
@@ -175,7 +190,17 @@ async function createRenderDatabase(slug, region = 'ohio') {
 
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(`Render DB creation failed: ${JSON.stringify(err)}`);
+    const errStr = JSON.stringify(err);
+    // If name already taken, find and reuse existing DB
+    if (res.status === 400 || res.status === 409 || errStr.includes('already') || errStr.includes('exists')) {
+      logger.info(`[Deploy] DB ${dbName} already exists, looking it up...`);
+      const existing = await findExistingDatabase(dbName);
+      if (existing) {
+        logger.info(`[Deploy] Reusing existing DB id=${existing.id}`);
+        return existing;
+      }
+    }
+    throw new Error(`Render DB creation failed (${res.status}): ${errStr}`);
   }
 
   return await res.json();
@@ -368,19 +393,27 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
 
     try {
       const dbSlug = isHomeCare ? `${slug}-care` : slug;
+      logger.info(`[Deploy] Creating DB: ${dbSlug}-db in ${region}`);
       const db = await createRenderDatabase(dbSlug, region);
+      logger.info(`[Deploy] DB created successfully: ${dbSlug}-db, id=${db.id}`);
       results.steps.push({ step: 'render_db', status: 'ok', dbId: db.id });
       results.services.database = db;
 
-      // Wait a moment for DB to initialize, then get connection info
+      // Wait for DB to initialize, then get connection info
+      logger.info(`[Deploy] Waiting 30s for DB to initialize...`);
       await new Promise(resolve => setTimeout(resolve, 30000));
       dbConnectionInfo = await getDatabaseConnectionInfo(db.id);
       dbInfo = dbConnectionInfo;
-      logger.info(`[Deploy] DB created: ${dbSlug}-db, connectionInfo keys: ${Object.keys(dbConnectionInfo || {}).join(', ')}`);
+      logger.info(`[Deploy] DB connection info retrieved. Keys: ${Object.keys(dbConnectionInfo || {}).join(', ')}`);
     } catch (dbErr) {
-      logger.error(`[Deploy] DB creation failed for ${slug}:`, dbErr.message);
+      // Log full error so we can see exactly what Render said
+      logger.error(`[Deploy] DB creation FAILED for ${slug}: ${dbErr.message}`);
       results.steps.push({ step: 'render_db', status: 'error', error: dbErr.message });
-      results.errors.push(`Database: ${dbErr.message}`);
+      results.errors.push(`Database creation failed: ${dbErr.message}`);
+      // Don't continue — backend needs a DB to work
+      results.success = false;
+      results.status = 'failed';
+      return results;
     }
 
     const jwtSecret = generateJwtSecret();
