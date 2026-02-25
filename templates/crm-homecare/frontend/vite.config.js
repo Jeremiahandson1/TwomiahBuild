@@ -1,10 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
-  optimizeDeps: {
-    exclude: ['@capacitor-community/background-geolocation'],
+  resolve: {
+    alias: [
+      { find: /^@capacitor\/core$/, replacement: path.resolve(__dirname, 'src/capacitor-stub.js') },
+      { find: /^@capacitor\/(.+)$/, replacement: path.resolve(__dirname, 'src/capacitor-stub.js') },
+      { find: /^@capacitor-community\/(.+)$/, replacement: path.resolve(__dirname, 'src/capacitor-stub.js') },
+    ],
   },
   server: {
     port: 3000,
@@ -21,7 +29,6 @@ export default defineConfig({
     minify: 'terser',
     chunkSizeWarningLimit: 600,
     rollupOptions: {
-      external: (id) => id.startsWith('@capacitor/') || id === '@capacitor-community/background-geolocation',
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
