@@ -80,7 +80,7 @@ export async function generate(config) {
       }
       copyTemplate(websiteTemplate, path.join(workDir, 'website'), tokens);
       // Inject CSS custom property values
-      injectCSSColors(path.join(workDir, 'website'), config.branding || {});
+      injectCSSColors(path.join(workDir, 'website'), config.branding || {}, industry);
       // Strip disabled website features
       stripWebsiteFeatures(path.join(workDir, 'website'), config.features?.website || []);
       // Write logo + favicon files
@@ -176,8 +176,24 @@ function buildTokenMap(config, slug) {
 
     // Industry
     '{{INDUSTRY}}': c.industry || 'Contractor',
-    '{{META_DESCRIPTION}}': c.metaDescription || `Professional services in ${c.city || 'your area'}.`,
-    '{{HERO_TAGLINE}}': c.heroTagline || `Trusted ${c.industry || 'Contractor'}`,
+    '{{META_DESCRIPTION}}': c.metaDescription || (
+      c.industry === 'home_care'
+        ? `Professional in-home care services in ${c.city || 'your area'}. Licensed, insured, compassionate caregivers serving ${c.serviceRegion || c.city || 'the area'}.`
+        : `Professional services in ${c.city || 'your area'}.`
+    ),
+    '{{HERO_TAGLINE}}': c.heroTagline || (
+      c.industry === 'home_care' ? 'VA APPROVED PROVIDER' : `Trusted ${c.industry || 'Contractor'}`
+    ),
+    '{{HERO_TITLE}}': c.heroTitle || (
+      c.industry === 'home_care'
+        ? `Compassionate Home Care for Your Loved Ones`
+        : `${c.name || 'Your Company'} — Quality You Can Trust`
+    ),
+    '{{HERO_DESCRIPTION}}': c.heroDescription || (
+      c.industry === 'home_care'
+        ? `Helping families in ${c.city || 'your area'} and surrounding communities with personalized, professional in-home care. Licensed, insured, and here when you need us.`
+        : `Serving ${c.serviceRegion || c.city || 'the area'} with quality workmanship and customer-first service.`
+    ),
 
     // Owner / Admin
     '{{OWNER_NAME}}': c.ownerName || 'Admin',
@@ -755,14 +771,30 @@ function stripWebsiteFeatures(websiteDir, enabledFeatures) {
 /**
  * Inject CSS custom property values into :root blocks
  */
-function injectCSSColors(websiteDir, branding) {
-  const primary = branding.primaryColor || '#f97316';
-  const secondary = branding.secondaryColor || '#1e3a5f';
-  const accent = branding.accentColor || primary; // default accent = primary
+function injectCSSColors(websiteDir, branding, industry) {
+  // Industry-aware color defaults
+  const defaults = industry === 'home_care'
+    ? { primary: '#009688', secondary: '#004d40', accent: '#f59e0b' }
+    : { primary: '#c9a227', secondary: '#1a2744', accent: '#c9a227' };
+
+  const primary = branding.primaryColor || defaults.primary;
+  const secondary = branding.secondaryColor || defaults.secondary;
+  const accent = branding.accentColor || defaults.accent;
   
   // Derive lighter shade from primary
   const primaryLight = lightenHex(primary, 20);
   const accentLight = lightenHex(accent, 20);
+
+  // Semantic aliases used by home care + contractor templates
+  const navyColor   = secondary;                   // --navy = secondary brand color
+  const navyLight   = lightenHex(secondary, 12);
+  const navyDark    = lightenHex(secondary, -15);
+  const goldColor   = primary;                     // --gold = primary brand color
+  const goldLight   = lightenHex(primary, 15);
+  const goldDark    = lightenHex(primary, -15);
+  const warmColor   = branding.accentColor || '#f59e0b'; // --warm = accent (amber)
+  const warmDark    = lightenHex(warmColor, -15);
+  const offWhite    = branding.offWhiteColor || '#f0fdf9'; // mint tint — can be overridden
   
   const cssFiles = findFiles(websiteDir, f => f.endsWith('.css'));
   
@@ -779,10 +811,11 @@ function injectCSSColors(websiteDir, branding) {
         if (line.includes('{')) braceDepth++;
         if (line.includes('}')) { braceDepth--; if (braceDepth <= 0) inRoot = false; }
         
+        // Standard factory color tokens
         if (line.includes('--color-primary-light:')) {
           return line.replace(/#[0-9a-fA-F]{3,8}/, primaryLight);
         }
-        if (line.includes('--color-primary:')) {
+        if (line.includes('--color-primary:') && !line.includes('--color-primary-')) {
           return line.replace(/#[0-9a-fA-F]{3,8}/, primary);
         }
         if (line.includes('--color-secondary:')) {
@@ -791,9 +824,20 @@ function injectCSSColors(websiteDir, branding) {
         if (line.includes('--color-accent-light:')) {
           return line.replace(/#[0-9a-fA-F]{3,8}/, accentLight);
         }
-        if (line.includes('--color-accent:')) {
+        if (line.includes('--color-accent:') && !line.includes('--color-accent-')) {
           return line.replace(/#[0-9a-fA-F]{3,8}/, accent);
         }
+
+        // Semantic palette tokens (home care + contractor templates)
+        if (line.includes('--navy-light:')) return line.replace(/#[0-9a-fA-F]{3,8}/, navyLight);
+        if (line.includes('--navy-dark:'))  return line.replace(/#[0-9a-fA-F]{3,8}/, navyDark);
+        if (line.includes('--navy:') && !line.includes('--navy-')) return line.replace(/#[0-9a-fA-F]{3,8}/, navyColor);
+        if (line.includes('--gold-light:')) return line.replace(/#[0-9a-fA-F]{3,8}/, goldLight);
+        if (line.includes('--gold-dark:'))  return line.replace(/#[0-9a-fA-F]{3,8}/, goldDark);
+        if (line.includes('--gold:') && !line.includes('--gold-')) return line.replace(/#[0-9a-fA-F]{3,8}/, goldColor);
+        if (line.includes('--warm-dark:'))  return line.replace(/#[0-9a-fA-F]{3,8}/, warmDark);
+        if (line.includes('--warm:') && !line.includes('--warm-')) return line.replace(/#[0-9a-fA-F]{3,8}/, warmColor);
+        if (line.includes('--off-white:'))  return line.replace(/#[0-9a-fA-F]{3,8}/, offWhite);
       }
       return line;
     });

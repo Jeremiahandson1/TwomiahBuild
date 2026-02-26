@@ -2,18 +2,18 @@
    These values are injected by the factory generator.
    Do not edit manually — use the admin panel or regenerate. */
 :root {
-  --color-primary: #1e3a5f;
-  --color-primary-light: #2d4a6f;
-  --color-secondary: #2c5282;
-  --color-accent: #ed8936;
-  --color-accent-light: #f6ad55;
+  --color-primary: #1736cf;
+  --color-primary-light: #4a69ff;
+  --color-secondary: #36914d;
+  --color-accent: #1736cf;
+  --color-accent-light: #4a69ff;
   --font-heading: 'Montserrat', sans-serif;
   --font-body: 'Montserrat', sans-serif;
   --border-radius: 8px;
 }
 
 /* ===========================================
-   {{COMPANY_NAME_UPPER}} - Premium Public Pages
+   INTEGRITY HOME HEALTHCARE - Premium Public Pages
    Unified styles for Gallery, Service, SubService, 
    Custom, and Project Detail pages
    =========================================== */

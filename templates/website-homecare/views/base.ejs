@@ -36,7 +36,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   
   <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   
   <!-- Styles -->
   <link rel="stylesheet" href="/styles/main.css">
@@ -46,10 +46,10 @@
   <%
     const phone = (typeof settings !== 'undefined' && settings && settings.phone) ? settings.phone : '{{COMPANY_PHONE}}';
     const email = (typeof settings !== 'undefined' && settings && settings.email) ? settings.email : '<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1876717b73587b74797e7471767b77766b6c6a6d7b6c71777636767d6c">[email&#160;protected]</a>';
-    const address = (typeof settings !== 'undefined' && settings && settings.address) ? settings.address : '{{COMPANY_ADDRESS}}';
+    const address = (typeof settings !== 'undefined' && settings && settings.address) ? settings.address : '123 Main St';
     const city = (typeof settings !== 'undefined' && settings && settings.city) ? settings.city : '{{CITY}}';
     const state = (typeof settings !== 'undefined' && settings && settings.state) ? settings.state : 'WI';
-    const zip = (typeof settings !== 'undefined' && settings && settings.zip) ? settings.zip : '{{ZIP}}';
+    const zip = (typeof settings !== 'undefined' && settings && settings.zip) ? settings.zip : '54701';
     const phoneRaw = phone.replace(/\D/g, '');
     const logoUrl = (typeof settings !== 'undefined' && settings && settings.logo) 
       ? (settings.logo.startsWith('http') ? settings.logo : (settings.logo.startsWith('/') ? settings.logo : '/' + settings.logo)) 
@@ -59,12 +59,12 @@
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "HomeAndConstructionBusiness",
+    "@type": "HomeHealthCare",
     "name": "{{COMPANY_NAME}}",
-    "description": "{{META_DESCRIPTION}} in {{CITY}} and the {{SERVICE_REGION}}",
+    "description": "Professional in-home care services in Eau Claire and the Chippewa Valley",
     "url": "{{SITE_URL}}",
-    "logo": "{{SITE_URL}}<%= logoUrl %>",
-    "image": "{{SITE_URL}}<%= logoUrl %>",
+    "logo": "https://{{DOMAIN}}<%= logoUrl %>",
+    "image": "https://{{DOMAIN}}<%= logoUrl %>",
     "telephone": "+1<%= phoneRaw %>",
     "email": "<%= email %>",
     "address": {
@@ -83,10 +83,10 @@
     "areaServed": [
       {
         "@type": "City",
-        "name": "{{CITY}}",
+        "name": "Eau Claire",
         "containedInPlace": {
           "@type": "State",
-          "name": "{{STATE_FULL}}"
+          "name": "WI"
         }
       },
       {
@@ -125,7 +125,7 @@
         "@type": "ListItem",
         "position": <%= index + 1 %>,
         "name": "<%= crumb.label %>",
-        "item": "{{SITE_URL}}<%= crumb.url %>"
+        "item": "https://{{DOMAIN}}<%= crumb.url %>"
       }<%= index < breadcrumbs.length - 1 ? ',' : '' %>
       <% }); %>
     ]
@@ -195,7 +195,7 @@
       }
     });
 
-    // cta_click — primary CTA buttons ("Request Estimate", "Get Started", "Free Assessment" etc)
+    // cta_click — primary CTA buttons ("Request Care", "Get Started", "Free Assessment" etc)
     document.addEventListener('click', function(e) {
       var btn = e.target.closest('a.btn-primary, button.btn-primary, .hero-buttons a, [data-cta]');
       if (btn) {
@@ -243,229 +243,6 @@
   </script>
   <% } %>
 
-  <!-- Two-Tier Nav Styles -->
-  <style>
-    /* Row 1: Logo + Utility + CTA */
-    .header-top {
-      background: white;
-      border-bottom: 1px solid #e8e8e8;
-      padding: 16px 0;
-    }
-    .header-top-content {
-      display: flex;
-      align-items: center;
-      gap: 28px;
-    }
-    .header-top .logo {
-      margin-right: auto;
-      margin-left: 8%;
-    }
-    .header-top .logo-image {
-      height: 60px;
-      width: auto;
-    }
-    .utility-nav {
-      display: flex;
-      gap: 28px;
-    }
-    .utility-nav a {
-      color: #222;
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 600;
-      transition: color 0.15s;
-    }
-    .utility-nav a:hover {
-      color: var(--accent, #c8963e);
-    }
-    .utility-nav a[href="/visualize"] {
-      color: var(--accent, #c8963e);
-      font-weight: 700;
-    }
-    .header-top-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    .header-phone {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #222;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 0.95rem;
-    }
-    .header-phone:hover { color: var(--accent, #c8963e); }
-
-    /* Row 2: Services Bar */
-    .services-bar {
-      background: var(--dark-bg, #1a1a2e);
-    }
-    .services-nav ul {
-      display: flex;
-      justify-content: center;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      gap: 0;
-    }
-    .services-nav ul > li > a {
-      display: block;
-      padding: 14px 20px;
-      color: rgba(255,255,255,0.9);
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      transition: background 0.15s, color 0.15s;
-    }
-    .services-nav ul > li > a:hover {
-      background: rgba(255,255,255,0.1);
-      color: white;
-    }
-    .services-nav .has-dropdown {
-      position: relative;
-    }
-    .services-nav .dropdown {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      background: white;
-      min-width: 220px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-      border-radius: 0 0 8px 8px;
-      z-index: 1000;
-      padding: 8px 0;
-    }
-    .services-nav .has-dropdown:hover .dropdown {
-      display: block;
-    }
-    .services-nav .dropdown a {
-      display: block;
-      padding: 10px 20px;
-      color: #333;
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      text-transform: none;
-      letter-spacing: 0;
-      transition: background 0.15s, color 0.15s;
-    }
-    .services-nav .dropdown a:hover {
-      background: #f5f5f5;
-      color: var(--accent, #c8963e);
-    }
-
-    /* Hide old top-bar if it somehow remains */
-    .top-bar { display: none !important; }
-    .main-nav-wrapper { display: none !important; }
-
-    /* Mobile nav panel */
-    .mobile-nav {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--dark-bg, #1a1a2e);
-      z-index: 999;
-      overflow-y: auto;
-      padding: 80px 24px 40px;
-    }
-    .mobile-nav.active {
-      display: block;
-    }
-    .mobile-nav ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .mobile-nav ul > li > a {
-      display: block;
-      padding: 14px 0;
-      color: rgba(255,255,255,0.9);
-      text-decoration: none;
-      font-size: 1.05rem;
-      font-weight: 500;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .mobile-nav .mobile-section-label {
-      color: var(--accent, #c8963e);
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 20px 0 8px;
-      border-bottom: none;
-    }
-    .mobile-nav .dropdown {
-      padding-left: 16px;
-    }
-    .mobile-nav .dropdown a {
-      display: block;
-      padding: 10px 0;
-      color: rgba(255,255,255,0.65);
-      text-decoration: none;
-      font-size: 0.95rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .mobile-nav .cta-item {
-      padding-top: 20px;
-      border-bottom: none;
-    }
-    .mobile-nav .cta-item .btn {
-      display: block;
-      text-align: center;
-      width: 100%;
-    }
-
-    /* Nav toggle button - simple 3-line hamburger */
-    .nav-toggle {
-      display: none;
-      background: none;
-      border: none;
-      width: 44px;
-      height: 44px;
-      cursor: pointer;
-      z-index: 1001;
-      padding: 8px 6px;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: stretch;
-    }
-    .nav-toggle .bar {
-      display: block;
-      height: 4px;
-      width: 100%;
-      background-color: var(--dark-bg, #1a1a2e);
-      border-radius: 2px;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-    }
-    .nav-toggle.active .bar { background-color: white; }
-    .nav-toggle.active .bar:nth-child(1) { transform: translateY(10px) rotate(45deg); }
-    .nav-toggle.active .bar:nth-child(2) { opacity: 0; }
-    .nav-toggle.active .bar:nth-child(3) { transform: translateY(-10px) rotate(-45deg); }
-
-    /* Scrolled state */
-    .main-header.scrolled .header-top {
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-
-    /* Responsive */
-    @media (max-width: 900px) {
-      .utility-nav { display: none; }
-      .header-phone { display: none; }
-      .services-bar { display: none; }
-      .nav-toggle { display: flex; }
-      .header-top .logo-image { height: 40px; }
-      .header-top .logo { margin-left: 0; }
-      .header-top-right .btn { font-size: 0.8rem; padding: 8px 14px; }
-    }
-  </style>
 </head>
 <body>
   <%/* GTM noscript fallback — must be immediately after <body> */%>
@@ -474,77 +251,70 @@
   <% } %>
 
   <!-- Header -->
-  <header class="main-header">
-    <!-- Row 1: Logo + Utility Nav + Contact -->
-    <div class="header-top">
+  <header class="main-header" id="main-header">
+    <div class="main-nav-wrapper">
       <div class="container">
-        <div class="header-top-content">
+        <div class="nav-content">
+
+          <!-- Logo -->
           <a href="/" class="logo">
-            <img src="<%= logoUrl %>" alt="{{COMPANY_NAME}}" class="logo-image" />
+            <img src="<%= logoUrl %>" alt="<%= settings && settings.companyName || 'Home Care' %>" class="logo-image" />
           </a>
-          
-          <nav class="utility-nav">
-            <a href="/gallery">Projects</a>
-            <a href="/visualize">Visualize</a>
-            <a href="/blog">Blog</a>
-            <a href="/#about">About</a>
-            <a href="/#contact">Contact</a>
+
+          <!-- Primary Nav -->
+          <nav class="main-nav" role="navigation" aria-label="Main navigation">
+            <ul>
+              <%
+                const allNavItems = typeof menuItems !== 'undefined' ? menuItems : [];
+                const visibleItems = allNavItems.filter(item => item.visible !== false);
+              %>
+              <% visibleItems.forEach(item => { %>
+                <li class="<%= item.children && item.children.length > 0 ? 'has-dropdown' : '' %>">
+                  <a href="<%= item.href %>"><%= item.label %></a>
+                  <% if (item.children && item.children.length > 0) { %>
+                    <div class="dropdown">
+                      <% item.children.forEach(child => { %>
+                        <a href="<%= child.href %>"><%= child.label %></a>
+                      <% }); %>
+                    </div>
+                  <% } %>
+                </li>
+              <% }); %>
+              <li class="nav-phone-item">
+                <a href="tel:<%= phoneRaw %>" class="nav-phone-link">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.19 14.9 19.79 19.79 0 0 1 1.12 6.24 2 2 0 0 1 3.1 4h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+                  <%= phone %>
+                </a>
+              </li>
+              <li class="cta-item">
+                <a href="#contact" class="btn btn-primary">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.19 14.9 19.79 19.79 0 0 1 1.12 6.24 2 2 0 0 1 3.1 4h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+                  Request Care
+                </a>
+              </li>
+            </ul>
           </nav>
 
-          <div class="header-top-right">
-            <a href="tel:<%= phoneRaw %>" class="header-phone">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-              </svg>
-              <%= phone %>
-            </a>
-            <a href="#contact" class="btn btn-primary btn-sm">Request Estimate</a>
-          </div>
-
-          <button class="nav-toggle" aria-label="Toggle menu">
+          <!-- Mobile toggle -->
+          <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
             <span class="bar"></span>
             <span class="bar"></span>
             <span class="bar"></span>
           </button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Row 2: Services Bar -->
-    <div class="services-bar">
-      <div class="container">
-        <nav class="main-nav services-nav">
-          <ul>
-            <% 
-              // Use menuItems if provided, otherwise show empty services nav
-              const allNavItems = typeof menuItems !== 'undefined' ? menuItems : [];
-              // Filter out utility items (blog, gallery, contact etc) — services bar is services only
-              const serviceItems = allNavItems.filter(item => !['blog', 'gallery', 'contact', 'about'].includes(item.id));
-            %>
-            
-            <% serviceItems.forEach(item => { %>
-              <li class="<%= item.children && item.children.length > 0 ? 'has-dropdown' : '' %>">
-                <a href="<%= item.href %>"><%= item.label %></a>
-                <% if (item.children && item.children.length > 0) { %>
-                  <div class="dropdown">
-                    <% item.children.forEach(child => { %>
-                      <a href="<%= child.href %>"><%= child.label %></a>
-                    <% }); %>
-                  </div>
-                <% } %>
-              </li>
-            <% }); %>
-          </ul>
-        </nav>
-      </div>
-    </div>
+        </div><!-- /nav-content -->
+      </div><!-- /container -->
+    </div><!-- /main-nav-wrapper -->
 
-    <!-- Mobile Nav (slides out) -->
-    <nav class="mobile-nav main-nav">
+    <!-- Mobile Nav Drawer -->
+    <nav class="mobile-nav" id="mobile-nav" aria-hidden="true">
       <ul>
-        <li class="mobile-section-label">Services</li>
-        <% serviceItems.forEach(item => { %>
-          <li class="<%= item.children && item.children.length > 0 ? 'has-dropdown' : '' %>">
+        <%
+          const allNavItemsMobile = typeof menuItems !== 'undefined' ? menuItems : [];
+          const visibleItemsMobile = allNavItemsMobile.filter(item => item.visible !== false);
+        %>
+        <% visibleItemsMobile.forEach(item => { %>
+          <li>
             <a href="<%= item.href %>"><%= item.label %></a>
             <% if (item.children && item.children.length > 0) { %>
               <div class="dropdown">
@@ -555,20 +325,19 @@
             <% } %>
           </li>
         <% }); %>
-        <li class="mobile-section-label">More</li>
-        <li><a href="/visualize">Visualize Your Home</a></li>
-        <li><a href="/gallery">Projects</a></li>
-        <li><a href="/blog">Blog</a></li>
-        <li><a href="/#about">About</a></li>
-        <li><a href="/#contact">Contact</a></li>
-        <li class="cta-item">
-          <a href="#contact" class="btn btn-primary">Request Estimate</a>
+        <li>
+          <a href="tel:<%= phoneRaw %>" style="color: var(--gold); font-weight:700;">
+            📞 <%= phone %>
+          </a>
+        </li>
+        <li style="padding-top:12px;">
+          <a href="#contact" class="btn btn-primary" style="display:block;text-align:center;">Request Care</a>
         </li>
       </ul>
     </nav>
   </header>
 
-  <!-- Main Content -->
+    <!-- Main Content -->
   <main>
     <%- body %>
   </main>
@@ -590,7 +359,7 @@
               </div>
               <span>{{COMPANY_NAME_UPPER}}</span>
             </div>
-            <p>Quality services for customers throughout the {{CITY}} area. Licensed, insured, and committed to excellence.</p>
+            <p>Quality services for customers throughout the Eau Claire area. Licensed, insured, and committed to excellence.</p>
             <div class="social-links">
               <% if (typeof settings !== 'undefined' && settings && settings.socialLinks) { %>
                 <% if (settings.socialLinks.facebook) { %>
@@ -662,24 +431,22 @@
           <div class="footer-col">
             <h4>Company</h4>
             <ul>
-              <li><a href="/visualize">Visualize Your Home</a></li>
-              <li><a href="/gallery">Projects</a></li>
+              <li><a href="/#about">About Us</a></li>
+              <li><a href="/gallery">Gallery</a></li>
               <li><a href="/blog">Blog</a></li>
               <li><a href="/#about">About Us</a></li>
               <li><a href="/#contact">Contact</a></li>
-              <li><a href="/#contact">Request Estimate</a></li>
+              <li><a href="/#contact">Request Care</a></li>
             </ul>
           </div>
 
           <div class="footer-col">
             <h4>Areas We Serve</h4>
             <ul>
-              <li><a href="/services">{{CITY}}</a></li>
-              <li><a href="/services">{{NEARBY_CITY_1}}</a></li>
-              <li><a href="/service-area/{{NEARBY_CITY_4}}">{{NEARBY_CITY_4}}</a></li>
-              <li><a href="/service-area/{{NEARBY_CITY_3}}">{{NEARBY_CITY_3}}</a></li>
-              
-              
+              <li><a href="/service-area/eau-claire">Eau Claire</a></li>
+              <li><a href="/service-area/chippewa-falls">Chippewa Falls</a></li>
+              <li><a href="/service-area/menomonie">Menomonie</a></li>
+              <li><a href="/service-area/osseo">Osseo</a></li>
             </ul>
           </div>
 
@@ -719,7 +486,7 @@
     <div class="footer-bottom">
       <div class="container">
         <p>&copy; <%= new Date().getFullYear() %> {{COMPANY_NAME}}. All rights reserved.</p>
-        <p>Serving {{CITY}}, {{NEARBY_CITY_4}}, {{NEARBY_CITY_1}}, and the {{SERVICE_REGION}}</p>
+        <p>Serving Eau Claire, Chippewa Falls, Menomonie, and the Chippewa Valley</p>
       </div>
     </div>
   </footer>
