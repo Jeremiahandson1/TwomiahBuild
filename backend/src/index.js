@@ -92,6 +92,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.set('etag', false); // Prevent stale 304 responses
 const server = createServer(app);
 
 // Initialize WebSocket
@@ -223,7 +224,7 @@ app.use('/api/v1/agreements', agreementsRoutes);
 app.use('/api/v1/audit', auditRoutes);
 app.use('/api/v1/booking', bookingRoutes);
 app.use('/api/v1/bulk', bulkRoutes);
-app.use('/api/v1/call-tracking', calltrackingRoutes);
+app.use('/api/v1/calltracking', calltrackingRoutes);
 app.use('/api/v1/comments', commentsRoutes);
 app.use('/api/v1/equipment', equipmentRoutes);
 app.use('/api/v1/export', exportRoutes);
