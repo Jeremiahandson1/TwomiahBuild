@@ -360,45 +360,45 @@ class ApiClient {
   booking = {
     getSettings: (companySlug) => this.get(`/api/v1/booking/${companySlug}`),
     create: (companySlug, data) => this.request(`/api/v1/booking/${companySlug}`, { method: 'POST', body: JSON.stringify(data) }),
-    list: (params) => this.get('/api/v1/gap/booking/requests', params),
-    confirm: (id) => this.action('/api/v1/gap/booking/requests', id, 'confirm'),
-    cancel: (id, data) => this.action('/api/v1/gap/booking/requests', id, 'cancel', data),
+    list: (params) => this.get('/api/v1/booking', params),
+    confirm: (id) => this.action('/api/v1/booking', id, 'confirm'),
+    cancel: (id, data) => this.action('/api/v1/booking', id, 'cancel', data),
   };
 
   // Job Costing — extend with gap routes
   jobCostingGap = {
-    forJob: (jobId) => this.get(`/api/v1/gap/job-costing/jobs/${jobId}`),
-    updateBudget: (jobId, data) => this.request(`/api/v1/gap/job-costing/jobs/${jobId}/budget`, { method: 'PUT', body: JSON.stringify(data) }),
-    report: (params) => this.get('/api/v1/gap/job-costing/report', params),
+    forJob: (jobId) => this.get(`/api/v1/job-costing/job/${jobId}`),
+    updateBudget: (jobId, data) => this.request(`/api/v1/job-costing/job/${jobId}/budget`, { method: 'PUT', body: JSON.stringify(data) }),
+    report: (params) => this.get('/api/v1/job-costing/report', params),
   };
 
   // Custom Forms
   customForms = {
-    list: (params) => this.get('/api/v1/gap/forms', params),
-    get: (id) => this.getOne('/api/v1/gap/forms', id),
-    create: (data) => this.create('/api/v1/gap/forms', data),
-    update: (id, data) => this.update('/api/v1/gap/forms', id, data),
-    delete: (id) => this.delete('/api/v1/gap/forms', id),
-    submit: (id, data) => this.request(`/api/v1/gap/forms/${id}/submit`, { method: 'POST', body: JSON.stringify(data) }),
+    list: (params) => this.get('/api/v1/custom-forms', params),
+    get: (id) => this.getOne('/api/v1/custom-forms', id),
+    create: (data) => this.create('/api/v1/custom-forms', data),
+    update: (id, data) => this.update('/api/v1/custom-forms', id, data),
+    delete: (id) => this.delete('/api/v1/custom-forms', id),
+    submit: (id, data) => this.request(`/api/v1/custom-forms/${id}/submit`, { method: 'POST', body: JSON.stringify(data) }),
   };
 
   // Lien Waivers
   lienWaivers = {
-    list: (params) => this.get('/api/v1/gap/lien-waivers', params),
-    get: (id) => this.getOne('/api/v1/gap/lien-waivers', id),
-    create: (data) => this.create('/api/v1/gap/lien-waivers', data),
-    send: (id) => this.action('/api/v1/gap/lien-waivers', id, 'send'),
-    sign: (id, data) => this.action('/api/v1/gap/lien-waivers', id, 'sign', data),
+    list: (params) => this.get('/api/v1/lien-waivers', params),
+    get: (id) => this.getOne('/api/v1/lien-waivers', id),
+    create: (data) => this.create('/api/v1/lien-waivers', data),
+    send: (id) => this.action('/api/v1/lien-waivers', id, 'send'),
+    sign: (id, data) => this.action('/api/v1/lien-waivers', id, 'sign', data),
   };
 
   // Draw Schedules
   drawSchedules = {
-    list: (params) => this.get('/api/v1/gap/draw-schedules', params),
-    get: (id) => this.getOne('/api/v1/gap/draw-schedules', id),
-    create: (data) => this.create('/api/v1/gap/draw-schedules', data),
-    update: (id, data) => this.update('/api/v1/gap/draw-schedules', id, data),
-    requestDraw: (id, data) => this.action('/api/v1/gap/draw-schedules', id, 'request-draw', data),
-    approveDraw: (id, drawId) => this.request(`/api/v1/gap/draw-schedules/${id}/draws/${drawId}/approve`, { method: 'POST' }),
+    list: (params) => this.get('/api/v1/draw-schedules', params),
+    get: (id) => this.getOne('/api/v1/draw-schedules', id),
+    create: (data) => this.create('/api/v1/draw-schedules', data),
+    update: (id, data) => this.update('/api/v1/draw-schedules', id, data),
+    requestDraw: (id, data) => this.action('/api/v1/draw-schedules', id, 'request-draw', data),
+    approveDraw: (id, drawId) => this.request(`/api/v1/draw-schedules/${id}/draws/${drawId}/approve`, { method: 'POST' }),
   };
 }
 

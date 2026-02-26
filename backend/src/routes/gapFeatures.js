@@ -10,6 +10,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { authenticate } from '../middleware/auth.js';
+import { prisma } from '../config/prisma.js';
 import booking from '../services/booking.js';
 import jobCosting from '../services/jobCosting.js';
 import customForms from '../services/customForms.js';
@@ -108,6 +109,16 @@ jobCostingRoutes.get('/job/:jobId', async (req, res, next) => {
   try {
     const analysis = await jobCosting.getJobCostAnalysis(req.params.jobId, req.user.companyId);
     res.json(analysis);
+  } catch (e) { next(e); }
+});
+
+jobCostingRoutes.put('/job/:jobId/budget', async (req, res, next) => {
+  try {
+    const { budget } = req.body;
+    const job = await prisma.job.findFirst({ where: { id: req.params.jobId, companyId: req.user.companyId } });
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+    const updated = await prisma.job.update({ where: { id: req.params.jobId }, data: { estimatedValue: budget } });
+    res.json(updated);
   } catch (e) { next(e); }
 });
 
