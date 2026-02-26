@@ -80,3 +80,38 @@ router.post('/:id/approve', requireRole('manager', 'admin', 'owner'), async (req
 });
 
 export default router;
+
+// GET /api/v1/time/weekly - weekly timesheet view
+router.get('/weekly', async (req, res, next) => {
+  try {
+    const companyId = req.user.companyId;
+    const { weekStart } = req.query;
+    const start = weekStart ? new Date(weekStart) : (() => {
+      const d = new Date(); d.setDate(d.getDate() - d.getDay()); d.setHours(0,0,0,0); return d;
+    })();
+    const end = new Date(start); end.setDate(end.getDate() + 7);
+
+    const entries = await prisma.timeEntry.findMany({
+      where: { companyId, userId: req.user.userId, date: { gte: start, lt: end } },
+      include: {
+        job: { select: { id: true, title: true, number: true } },
+        project: { select: { id: true, name: true, number: true } }
+      },
+      orderBy: { date: 'asc' },
+    });
+
+    const byDay = {};
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start); d.setDate(d.getDate() + i);
+      const key = d.toISOString().split('T')[0];
+      byDay[key] = { date: key, entries: [], totalHours: 0 };
+    }
+    for (const entry of entries) {
+      const key = new Date(entry.date).toISOString().split('T')[0];
+      if (byDay[key]) { byDay[key].entries.push(entry); byDay[key].totalHours += Number(entry.hours); }
+    }
+
+    const totalHours = entries.reduce((s, e) => s + Number(e.hours), 0);
+    res.json({ weekStart: start.toISOString(), days: Object.values(byDay), totalHours, entries });
+  } catch (error) { next(error); }
+});

@@ -192,7 +192,7 @@ customFormsRoutes.post('/submissions', async (req, res, next) => {
   try {
     const submission = await customForms.submitForm(req.user.companyId, {
       ...req.body,
-      submittedById: req.user.id,
+      submittedById: req.user.userId,
     });
     res.status(201).json(submission);
   } catch (e) { next(e); }
@@ -252,7 +252,7 @@ lienWaiverRoutes.put('/:id/upload', async (req, res, next) => {
 lienWaiverRoutes.put('/:id/approve', async (req, res, next) => {
   try {
     await lienWaivers.approveWaiver(req.params.id, req.user.companyId, {
-      approvedById: req.user.id,
+      approvedById: req.user.userId,
       notes: req.body.notes,
     });
     res.json({ success: true });
@@ -262,7 +262,7 @@ lienWaiverRoutes.put('/:id/approve', async (req, res, next) => {
 lienWaiverRoutes.put('/:id/reject', async (req, res, next) => {
   try {
     await lienWaivers.rejectWaiver(req.params.id, req.user.companyId, {
-      rejectedById: req.user.id,
+      rejectedById: req.user.userId,
       reason: req.body.reason,
     });
     res.json({ success: true });
@@ -346,7 +346,7 @@ drawScheduleRoutes.post('/:id/submit', async (req, res, next) => {
 drawScheduleRoutes.post('/:id/approve', async (req, res, next) => {
   try {
     const draw = await drawSchedules.approveDrawRequest(req.params.id, req.user.companyId, {
-      approvedById: req.user.id,
+      approvedById: req.user.userId,
       notes: req.body.notes,
     });
     res.json(draw);
@@ -356,7 +356,7 @@ drawScheduleRoutes.post('/:id/approve', async (req, res, next) => {
 drawScheduleRoutes.post('/:id/reject', async (req, res, next) => {
   try {
     await drawSchedules.rejectDrawRequest(req.params.id, req.user.companyId, {
-      rejectedById: req.user.id,
+      rejectedById: req.user.userId,
       reason: req.body.reason,
     });
     res.json({ success: true });
