@@ -8,12 +8,12 @@
 /* ========== CSS Variables ========== */
 :root {
   /* Primary — Dark Teal (headings, footer, nav text, secondary buttons) */
-  --navy:       #004d40;
+  --navy:       {{SECONDARY_COLOR}};
   --navy-light: #00695c;
   --navy-dark:  #00251a;
 
   /* Brand — Teal (primary buttons, links, accents, service bar) */
-  --gold:       #009688;
+  --gold:       {{PRIMARY_COLOR}};
   --gold-light: #4db6ac;
   --gold-dark:  #00796b;
 
@@ -23,7 +23,7 @@
 
   /* Backgrounds */
   --white:     #ffffff;
-  --off-white: #f0fdf9;  /* light mint tint */
+  --off-white: {{OFF_WHITE_COLOR}};
   --gray-100:  #f5f5f5;
   --gray-200:  #e5e5e5;
   --gray-300:  #d4d4d4;
@@ -33,10 +33,10 @@
   --black:     #000000;
 
   /* Admin / compat aliases */
-  --color-primary:       #009688;
+  --color-primary:       {{PRIMARY_COLOR}};
   --color-primary-dark:  #00796b;
   --color-primary-light: #b2dfdb;
-  --color-secondary:     #004d40;
+  --color-secondary:     {{SECONDARY_COLOR}};
   --color-accent:        #f59e0b;
   --font-heading: 'Nunito', sans-serif;
   --font-body:    'Open Sans', sans-serif;
@@ -3722,12 +3722,27 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
   padding: 16px 0;
 }
 
+.hc-footer-bottom-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .hc-footer-bottom p {
   font-size: 13px;
   color: #7a9991;
   margin: 0;
-  text-align: center;
 }
+
+.built-by a {
+  color: #7a9991;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.built-by a:hover { color: var(--warm); }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1100px) {

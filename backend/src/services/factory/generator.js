@@ -195,6 +195,12 @@ function buildTokenMap(config, slug) {
         : `Serving ${c.serviceRegion || c.city || 'the area'} with quality workmanship and customer-first service.`
     ),
 
+    // Website content tokens
+    '{{HERO_BADGE}}': c.heroBadge || (c.industry === 'home_care' ? 'Compassionate In-Home Care' : 'Licensed & Insured'),
+    '{{TRUST_BADGE_1}}': c.trustBadge1 || (c.industry === 'home_care' ? 'Licensed & Insured' : 'Licensed & Insured'),
+    '{{TRUST_BADGE_2}}': c.trustBadge2 || (c.industry === 'home_care' ? 'Background Checked Caregivers' : 'Free Estimates'),
+    '{{RENDER_DOMAIN}}': c.renderDomain || `${slug}-site.onrender.com`,
+
     // Owner / Admin
     '{{OWNER_NAME}}': c.ownerName || 'Admin',
     '{{OWNER_FIRST_NAME}}': firstName,
@@ -600,24 +606,27 @@ function createZip(sourceDir, outputPath) {
  * Write logo and favicon from base64 data URLs to disk
  */
 function writeBrandingAssets(targetDir, branding) {
-  const uploadsDir = path.join(targetDir, 'uploads');
-  fs.mkdirSync(uploadsDir, { recursive: true });
+  // Logo goes in build/images/ — committed to git, always deployed
+  const imagesDir = path.join(targetDir, 'build', 'images');
+  fs.mkdirSync(imagesDir, { recursive: true });
+
+  // build/ for favicon — served as static root, before /:slug wildcard
+  const buildDir = path.join(targetDir, 'build');
 
   if (branding.logo && branding.logo.startsWith('data:')) {
     const ext = getExtFromDataUrl(branding.logo) || 'png';
-    const logoPath = path.join(uploadsDir, `logo.${ext}`);
+    const logoPath = path.join(imagesDir, `logo.${ext}`);
     writeDataUrl(branding.logo, logoPath);
-
-    // Update settings.json if it exists
-    updateSettingsField(targetDir, 'logo', `/uploads/logo.${ext}`);
+    updateSettingsField(targetDir, 'logo', `/images/logo.${ext}`);
   }
 
   if (branding.favicon && branding.favicon.startsWith('data:')) {
-    const ext = getExtFromDataUrl(branding.favicon) || 'ico';
-    const faviconPath = path.join(uploadsDir, `favicon.${ext}`);
-    writeDataUrl(branding.favicon, faviconPath);
-
-    updateSettingsField(targetDir, 'favicon', `/uploads/favicon.${ext}`);
+    // Always write as .png (more reliable than .ico across browsers)
+    const pngPath = path.join(buildDir, 'favicon.png');
+    const icoPath = path.join(buildDir, 'favicon.ico');
+    writeDataUrl(branding.favicon, pngPath);
+    writeDataUrl(branding.favicon, icoPath);
+    updateSettingsField(targetDir, 'favicon', `/favicon.png`);
   }
 }
 

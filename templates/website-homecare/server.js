@@ -10,7 +10,7 @@ const ejs = require('ejs');
 const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
-const BASE_URL = process.env.BASE_URL || 'https://integrity-home-healthcare-site.onrender.com';
+const BASE_URL = process.env.BASE_URL || 'https://{{RENDER_DOMAIN}}';
 
 // ─── Paths ────────────────────────────────────────────────────────────────────
 const isProd = process.env.NODE_ENV === 'production';
@@ -180,6 +180,13 @@ const leadLimiter  = rateLimit({ windowMs: 15 * 60 * 1000, max: 5,
 });
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(buildDir, 'favicon.ico'));
+});
+app.get('/favicon.png', (req, res) => {
+  res.sendFile(path.join(buildDir, 'favicon.png'));
+});
+
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 const adminRoutes = require('./routes/admin');
@@ -214,7 +221,7 @@ app.get('/', async (req, res) => {
     homepage,
     featuredProjects,
     recentPosts,
-    title: readData('settings.json', {}).defaultMetaTitle || 'Integrity Home Healthcare — Eau Claire, WI',
+    title: readData('settings.json', {}).defaultMetaTitle || '{{COMPANY_NAME}} — Eau Claire, WI',
     description: readData('settings.json', {}).defaultMetaDescription || 'Professional in-home care services across Chippewa Valley.',
     canonicalUrl: BASE_URL
   });
@@ -223,7 +230,7 @@ app.get('/', async (req, res) => {
 // Contact
 app.get('/contact', async (req, res) => {
   await renderPage(res, 'contact', {
-    title: 'Contact Us | Integrity Home Healthcare',
+    title: 'Contact Us | {{COMPANY_NAME}}',
     description: 'Request a free in-home assessment or reach out to our care coordinators.',
     canonicalUrl: `${BASE_URL}/contact`,
     selectedService: req.query.service || ''
@@ -234,7 +241,7 @@ app.get('/contact', async (req, res) => {
 app.get('/services', async (req, res) => {
   await renderPage(res, 'home', {   // falls back to home if no services.ejs
     homepage: readData('homepage.json', {}),
-    title: 'Our Services | Integrity Home Healthcare',
+    title: 'Our Services | {{COMPANY_NAME}}',
     description: 'Comprehensive in-home care services in Eau Claire and Chippewa Valley.',
     canonicalUrl: `${BASE_URL}/services`
   });
@@ -250,7 +257,7 @@ app.get('/services/:slug', async (req, res) => {
   const viewFile = path.join(viewsDir, 'custom-page.ejs');
   await renderPage(res, fs.existsSync(viewFile) ? 'custom-page' : 'home', {
     page:        service,
-    title:       `${service.title} | Integrity Home Healthcare`,
+    title:       `${service.title} | {{COMPANY_NAME}}`,
     description: service.description || service.shortDescription || '',
     canonicalUrl: `${BASE_URL}/services/${service.slug}`
   });
@@ -262,8 +269,8 @@ app.get('/blog', async (req, res) => {
   await renderPage(res, 'home', {
     homepage:   readData('homepage.json', {}),
     recentPosts: posts,
-    title:      'Blog | Integrity Home Healthcare',
-    description: 'News and resources from Integrity Home Healthcare.',
+    title:      'Blog | {{COMPANY_NAME}}',
+    description: 'News and resources from {{COMPANY_NAME}}.',
     canonicalUrl: `${BASE_URL}/blog`
   });
 });
@@ -276,7 +283,7 @@ app.get('/blog/:slug', async (req, res) => {
 
   await renderPage(res, 'custom-page', {
     page:        { ...post, content: post.content || post.body || '' },
-    title:       `${post.title} | Integrity Home Healthcare`,
+    title:       `${post.title} | {{COMPANY_NAME}}`,
     description: post.excerpt || '',
     canonicalUrl: `${BASE_URL}/blog/${post.slug}`
   });
@@ -288,7 +295,7 @@ app.get('/gallery', async (req, res) => {
   await renderPage(res, 'home', {
     homepage:        readData('homepage.json', {}),
     featuredProjects: gallery,
-    title:           'Gallery | Integrity Home Healthcare',
+    title:           'Gallery | {{COMPANY_NAME}}',
     description:     'Browse our work across Chippewa Valley.',
     canonicalUrl:    `${BASE_URL}/gallery`
   });
@@ -302,7 +309,7 @@ app.get('/gallery/:id', async (req, res) => {
 
   await renderPage(res, 'project-detail', {
     project,
-    title:       `${project.title} | Integrity Home Healthcare`,
+    title:       `${project.title} | {{COMPANY_NAME}}`,
     description: project.description || '',
     canonicalUrl: `${BASE_URL}/gallery/${project.id}`
   });
@@ -320,7 +327,7 @@ app.get('/:slug', async (req, res) => {
   const s = readData('settings.json', {});
   await renderPage(res, 'custom-page', {
     page,
-    title:       `${page.title} | ${s.siteName || 'Integrity Home Healthcare'}`,
+    title:       `${page.title} | ${s.siteName || '{{COMPANY_NAME}}'}`,
     description: page.metaDescription || page.excerpt || '',
     canonicalUrl: `${BASE_URL}/${page.slug}`
   });
@@ -346,7 +353,7 @@ app.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════════════════════╗
 ║                                                      ║
-║   🏠  Integrity Home Healthcare                      ║
+║   🏠  {{COMPANY_NAME}}                      ║
 ║                                                      ║
 ║   Port:     ${PORT}                                    ║
 ║   Mode:     ${isProd ? 'Production' : 'Development'}                         ║
@@ -365,3 +372,4 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
