@@ -1,30 +1,30 @@
 {
   "items": [
     {
-      "id": "services",
-      "label": "Services",
-      "href": "/services",
+      "id": "about",
+      "label": "About",
+      "href": "#about",
       "visible": true,
       "children": []
     },
     {
-      "id": "gallery",
-      "label": "Gallery",
-      "href": "/gallery",
-      "visible": false,
+      "id": "services",
+      "label": "Services",
+      "href": "#services",
+      "visible": true,
       "children": []
     },
     {
-      "id": "blog",
-      "label": "Blog",
-      "href": "/blog",
-      "visible": false,
+      "id": "areas",
+      "label": "Service Areas",
+      "href": "#areas",
+      "visible": true,
       "children": []
     },
     {
       "id": "contact",
       "label": "Contact",
-      "href": "/contact",
+      "href": "#contact",
       "visible": true,
       "children": []
     }

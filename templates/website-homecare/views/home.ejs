@@ -8,9 +8,9 @@ const businessHours = (typeof homepage !== 'undefined' && homepage && homepage.b
 
 // Settings with fallbacks
 const phone = (typeof settings !== 'undefined' && settings && settings.phone) ? settings.phone : '{{COMPANY_PHONE}}';
-const email = (typeof settings !== 'undefined' && settings && settings.email) ? settings.email : '{{COMPANY_EMAIL}}';
+const email = (typeof settings !== 'undefined' && settings && settings.email) ? settings.email : 'integrityhomehrealthcarellc@outlook.com';
 const address = (typeof settings !== 'undefined' && settings && settings.address) ? settings.address : '123 Main St';
-const city = (typeof settings !== 'undefined' && settings && settings.city) ? settings.city : '{{CITY}}';
+const city = (typeof settings !== 'undefined' && settings && settings.city) ? settings.city : 'Eau Claire';
 const state = (typeof settings !== 'undefined' && settings && settings.state) ? settings.state : 'WI';
 const zip = (typeof settings !== 'undefined' && settings && settings.zip) ? settings.zip : '54701';
 const phoneRaw = phone.replace(/\D/g, '');
@@ -108,506 +108,186 @@ function getImageUrl(p) {
     </div>
   </div>
 
-  <!-- Services Section -->
-  <section class="services-section" id="services">
+  <!-- ═══ ABOUT US ═══ -->
+  <section class="about-section" id="about">
     <div class="container">
-      <h2>Our Services</h2>
-      <div class="services-grid">
+      <div class="section-eyebrow">About Us</div>
+      <h2 class="section-headline-serif">Care That Feels Like Family</h2>
+      <div class="about-body">
+        <p><%= settings && settings.aboutParagraph1 || 'We are a locally owned and operated home care agency serving ' + (city || '{{CITY}}') + ' and the surrounding communities. We understand that inviting someone into your home to care for a loved one is a deeply personal decision—and we don't take that trust lightly.' %></p>
+        <p><%= settings && settings.aboutParagraph2 || 'We provide one-on-one, personalized care tailored to each client's unique needs. Whether you need a few hours of support each week or more comprehensive daily assistance, we're here to help your loved one maintain their independence, dignity, and quality of life.' %></p>
+        <% if (settings && settings.vaApproved !== false) { %>
+        <blockquote class="about-va-quote">
+          As a VA-approved provider, we're proud to serve the veterans who have served us. We work directly with the VA to make accessing care as simple as possible for veteran families.
+        </blockquote>
+        <% } %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SERVICES ═══ -->
+  <section class="hc-services-section" id="services">
+    <div class="container">
+      <div class="section-eyebrow">Our Services</div>
+      <h2 class="section-headline-serif">How We Can Help</h2>
+      <div class="hc-services-grid">
         <% if (typeof services !== 'undefined' && services && services.length > 0) { %>
           <% services.forEach(function(service) { %>
-            <div class="service-card animate-on-scroll">
-              <div class="service-image">
-                <% if (service.image) { %>
-                  <img 
-                    src="<%= getImageUrl(service.image) %>" 
-                    alt="<%= service.title %> services in {{CITY}}, {{STATE}} - {{COMPANY_NAME}}"
-                    loading="lazy"
-                    width="800"
-                    height="600"
-                  >
+            <div class="hc-service-card">
+              <div class="hc-service-icon">
+                <% if (service.svgIcon) { %>
+                  <%- service.svgIcon %>
                 <% } else { %>
-                  <span class="service-icon"><%= service.icon || '🤝' %></span>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 <% } %>
               </div>
-              <div class="service-content">
-                <h3><%= service.title %></h3>
-                <p><%= service.shortDescription || service.tagline || service.description %></p>
-                <% if (service.links && service.links.length > 0) { %>
-                  <hr>
-                  <ul class="service-links">
-                    <% service.links.forEach(function(link) { %>
-                      <li><a href="<%= link.href %>"><%= link.label %></a></li>
-                    <% }); %>
-                  </ul>
-                <% } %>
-              </div>
+              <h3><%= service.title %></h3>
+              <p><%= service.shortDescription || service.tagline || service.description %></p>
             </div>
           <% }); %>
+        <% } else { %>
+          <div class="hc-service-card"><div class="hc-service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><h3>Personal Care</h3><p>Assistance with daily activities like bathing, dressing, grooming, and hygiene—delivered with dignity and respect.</p></div>
+          <div class="hc-service-card"><div class="hc-service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><h3>Companionship</h3><p>Friendly conversation, social engagement, and a caring presence to combat isolation and brighten each day.</p></div>
+          <div class="hc-service-card"><div class="hc-service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v3H3z"/><path d="M3 9h18v3H3z"/><path d="M3 15h12v3H3z"/></svg></div><h3>Meal Preparation</h3><p>Nutritious, home-cooked meals prepared according to dietary needs and personal preferences.</p></div>
+          <div class="hc-service-card"><div class="hc-service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><h3>Light Housekeeping</h3><p>Help with laundry, dishes, tidying up, and keeping the home clean, safe, and comfortable.</p></div>
+          <div class="hc-service-card"><div class="hc-service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><h3>Medication Reminders</h3><p>Gentle reminders to help ensure medications are taken on schedule, as prescribed.</p></div>
+          <div class="hc-service-card"><div class="hc-service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><h3>Transportation</h3><p>Safe rides to medical appointments, errands, social activities, and anywhere else life takes you.</p></div>
+          <div class="hc-service-card"><div class="hc-service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><h3>Respite Care</h3><p>Giving family caregivers a well-deserved break while we provide attentive, reliable care for your loved one.</p></div>
         <% } %>
       </div>
     </div>
   </section>
 
-  <!-- Why Choose Us Section -->
-  <section class="why-choose-section">
+  <!-- ═══ SERVICE AREA ═══ -->
+  <section class="service-area-section" id="areas">
     <div class="container">
-      <h2>Why Families in Eau Claire Choose {{COMPANY_NAME}}</h2>
-      <div class="why-grid">
-        <div class="why-item animate-on-scroll">
-          <div class="why-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </div>
-          <h3>Caregivers Who Truly Care</h3>
-          <p>Every caregiver on our team is carefully screened, background-checked, and selected for their genuine compassion. We don't just fill shifts — we match the right caregiver to your loved one's personality and needs.</p>
-        </div>
-        <div class="why-item animate-on-scroll">
-          <div class="why-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          </div>
-          <h3>Locally Owned in Chippewa Valley</h3>
-          <p>We're not a national franchise — we're your neighbors. {{COMPANY_NAME}} is owned and operated right here in Eau Claire, serving families across Eau Claire, Chippewa Falls, Osseo, and throughout Chippewa Valley.</p>
-        </div>
-        <div class="why-item animate-on-scroll">
-          <div class="why-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <h3>Licensed, Insured & Accountable</h3>
-          <p>{{COMPANY_NAME}} is fully licensed by the state, carries comprehensive liability insurance, and maintains workers' compensation coverage on every caregiver. Your family is protected — and so is your peace of mind.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Testimonials Section -->
-  <% if (typeof testimonials !== 'undefined' && testimonials && testimonials.length > 0) { %>
-    <section class="testimonials-section">
-      <div class="container">
-        <h2>What Our Customers Say</h2>
-        <div class="testimonial-slider">
-          <% testimonials.forEach(function(testimonial, index) { %>
-            <div class="testimonial-card <%= index === 0 ? 'active' : '' %>" data-index="<%= index %>">
-              <div class="testimonial-content">
-                <div class="testimonial-stars">
-                  <%= '★'.repeat(testimonial.rating || 5) %>
-                </div>
-                <blockquote>"<%= testimonial.text %>"</blockquote>
-                <div class="testimonial-author">
-                  <% if (testimonial.image) { %>
-                    <img src="<%= getImageUrl(testimonial.image) %>" alt="<%= testimonial.author %>">
-                  <% } %>
-                  <div>
-                    <strong><%= testimonial.author %></strong>
-                    <% if (testimonial.location) { %>
-                      <span><%= testimonial.location %></span>
-                    <% } %>
-                  </div>
-                </div>
-              </div>
-            </div>
-          <% }); %>
-        </div>
-        <% if (testimonials.length > 1) { %>
-          <div class="testimonial-dots">
-            <% testimonials.forEach(function(_, i) { %>
-              <button 
-                class="<%= i === 0 ? 'active' : '' %>"
-                data-index="<%= i %>"
-                aria-label="Testimonial <%= i + 1 %>"
-              ></button>
-            <% }); %>
-          </div>
-        <% } %>
-      </div>
-    </section>
-  <% } %>
-
-  <!-- Trust Badges -->
-  <% if (trustBadges.length > 0) { %>
-    <section class="trust-section">
-      <div class="container">
-        <div class="review-badges">
-          <% trustBadges.forEach(function(badge) { %>
-            <div class="review-badge">
-              <% if (badge.type === 'google') { %>
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-              <% } else if (badge.type === 'facebook') { %>
-                <svg viewBox="0 0 512 512" fill="currentColor">
-                  <path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/>
-                </svg>
-              <% } else if (badge.type === 'bbb') { %>
-                <span class="badge-text">BBB</span>
-              <% } else { %>
-                <span class="badge-text">✓</span>
-              <% } %>
-              <div class="badge-info">
-                <span class="stars"><%= badge.label %></span>
-                <span class="count"><%= badge.sublabel %></span>
-              </div>
-            </div>
-          <% }); %>
-        </div>
-      </div>
-    </section>
-  <% } %>
-
-  <!-- CTA Section -->
-  <section 
-    class="cta-section"
-    <% if (ctaSection.backgroundImage) { %>
-      style="background-image: url(<%= getImageUrl(ctaSection.backgroundImage) %>)"
-    <% } %>
-  >
-    <div class="container">
-      <%
-        const ctaTitle = ctaSection.title || 'Ready to start care for your loved one?';
-        const ctaTitleLines = ctaTitle.split('\n');
-      %>
-      <h2>
-        <% ctaTitleLines.forEach(function(line, i) { %>
-          <%= line %><% if (i === 0 && ctaTitleLines.length > 1) { %><br><% } %>
+      <div class="section-eyebrow">Service Area</div>
+      <h2 class="section-headline-serif">Proudly Serving the <%= settings && settings.serviceRegion || (city + ' Area') %></h2>
+      <p class="service-area-sub">We provide in-home care throughout <%= city %> and surrounding communities within approximately 30 minutes.</p>
+      <div class="service-area-pills">
+        <% serviceAreas.forEach(function(area, i) { %>
+          <span class="area-pill <%= i === 0 ? 'area-pill-active' : '' %>"><%= area %></span>
         <% }); %>
-      </h2>
-      <p><%= ctaSection.description || "Contact us today for a free in-home assessment. Care can often begin within 24–48 hours." %></p>
-      <div class="cta-buttons">
-        <a href="<%= ctaSection.primaryButtonLink || '#contact' %>" class="btn btn-primary btn-lg">
-          <%= ctaSection.primaryButtonText || 'Schedule a Free Estimate' %>
-        </a>
-        <a href="<%= ctaSection.secondaryButtonLink || 'tel:' + phoneRaw %>" class="btn btn-outline btn-lg">
-          <%= ctaSection.secondaryButtonText || 'Call ' + phone %>
-        </a>
       </div>
     </div>
   </section>
 
-  <!-- Latest Blog Posts -->
-  <% if (typeof recentPosts !== 'undefined' && recentPosts && recentPosts.length > 0) { %>
-    <section class="blog-preview-section">
-      <div class="container">
-        <h2>Latest from Our Blog</h2>
-        <div class="blog-preview-grid">
-          <% recentPosts.forEach(function(post) { %>
-            <a href="/blog/<%= post.slug %>" class="blog-preview-card animate-on-scroll">
-              <% if (post.featuredImage) { %>
-                <img 
-                  src="<%= getImageUrl(post.featuredImage) %>" 
-                  alt="<%= post.title %>"
-                  loading="lazy"
-                  width="400"
-                  height="225"
-                >
-              <% } %>
-              <div class="blog-preview-content">
-                <h3><%= post.title %></h3>
-                <p><%= post.excerpt %></p>
-                <span class="read-more">Read More →</span>
+  <!-- ═══ CTA BANNER ═══ -->
+  <section class="hc-cta-banner">
+    <div class="container">
+      <h2><%= ctaSection.title || 'Ready to Talk About Care Options?' %></h2>
+      <p><%= ctaSection.description || "Every family's situation is different. Let's have a conversation about how we can help—no pressure, no obligation." %></p>
+      <div class="hc-cta-buttons">
+        <a href="tel:<%= phoneRaw %>" class="btn hc-cta-btn-white">Call <%= phone %></a>
+        <a href="#contact" class="btn hc-cta-btn-outline">Send Us a Message</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CONTACT ═══ -->
+  <section class="hc-contact-section" id="contact">
+    <div class="container">
+      <div class="hc-contact-grid">
+
+        <!-- Left: Info -->
+        <div class="hc-contact-info">
+          <h2>Let's Start a Conversation</h2>
+          <p>Whether you're exploring options or ready to get started, we're happy to answer your questions. Reach out by phone, email, or the contact form.</p>
+          <div class="hc-contact-items">
+            <div class="hc-contact-item">
+              <div class="hc-contact-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.19 14.9 19.79 19.79 0 0 1 1.12 6.24 2 2 0 0 1 3.1 4h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
               </div>
-            </a>
-          <% }); %>
-        </div>
-        <div style="text-align: center; margin-top: 1.5rem;">
-          <a href="/blog" class="btn btn-outline">View All Articles</a>
-        </div>
-      </div>
-    </section>
-  <% } %>
-
-  <!-- FAQ Section -->
-  <section class="home-faq">
-    <div class="container">
-      <h2>Frequently Asked Questions</h2>
-      <div class="home-faq-list">
-        <details class="home-faq-item animate-on-scroll">
-          <summary><strong>How quickly can care start in Eau Claire?</strong></summary>
-          <p>In most cases we can begin care within 24–48 hours of your free assessment. For urgent situations, contact us directly and we'll do everything we can to expedite the process.</p>
-        </details>
-        <details class="home-faq-item animate-on-scroll">
-          <summary><strong>Do you accept Medicare or Medicaid?</strong></summary>
-          <p>Coverage varies by the type of care needed. We work with families to understand their options and will help you navigate what may be covered. Contact us and we'll walk you through it at no cost.</p>
-        </details>
-        <details class="home-faq-item animate-on-scroll">
-          <summary><strong>What areas do you serve besides Eau Claire?</strong></summary>
-          <p>We provide in-home care services throughout Chippewa Valley, including Eau Claire, Chippewa Falls, Osseo, and surrounding communities. Call us if you're unsure whether we cover your area.</p>
-        </details>
-        <details class="home-faq-item animate-on-scroll">
-          <summary><strong>What makes {{COMPANY_NAME}} different?</strong></summary>
-          <p>We're locally owned, which means you're working with people who are invested in this community — not a national call center. Every client gets a dedicated care coordinator, and we personally match caregivers based on personality and needs, not just availability.</p>
-        </details>
-        <details class="home-faq-item animate-on-scroll">
-          <summary><strong>What if we're not happy with our caregiver?</strong></summary>
-          <p>We'll make it right. The right fit matters deeply to us. If a caregiver isn't the right match, just let your care coordinator know and we'll work quickly to find someone better suited to your loved one.</p>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <!-- Contact Form Section -->
-  <section class="contact-section" id="contact">
-    <div class="container">
-      <div class="contact-grid">
-        <div class="contact-info">
-          <h2>Contact Us</h2>
-          <div class="contact-item">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
-            <div>
-              <strong>Phone</strong>
-              <a href="tel:<%= phoneRaw %>"><%= phone %></a>
+              <div>
+                <div class="hc-contact-label">Phone</div>
+                <a href="tel:<%= phoneRaw %>" class="hc-contact-value"><%= phone %></a>
+              </div>
             </div>
-          </div>
-          <div class="contact-item">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-            <div>
-              <strong>Email</strong>
-              <a href="mailto:<%= email %>"><%= email %></a>
+            <div class="hc-contact-item">
+              <div class="hc-contact-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div>
+                <div class="hc-contact-label">Email</div>
+                <a href="mailto:<%= email %>" class="hc-contact-value"><%= email %></a>
+              </div>
             </div>
-          </div>
-          <div class="contact-item">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <div>
-              <strong>Address</strong>
-              <span><%= address %><br/><%= city %>, <%= state %> <%= zip %></span>
+            <div class="hc-contact-item">
+              <div class="hc-contact-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <div>
+                <div class="hc-contact-label">Location</div>
+                <span class="hc-contact-value"><%= city %>, <%= state === 'WI' ? 'Wisconsin' : state %></span>
+              </div>
             </div>
-          </div>
-          <div class="contact-item">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-            <div>
-              <strong>Hours</strong>
-              <span>
-                <% if (businessHours.monday && !businessHours.monday.closed) { %>
-                  Mon - Fri: <%= businessHours.monday.open %> - <%= businessHours.monday.close %>
-                <% } else { %>
-                  Mon - Fri: 8am - 5pm
-                <% } %>
-                <br/>
-                <% if (businessHours.saturday && !businessHours.saturday.closed) { %>
-                  Sat: <%= businessHours.saturday.open %><% if (businessHours.saturday.close) { %> - <%= businessHours.saturday.close %><% } %>
-                <% } else { %>
-                  Sat: By Appointment
-                <% } %>
-              </span>
-            </div>
-          </div>
-          
-          <div class="service-areas">
-            <h3>Service Areas</h3>
-            <p><%= serviceAreas.join(', ') %>, and surrounding communities.</p>
           </div>
         </div>
 
-        <div class="contact-form-container">
-          <h2>Request a Free Assessment</h2>
+        <!-- Right: Form -->
+        <div class="hc-contact-form-wrap">
+          <h3>Request a Free Consultation</h3>
+          <p class="form-subhead">Tell us a little about your situation and we'll be in touch soon.</p>
           <form id="contact-form" method="POST" action="/api/leads">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="name">Name *</label>
-                <input type="text" id="name" name="name" required>
-              </div>
-              <div class="form-group">
-                <label for="phone">Phone *</label>
-                <input type="tel" id="phone" name="phone" required>
-              </div>
+            <div class="hc-form-group">
+              <label>Your Name</label>
+              <input type="text" name="name" required placeholder="">
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email">
-              </div>
-              <div class="form-group">
-                <label for="address-field">Address</label>
-                <input type="text" id="address-field" name="address">
-              </div>
+            <div class="hc-form-group">
+              <label>Phone Number</label>
+              <input type="tel" name="phone" required placeholder="">
             </div>
-            <div class="form-group">
-              <label>Services Needed</label>
-              <div class="checkbox-grid">
-                <% if (typeof services !== 'undefined' && services && services.length > 0) { %>
-                  <% services.slice(0, 6).forEach(function(service) { %>
-                    <label class="checkbox-item">
-                      <input type="checkbox" name="services[]" value="<%= service.title %>">
-                      <span><%= service.title %></span>
-                    </label>
-                  <% }); %>
-                <% } %>
-              </div>
+            <div class="hc-form-group">
+              <label>Email Address</label>
+              <input type="email" name="email" placeholder="">
             </div>
-            <div class="form-group">
-              <label for="message">Tell Us About Your Situation</label>
-              <textarea id="message" name="message" rows="4" placeholder="Tell us about your loved one's care needs..."></textarea>
+            <div class="hc-form-group">
+              <label>What type of care are you looking for?</label>
+              <select name="careType">
+                <option value="">Select an option...</option>
+                <option>Personal Care</option>
+                <option>Companionship</option>
+                <option>Meal Preparation</option>
+                <option>Medication Reminders</option>
+                <option>Transportation</option>
+                <option>Respite Care</option>
+                <option>Light Housekeeping</option>
+                <option>Other / Not Sure</option>
+              </select>
             </div>
-            <div id="form-error" style="display: none; color: #dc2626; background: #fef2f2; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; font-size: 0.95rem;"></div>
-            <button type="submit" class="btn btn-primary btn-lg full-width">
-              Submit Request
-            </button>
+            <div class="hc-form-group">
+              <label>Tell us about your situation</label>
+              <textarea name="message" rows="4" placeholder="Who needs care? What kind of help are you looking for?"></textarea>
+            </div>
+            <div id="form-error" style="display:none;color:#dc2626;background:#fef2f2;padding:12px 16px;border-radius:8px;margin-bottom:8px;font-size:.9rem;"></div>
+            <button type="submit" class="btn btn-warm btn-lg" style="width:100%;border-radius:50px;">Send Message</button>
           </form>
         </div>
+
       </div>
     </div>
   </section>
 
-  <!-- Map Section -->
-  <section class="map-section">
-    <iframe 
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2844.8234567890!2d-91.4984!3d44.8113!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x87f8b1234567890%3A0x1234567890!2s<%= encodeURIComponent(address + ', ' + city + ', ' + state + ' ' + zip) %>!5e0!3m2!1sen!2sus!4v1234567890"
-      allowfullscreen="" 
-      loading="lazy"
-      title="Location Map"
-    ></iframe>
-  </section>
-
-  <!-- Enhanced LocalBusiness Schema with Reviews -->
+  <!-- Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "HomeHealthCare",
-    "name": "{{COMPANY_NAME}}",
-    "image": "https://{{DOMAIN}}/logo.jpg",
-    "url": "{{SITE_URL}}",
+    "name": "<%= settings && settings.companyName || 'Home Care' %>",
+    "url": "<%= settings && settings.siteUrl || '' %>",
     "telephone": "+1<%= phoneRaw %>",
     "email": "<%= email %>",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "<%= address %>",
       "addressLocality": "<%= city %>",
       "addressRegion": "<%= state %>",
       "postalCode": "<%= zip %>",
       "addressCountry": "US"
     },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": "44.8113",
-      "longitude": "-91.4984"
-    },
-    "areaServed": [
-      <% serviceAreas.forEach(function(area, index) { %>
-      {
-        "@type": "City",
-        "name": "<%= area %>, WI"
-      }<%= index < serviceAreas.length - 1 ? ',' : '' %>
-      <% }); %>
-    ],
-    "priceRange": "$$",
-    "openingHoursSpecification": [
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        "opens": "08:00",
-        "closes": "17:00"
-      }
-    ]
-    <% if (typeof services !== 'undefined' && services && services.length > 0) { %>
-    ,"hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "Home Care Services",
-      "itemListElement": [
-        <% services.forEach(function(s, index) { %>
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "MedicalProcedure",
-            "name": "<%= s.title %>",
-            "description": "<%= s.description %>"
-          }
-        }<%= index < services.length - 1 ? ',' : '' %>
-        <% }); %>
-      ]
-    }
-    <% } %>
-    <% if (typeof testimonials !== 'undefined' && testimonials && testimonials.length > 0) { %>
-    ,"aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "<%= (testimonials.reduce(function(sum, t) { return sum + (t.rating || 5); }, 0) / testimonials.length).toFixed(1) %>",
-      "reviewCount": <%= testimonials.length %>,
-      "bestRating": "5",
-      "worstRating": "1"
-    }
-    ,"review": [
-      <% testimonials.forEach(function(t, index) { %>
-      {
-        "@type": "Review",
-        "author": {
-          "@type": "Person",
-          "name": "<%= t.author %>"
-        },
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": <%= t.rating || 5 %>,
-          "bestRating": "5"
-        },
-        "reviewBody": "<%= t.text %>"
-        <% if (t.createdAt) { %>
-        ,"datePublished": "<%= t.createdAt.split('T')[0] %>"
-        <% } %>
-      }<%= index < testimonials.length - 1 ? ',' : '' %>
-      <% }); %>
-    ]
-    <% } %>
+    "areaServed": [<% serviceAreas.forEach(function(area, i) { %>{"@type":"City","name":"<%= area %>"}<%- i < serviceAreas.length-1 ? ',' : '' %><% }); %>]
   }
   </script>
 
-  <!-- FAQ Schema for Rich Results -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "How quickly can care start in Eau Claire?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "In most cases we can begin care within 24–48 hours of your free assessment. For urgent situations we'll do everything we can to expedite the process."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Do you accept Medicare or Medicaid?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Coverage varies by the type of care needed. We work with families to understand their options and will help you navigate what may be covered at no cost."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What areas do you serve besides Eau Claire?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We provide in-home care throughout Chippewa Valley, including Eau Claire, Chippewa Falls, Osseo, and surrounding communities."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What makes {{COMPANY_NAME}} different?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We're locally owned and personally match caregivers based on personality and needs. Every client gets a dedicated care coordinator, not a national call center."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What if we're not happy with our caregiver?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We'll make it right. If a caregiver isn't the right match, let your care coordinator know and we'll find someone better suited to your loved one quickly."
-        }
-      }
-    ]
-  }
-  </script>
 </div>
 
 <script>
