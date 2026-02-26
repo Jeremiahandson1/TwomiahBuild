@@ -21,7 +21,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="{{COMPANY_NAME}}">
   <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="<%= (typeof ogImage !== 'undefined' && ogImage) ? ogImage : '{{SITE_URL}}/uploads/og-default.jpg' %>">
+  <meta property="og:image" content="<%= (typeof ogImage !== 'undefined' && ogImage) ? ogImage : 'https://integrityhomehrealthcarellc.org/uploads/og-default.jpg' %>">
   
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -36,18 +36,59 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   
   <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
   
   <!-- Styles -->
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/public-pages.css">
+
+  <!-- Runtime Brand Color Override (from settings) -->
+  <%
+    const _pc  = (typeof settings !== 'undefined' && settings && settings.primaryColor)   || null;
+    const _sc  = (typeof settings !== 'undefined' && settings && settings.secondaryColor) || null;
+    const _ac  = (typeof settings !== 'undefined' && settings && settings.accentColor)    || null;
+    const _ow  = (typeof settings !== 'undefined' && settings && settings.offWhiteColor)  || null;
+    if (_pc || _sc || _ac) {
+      // Simple hex lightening helper
+      function _lh(hex, pct) {
+        hex = (hex||'').replace('#','');
+        if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+        const n=parseInt(hex,16);
+        const clamp=(v)=>Math.min(255,Math.max(0,v));
+        const step=Math.round(255*Math.abs(pct)/100)*(pct>0?1:-1);
+        const r=clamp((n>>16)+step), g=clamp(((n>>8)&0xff)+step), b=clamp((n&0xff)+step);
+        return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+      }
+      const _navy  = _sc || '#004d40';
+      const _gold  = _pc || '#009688';
+      const _warm  = _ac || '#f59e0b';
+  %>
+  <style>
+    :root {
+      --navy:       <%= _navy %>;
+      --navy-light: <%= _lh(_navy, 12) %>;
+      --navy-dark:  <%= _lh(_navy, -15) %>;
+      --gold:       <%= _gold %>;
+      --gold-light: <%= _lh(_gold, 15) %>;
+      --gold-dark:  <%= _lh(_gold, -15) %>;
+      --warm:       <%= _warm %>;
+      --warm-dark:  <%= _lh(_warm, -15) %>;
+      <% if (_ow) { %>--off-white: <%= _ow %>;<% } %>
+      --color-primary:       <%= _gold %>;
+      --color-primary-light: <%= _lh(_gold, 20) %>;
+      --color-secondary:     <%= _navy %>;
+      --color-accent:        <%= _warm %>;
+    }
+  </style>
+  <% } %>
+  
   
   <!-- Structured Data -->
   <%
     const phone = (typeof settings !== 'undefined' && settings && settings.phone) ? settings.phone : '{{COMPANY_PHONE}}';
     const email = (typeof settings !== 'undefined' && settings && settings.email) ? settings.email : '<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1876717b73587b74797e7471767b77766b6c6a6d7b6c71777636767d6c">[email&#160;protected]</a>';
     const address = (typeof settings !== 'undefined' && settings && settings.address) ? settings.address : '123 Main St';
-    const city = (typeof settings !== 'undefined' && settings && settings.city) ? settings.city : '{{CITY}}';
+    const city = (typeof settings !== 'undefined' && settings && settings.city) ? settings.city : 'Eau Claire';
     const state = (typeof settings !== 'undefined' && settings && settings.state) ? settings.state : 'WI';
     const zip = (typeof settings !== 'undefined' && settings && settings.zip) ? settings.zip : '54701';
     const phoneRaw = phone.replace(/\D/g, '');
@@ -62,9 +103,9 @@
     "@type": "HomeHealthCare",
     "name": "{{COMPANY_NAME}}",
     "description": "Professional in-home care services in Eau Claire and the Chippewa Valley",
-    "url": "{{SITE_URL}}",
-    "logo": "https://{{DOMAIN}}<%= logoUrl %>",
-    "image": "https://{{DOMAIN}}<%= logoUrl %>",
+    "url": "https://integrityhomehrealthcarellc.org",
+    "logo": "https://integrityhomehrealthcarellc.org<%= logoUrl %>",
+    "image": "https://integrityhomehrealthcarellc.org<%= logoUrl %>",
     "telephone": "+1<%= phoneRaw %>",
     "email": "<%= email %>",
     "address": {
@@ -125,7 +166,7 @@
         "@type": "ListItem",
         "position": <%= index + 1 %>,
         "name": "<%= crumb.label %>",
-        "item": "https://{{DOMAIN}}<%= crumb.url %>"
+        "item": "https://integrityhomehrealthcarellc.org<%= crumb.url %>"
       }<%= index < breadcrumbs.length - 1 ? ',' : '' %>
       <% }); %>
     ]
@@ -357,7 +398,7 @@
                   <rect x="15" y="22" width="10" height="14" stroke="currentColor" strokeWidth="2"/>
                 </svg>
               </div>
-              <span>{{COMPANY_NAME_UPPER}}</span>
+              <span>INTEGRITY HOME HEALTHCARE</span>
             </div>
             <p>Quality services for customers throughout the Eau Claire area. Licensed, insured, and committed to excellence.</p>
             <div class="social-links">

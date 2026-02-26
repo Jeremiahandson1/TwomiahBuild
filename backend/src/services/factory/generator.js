@@ -204,8 +204,10 @@ function buildTokenMap(config, slug) {
     '{{HASHED_DEFAULT_PASSWORD}}': bcrypt.hashSync(defaultPassword, 10),
 
     // Branding / Colors
-    '{{PRIMARY_COLOR}}': b.primaryColor || '#f97316',
-    '{{SECONDARY_COLOR}}': b.secondaryColor || '#1e3a5f',
+    '{{PRIMARY_COLOR}}': b.primaryColor || defaults.primary,
+    '{{SECONDARY_COLOR}}': b.secondaryColor || defaults.secondary,
+    '{{ACCENT_COLOR}}': b.accentColor || defaults.accent,
+    '{{OFF_WHITE_COLOR}}': b.offWhiteColor || (industry === 'home_care' ? '#f0fdf9' : '#f8f9fa'),
 
     // Products selected
     '{{PRODUCTS_JSON}}': JSON.stringify(config.products || ['crm']),

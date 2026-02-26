@@ -55,5 +55,9 @@
   },
   "twoFactorEnabled": false,
   "adminPassword": "{{HASHED_DEFAULT_PASSWORD}}",
-  "twoFactorSecret": ""
+  "twoFactorSecret": "",
+  "primaryColor": "{{PRIMARY_COLOR}}",
+  "secondaryColor": "{{SECONDARY_COLOR}}",
+  "accentColor": "{{ACCENT_COLOR}}",
+  "offWhiteColor": "{{OFF_WHITE_COLOR}}"
 }
