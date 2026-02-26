@@ -80,7 +80,7 @@ const WEBSITE_PRESETS = [
     name: 'Full Site',
     description: 'All pages — services, gallery, blog, testimonials, contact form, and visualizer tool.',
     icon: '🌐',
-    example: 'e.g. Claflin Construction',
+    example: 'e.g. Riverside Roofing',
     features: ['contact_form', 'services_pages', 'gallery', 'blog', 'testimonials', 'analytics'],
   },
   {

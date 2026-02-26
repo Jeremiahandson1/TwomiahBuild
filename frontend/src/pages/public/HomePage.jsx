@@ -78,8 +78,8 @@ const FEATURE_CATEGORIES = [
 const TESTIMONIALS = [
   {
     quote: "We cut our billing time by 70%. What used to take me a Friday afternoon now takes 20 minutes.",
-    name: "Mike Claflin",
-    title: "Owner, Claflin Construction",
+    name: "Tom Rivera",
+    title: "Owner, Riverside Roofing",
     location: "Eau Claire, WI",
     rating: 5,
   },
