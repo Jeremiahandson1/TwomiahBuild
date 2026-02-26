@@ -129,7 +129,14 @@ export default function FactoryWizard() {
     features: {
       website: [],
       crm: [],
-    }
+    },
+    integrations: {
+      twilio: { accountSid: '', authToken: '', phoneNumber: '' },
+      sendgrid: { apiKey: '' },
+      stripe: { secretKey: '', publishableKey: '', webhookSecret: '' },
+      sentry: { dsn: '' },
+      googleMaps: { apiKey: '' },
+    },
   });
 
   // Persist state on change (debounced to avoid excessive writes)
@@ -174,6 +181,7 @@ export default function FactoryWizard() {
     { label: 'Company', icon: Building2 },
     { label: 'Branding', icon: Palette },
     { label: 'Features', icon: Settings2 },
+    { label: 'Integrations', icon: Zap },
     { label: 'Generate', icon: Download },
   ];
 
@@ -183,6 +191,16 @@ export default function FactoryWizard() {
 
   const updateBranding = useCallback((key, value) => {
     setConfig(prev => ({ ...prev, branding: { ...prev.branding, [key]: value } }));
+  }, []);
+
+  const updateIntegration = useCallback((service, key, value) => {
+    setConfig(prev => ({
+      ...prev,
+      integrations: {
+        ...prev.integrations,
+        [service]: { ...prev.integrations[service], [key]: value },
+      },
+    }));
   }, []);
 
   const toggleProduct = useCallback((productId) => {
@@ -254,7 +272,8 @@ export default function FactoryWizard() {
           <button
             onClick={() => { clearSavedState(); setStep(0); setConfig({
               products: [], company: { name: '', email: '', phone: '', address: '', city: '', state: '', zip: '', domain: '', ownerName: '', industry: '', serviceRegion: '', nearbyCities: ['', '', '', ''] },
-              branding: { primaryColor: '#f97316', secondaryColor: '#1e3a5f' }, features: { website: [], crm: [] }
+              branding: { primaryColor: '#f97316', secondaryColor: '#1e3a5f' }, features: { website: [], crm: [] },
+              integrations: { twilio: { accountSid: '', authToken: '', phoneNumber: '' }, sendgrid: { apiKey: '' }, stripe: { secretKey: '', publishableKey: '', webhookSecret: '' }, sentry: { dsn: '' }, googleMaps: { apiKey: '' } },
             }); }}
             style={{ fontSize: '0.8rem', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4, textDecoration: 'underline' }}
           >Start over</button>
@@ -271,6 +290,13 @@ export default function FactoryWizard() {
         {step === 2 && <BrandingForm branding={config.branding} onChange={updateBranding} />}
         {step === 3 && <FeatureStep config={config} setConfig={setConfig} registry={featureRegistry} />}
         {step === 4 && (
+          <IntegrationsStep
+            config={config}
+            integrations={config.integrations}
+            onChange={updateIntegration}
+          />
+        )}
+        {step === 5 && (
           <ReviewStep
             config={config}
             registry={featureRegistry}
@@ -298,7 +324,7 @@ export default function FactoryWizard() {
             <ChevronLeft size={18} /> Back
           </button>
 
-          {step < 4 ? (
+          {step < 5 ? (
             <button
               onClick={() => {
                 if (step === 1) {
@@ -1064,7 +1090,207 @@ function FeatureRow({ feature, checked, core, onToggle }) {
 }
 
 
-// ─── STEP 5: REVIEW & GENERATE ─────────────────────────────────────
+// ─── STEP 5: INTEGRATIONS ──────────────────────────────────────────
+
+const INTEGRATIONS = [
+  {
+    id: 'twilio',
+    name: 'Twilio — SMS & Two-Way Texting',
+    icon: '💬',
+    color: '#F22F46',
+    requiredFeatures: ['two_way_texting', 'sms', 'calltracking', 'call_tracking'],
+    description: 'Required for two-way texting and call tracking.',
+    link: 'https://console.twilio.com',
+    linkText: 'Get credentials at console.twilio.com',
+    fields: [
+      { key: 'accountSid', label: 'Account SID', placeholder: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' },
+      { key: 'authToken',  label: 'Auth Token',  placeholder: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', sensitive: true },
+      { key: 'phoneNumber', label: 'Phone Number', placeholder: '+15551234567' },
+    ],
+  },
+  {
+    id: 'sendgrid',
+    name: 'SendGrid — Transactional Email',
+    icon: '✉️',
+    color: '#1A82E2',
+    requiredFeatures: [], // always relevant
+    description: 'Sends invoices, quotes, notifications, and review requests.',
+    link: 'https://app.sendgrid.com/settings/api_keys',
+    linkText: 'Get API key at sendgrid.com',
+    fields: [
+      { key: 'apiKey', label: 'API Key', placeholder: 'SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', sensitive: true },
+    ],
+  },
+  {
+    id: 'stripe',
+    name: 'Stripe — Online Payments',
+    icon: '💳',
+    color: '#6772E5',
+    requiredFeatures: ['online_payments', 'payments', 'invoicing'],
+    description: 'Accepts credit cards and ACH payments on invoices.',
+    link: 'https://dashboard.stripe.com/apikeys',
+    linkText: 'Get keys at dashboard.stripe.com',
+    fields: [
+      { key: 'secretKey',      label: 'Secret Key',       placeholder: 'sk_live_xxxxxxxx', sensitive: true },
+      { key: 'publishableKey', label: 'Publishable Key',  placeholder: 'pk_live_xxxxxxxx' },
+      { key: 'webhookSecret',  label: 'Webhook Secret',   placeholder: 'whsec_xxxxxxxx', sensitive: true },
+    ],
+  },
+  {
+    id: 'googleMaps',
+    name: 'Google Maps — GPS & Geocoding',
+    icon: '🗺️',
+    color: '#4285F4',
+    requiredFeatures: ['gps_tracking', 'routing', 'maps', 'fleet'],
+    description: 'Powers GPS tracking, route optimization, and map views.',
+    link: 'https://console.cloud.google.com/apis/credentials',
+    linkText: 'Get API key at console.cloud.google.com',
+    fields: [
+      { key: 'apiKey', label: 'API Key', placeholder: 'AIzaSy...', sensitive: false },
+    ],
+  },
+  {
+    id: 'sentry',
+    name: 'Sentry — Error Monitoring',
+    icon: '🔍',
+    color: '#362D59',
+    requiredFeatures: [], // always optional
+    description: 'Captures production errors so you know when something breaks.',
+    link: 'https://sentry.io/settings/projects/',
+    linkText: 'Get DSN at sentry.io',
+    fields: [
+      { key: 'dsn', label: 'DSN', placeholder: 'https://xxx@oyyy.ingest.sentry.io/zzz' },
+    ],
+  },
+];
+
+function IntegrationsStep({ config, integrations, onChange }) {
+  const [showSensitive, setShowSensitive] = useState({});
+  const selectedFeatures = [...(config.features?.crm || []), ...(config.features?.website || [])];
+
+  // Determine which integrations are relevant to selected features
+  const isRelevant = (integration) => {
+    if (integration.requiredFeatures.length === 0) return true;
+    return integration.requiredFeatures.some(f => selectedFeatures.includes(f));
+  };
+
+  const relevant = INTEGRATIONS.filter(isRelevant);
+  const optional = INTEGRATIONS.filter(i => !isRelevant(i));
+
+  const [showOptional, setShowOptional] = useState(false);
+  const displayed = showOptional ? INTEGRATIONS : relevant;
+
+  const hasAnyValue = (integ) => {
+    const vals = integrations?.[integ.id] || {};
+    return integ.fields.some(f => vals[f.key]?.trim());
+  };
+
+  const toggleSensitive = (fieldKey) => {
+    setShowSensitive(prev => ({ ...prev, [fieldKey]: !prev[fieldKey] }));
+  };
+
+  return (
+    <div>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>Integrations</h2>
+      <p style={{ color: '#6b7280', marginBottom: 8 }}>
+        Enter credentials for services this build will use. All fields are optional —
+        leave blank and configure later in the deployed app's settings.
+      </p>
+      <div style={{ padding: '10px 14px', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, fontSize: '0.82rem', color: '#92400e', marginBottom: 24 }}>
+        🔒 These values go directly into the generated <code>.env</code> file and are never stored on Twomiah's servers.
+      </div>
+
+      <div style={{ display: 'grid', gap: 16 }}>
+        {displayed.map(integ => {
+          const vals = integrations?.[integ.id] || {};
+          const filled = hasAnyValue(integ);
+          const isHighlighted = isRelevant(integ);
+
+          return (
+            <div key={integ.id} style={{
+              border: `2px solid ${filled ? integ.color : isHighlighted ? '#e5e7eb' : '#f3f4f6'}`,
+              borderRadius: 12, overflow: 'hidden',
+              opacity: isHighlighted ? 1 : 0.7,
+            }}>
+              {/* Header */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px',
+                background: filled ? `${integ.color}10` : '#f9fafb',
+              }}>
+                <span style={{ fontSize: 24 }}>{integ.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#111827' }}>
+                    {integ.name}
+                    {filled && <span style={{ marginLeft: 8, fontSize: '0.72rem', color: integ.color, fontWeight: 700 }}>✓ CONFIGURED</span>}
+                    {!isHighlighted && <span style={{ marginLeft: 8, fontSize: '0.72rem', color: '#9ca3af' }}>NOT NEEDED FOR SELECTED FEATURES</span>}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: 2 }}>{integ.description}</div>
+                </div>
+                <a href={integ.link} target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: '0.75rem', color: '#3b82f6', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                  {integ.linkText} ↗
+                </a>
+              </div>
+
+              {/* Fields */}
+              <div style={{ padding: '12px 16px', display: 'grid', gap: 10, background: 'white' }}>
+                {integ.fields.map(field => {
+                  const fieldKey = `${integ.id}.${field.key}`;
+                  const isVisible = showSensitive[fieldKey] || !field.sensitive;
+                  return (
+                    <div key={field.key}>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#374151', marginBottom: 4, display: 'block' }}>
+                        {field.label}
+                      </label>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <input
+                          type={isVisible ? 'text' : 'password'}
+                          value={vals[field.key] || ''}
+                          onChange={e => onChange(integ.id, field.key, e.target.value)}
+                          placeholder={field.placeholder}
+                          style={{
+                            flex: 1, padding: '9px 12px', border: '1px solid #d1d5db',
+                            borderRadius: 8, fontSize: '0.85rem', outline: 'none',
+                            fontFamily: vals[field.key] ? 'monospace' : 'inherit',
+                            background: vals[field.key] ? '#f0fdf4' : 'white',
+                          }}
+                        />
+                        {field.sensitive && (
+                          <button
+                            onClick={() => toggleSensitive(fieldKey)}
+                            style={{
+                              padding: '9px 12px', border: '1px solid #d1d5db', borderRadius: 8,
+                              background: 'white', cursor: 'pointer', fontSize: '0.8rem', color: '#6b7280',
+                            }}
+                          >
+                            {isVisible ? '🙈 Hide' : '👁 Show'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Show/hide non-relevant integrations */}
+      {optional.length > 0 && !showOptional && (
+        <button
+          onClick={() => setShowOptional(true)}
+          style={{ marginTop: 16, background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'underline' }}
+        >
+          Show {optional.length} other integration{optional.length > 1 ? 's' : ''} not needed for selected features
+        </button>
+      )}
+    </div>
+  );
+}
+
+
+// ─── STEP 6: REVIEW & GENERATE ─────────────────────────────────────
 
 function ReviewStep({ config, registry, generating, result, error, onGenerate }) {
   const [deploying, setDeploying] = useState(false);
@@ -1187,6 +1413,41 @@ function ReviewStep({ config, registry, generating, result, error, onGenerate })
         {config.products.includes('website') && config.features.website.length > 0 && (
           <SummaryCard title={`Website Features (${config.features.website.length})`} items={config.features.website.map(f => f.replace(/_/g, ' '))} />
         )}
+        {/* Integrations summary */}
+        {(() => {
+          const integ = config.integrations || {};
+          const configured = [];
+          const missing = [];
+          if (integ.twilio?.accountSid) configured.push('Twilio SMS'); else missing.push('Twilio SMS');
+          if (integ.sendgrid?.apiKey) configured.push('SendGrid Email'); else missing.push('SendGrid Email');
+          if (integ.stripe?.secretKey) configured.push('Stripe Payments'); else missing.push('Stripe Payments');
+          if (integ.googleMaps?.apiKey) configured.push('Google Maps');
+          if (integ.sentry?.dsn) configured.push('Sentry');
+          return (
+            <div style={{ padding: 16, background: '#f9fafb', borderRadius: 10, border: '1px solid #e5e7eb' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#374151', marginBottom: 8 }}>Integrations</div>
+              {configured.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
+                  {configured.map(s => (
+                    <span key={s} style={{ padding: '3px 10px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 6, fontSize: '0.8rem', color: '#15803d' }}>✓ {s}</span>
+                  ))}
+                </div>
+              )}
+              {missing.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {missing.map(s => (
+                    <span key={s} style={{ padding: '3px 10px', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 6, fontSize: '0.8rem', color: '#c2410c' }}>⚠ {s} not configured</span>
+                  ))}
+                </div>
+              )}
+              {missing.length > 0 && (
+                <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 6 }}>
+                  Unconfigured services can be added later in the deployed app's Settings → Integrations.
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {error && (

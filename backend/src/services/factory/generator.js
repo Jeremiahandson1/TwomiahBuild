@@ -202,6 +202,17 @@ function buildTokenMap(config, slug) {
     // Generated secrets
     '{{JWT_SECRET}}': crypto.randomBytes(32).toString('hex'),
     '{{DATABASE_URL}}': c.databaseUrl || `postgresql://user:pass@localhost:5432/${slug}_crm`,
+
+    // Integrations — populated from wizard, fall back to empty (user configures post-deploy)
+    '{{TWILIO_ACCOUNT_SID}}':    (config.integrations?.twilio?.accountSid  || '').trim(),
+    '{{TWILIO_AUTH_TOKEN}}':     (config.integrations?.twilio?.authToken   || '').trim(),
+    '{{TWILIO_PHONE_NUMBER}}':   (config.integrations?.twilio?.phoneNumber || '').trim(),
+    '{{SENDGRID_API_KEY}}':      (config.integrations?.sendgrid?.apiKey    || '').trim(),
+    '{{STRIPE_SECRET_KEY}}':     (config.integrations?.stripe?.secretKey   || '').trim(),
+    '{{STRIPE_PUBLISHABLE_KEY}}': (config.integrations?.stripe?.publishableKey || '').trim(),
+    '{{STRIPE_WEBHOOK_SECRET}}': (config.integrations?.stripe?.webhookSecret   || '').trim(),
+    '{{GOOGLE_MAPS_API_KEY}}':   (config.integrations?.googleMaps?.apiKey || '').trim(),
+    '{{SENTRY_DSN}}':            (config.integrations?.sentry?.dsn        || '').trim(),
   };
 }
 
