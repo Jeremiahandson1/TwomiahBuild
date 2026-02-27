@@ -11,6 +11,7 @@ const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', exact: true },
   { to: '/customers', icon: Users, label: 'Customers' },
   { to: '/factory', icon: Factory, label: 'Factory' },
+  { to: '/plans', icon: Tag, label: 'Plans' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 

@@ -40,6 +40,7 @@ const PortalProjects            = lazy(() => import('./components/portal/PortalP
 const OperatorLayout        = lazy(() => import('./components/layout/OperatorLayout'));
 const OperatorDashboard     = lazy(() => import('./pages/OperatorDashboard'));
 const CustomersPage         = lazy(() => import('./pages/CustomersPage'));
+const PlansPage              = lazy(() => import('./pages/PlansPage'));
 const CustomerDetailPage    = lazy(() => import('./pages/CustomerDetailPage'));
 const SettingsPage          = lazy(() => import('./pages/SettingsPage'));
 const BillingSettingsPage   = lazy(() => import('./pages/settings/BillingSettingsPage'));
@@ -145,6 +146,7 @@ function App() {
                       <Route path="customers"            element={<CustomersPage />} />
                       <Route path="customers/:id"        element={<CustomerDetailPage />} />
                       <Route path="factory"              element={<FactoryWizard />} />
+                      <Route path="plans"               element={<PlansPage />} />
                       <Route path="builds"               element={<BuildsPage />} />
                       <Route path="settings"             element={<SettingsPage />} />
                       <Route path="settings/billing"     element={<BillingSettingsPage />} />

@@ -1447,4 +1447,93 @@ router.post('/customers/:id/cancel', async (req, res) => {
 });
 
 
+
+// ─── Stripe Webhook ────────────────────────────────────────────────────────────
+// Must use raw body — registered before JSON middleware in index.js
+
+router.post('/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_FACTORY_WEBHOOK_SECRET;
+
+  let event;
+  try {
+    if (webhookSecret) {
+      event = factoryStripe.verifyWebhook(req.body, sig, webhookSecret);
+    } else {
+      // Dev mode — no signature verification
+      event = JSON.parse(req.body.toString());
+    }
+  } catch (err) {
+    logger.error('[Factory Webhook] Signature verification failed:', err.message);
+    return res.status(400).json({ error: 'Invalid signature' });
+  }
+
+  try {
+    const result = await factoryStripe.handleWebhookEvent(event, prisma);
+    res.json({ received: true, result });
+  } catch (err) {
+    logger.error('[Factory Webhook] Handler error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Pricing Plans ─────────────────────────────────────────────────────────────
+
+router.get('/plans', (req, res) => {
+  res.json({
+    plans: [
+      {
+        id: 'starter',
+        name: 'Starter',
+        description: 'CRM only — perfect for getting organized',
+        monthlyPrice: 97,
+        yearlyPrice: 970,
+        includes: ['crm'],
+        features: [
+          'Full CRM (contacts, jobs, invoices, quotes)',
+          'Mobile app access',
+          'Email notifications',
+          'Up to 3 team members',
+          'Email support',
+        ],
+      },
+      {
+        id: 'professional',
+        name: 'Professional',
+        description: 'CRM + Website — the complete package',
+        monthlyPrice: 197,
+        yearlyPrice: 1970,
+        includes: ['crm', 'website', 'cms'],
+        popular: true,
+        features: [
+          'Everything in Starter',
+          'Professional website',
+          'Website content manager',
+          'Lead capture forms',
+          'SEO-optimized pages',
+          'Up to 10 team members',
+          'Priority support',
+        ],
+      },
+      {
+        id: 'growth',
+        name: 'Growth',
+        description: 'Professional + marketing automation',
+        monthlyPrice: 297,
+        yearlyPrice: 2970,
+        includes: ['crm', 'website', 'cms', 'paid_ads'],
+        features: [
+          'Everything in Professional',
+          'Google Ads management',
+          'Facebook Ads management',
+          'Call tracking',
+          'Monthly performance reports',
+          'Unlimited team members',
+          'Dedicated account manager',
+        ],
+      },
+    ],
+  });
+});
+
 export default router;
