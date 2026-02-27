@@ -1040,7 +1040,39 @@ router.post('/customers/:id/redeploy', async (req, res) => {
     } catch (e) { /* */ }
 
     if (!renderServiceIds) {
-      return res.status(400).json({ error: 'No deployed services found' });
+      // No service IDs — fall back to full deploy flow
+      logger.info(`[Redeploy] No service IDs for ${customer.slug}, running full deploy...`);
+      const latestBuild = await prisma.factoryBuild.findFirst({
+        where: { customerId: customer.id },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (!latestBuild?.zipPath) {
+        return res.status(400).json({ error: 'No build found. Generate a package first.' });
+      }
+      res.json({ message: 'Full deployment started', status: 'deploying' });
+      try {
+        await prisma.factoryCustomer.update({ where: { id: customer.id }, data: { status: 'deploying' } });
+        let zipPath = await factoryStorage.downloadZip(latestBuild.zipPath, latestBuild.storageType || 's3');
+        const result = await deployService.deployCustomer(customer, zipPath, {});
+        const updateData = { status: result.success ? 'deployed' : 'generated' };
+        if (result.apiUrl) updateData.apiUrl = result.apiUrl;
+        if (result.deployedUrl) updateData.deployedUrl = result.deployedUrl;
+        if (result.siteUrl) updateData.siteUrl = result.siteUrl;
+        if (result.repoUrl) updateData.repoUrl = result.repoUrl;
+        if (result.services) {
+          const serviceIds = {};
+          if (result.services.backend?.id) serviceIds.backend = result.services.backend.id;
+          if (result.services.frontend?.id) serviceIds.frontend = result.services.frontend.id;
+          if (result.services.site?.id) serviceIds.site = result.services.site.id;
+          updateData.renderServiceIds = JSON.stringify(serviceIds);
+        }
+        await prisma.factoryCustomer.update({ where: { id: customer.id }, data: updateData });
+        logger.info(`[Redeploy] Full deploy complete for ${customer.slug}: ${result.status}`);
+      } catch (err) {
+        logger.error(`[Redeploy] Full deploy failed for ${customer.slug}:`, err.message);
+        await prisma.factoryCustomer.update({ where: { id: customer.id }, data: { status: 'generated' } });
+      }
+      return;
     }
     const result = await deployService.redeployCustomer({ renderServiceIds });
     res.json(result);
