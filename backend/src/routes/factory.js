@@ -502,7 +502,7 @@ router.post('/admin/patch-repo-urls', async (req, res) => {
   }
 });
 
-router.get('/debug/templates', authenticate, async (req, res) => {
+router.get('/debug/templates', async (req, res) => {
   const fs = (await import('fs')).default;
   const path = (await import('path')).default;
   const __file = new URL(import.meta.url).pathname;
