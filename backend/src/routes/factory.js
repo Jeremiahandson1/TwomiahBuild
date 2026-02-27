@@ -502,6 +502,25 @@ router.post('/admin/patch-repo-urls', async (req, res) => {
   }
 });
 
+router.get('/debug/templates', authenticate, async (req, res) => {
+  const fs = (await import('fs')).default;
+  const path = (await import('path')).default;
+  const __file = new URL(import.meta.url).pathname;
+  const PROJECT_ROOT = path.resolve(__file, '..', '..', '..', '..');
+  const TEMPLATES_ROOT = process.env.TWOMIAH_BUILD_TEMPLATES_DIR || path.join(PROJECT_ROOT, 'templates');
+  const result = { TEMPLATES_ROOT, templates: {} };
+  try {
+    const dirs = fs.readdirSync(TEMPLATES_ROOT);
+    for (const dir of dirs) {
+      const pagesPath = path.join(TEMPLATES_ROOT, dir, 'admin', 'src', 'pages');
+      if (fs.existsSync(pagesPath)) {
+        result.templates[dir] = fs.readdirSync(pagesPath);
+      }
+    }
+  } catch (e) { result.error = e.message; }
+  res.json(result);
+});
+
 router.get('/stats', async (req, res) => {
   try {
     
