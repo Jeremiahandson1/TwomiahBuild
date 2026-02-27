@@ -6,10 +6,7 @@ import Modal from './components/Modal';
 
 // Pages
 import HomePage from './pages/HomePage';
-import GalleryPage from './pages/GalleryPage';
-import ProjectDetailPage from './pages/ProjectDetailPage';
 import ServicePage from './pages/ServicePage';
-import SubServicePage from './pages/SubServicePage';
 import CustomPage from './pages/CustomPage';
 
 // Admin
@@ -206,11 +203,6 @@ function AppContent() {
       >
         <Routes>
           <Route path="/" element={<HomePage onFormSuccess={handleFormSuccess} />} />
-          <Route path="/gallery" element={<GalleryPage />} />
-          <Route path="/projects" element={<GalleryPage />} />
-          <Route path="/gallery/:id" element={<ProjectDetailPage />} />
-          <Route path="/projects/:id" element={<ProjectDetailPage />} />
-          <Route path="/services/:serviceId/:subId" element={<SubServicePage />} />
           <Route path="/services/:id" element={<ServicePage />} />
           <Route path="/page/:pageId" element={<CustomPage />} />
           <Route path="*" element={<NotFound />} />
