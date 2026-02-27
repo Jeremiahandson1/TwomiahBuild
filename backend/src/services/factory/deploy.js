@@ -72,6 +72,22 @@ export function getMissingConfig() {
 /**
  * Create a GitHub repo and push the generated customer code to it
  */
+async function deleteGitHubRepo(repoFullName) {
+  try {
+    const res = await fetch(`${GITHUB_API}/repos/${repoFullName}`, {
+      method: 'DELETE',
+      headers: githubHeaders(),
+    });
+    if (res.status === 204) {
+      logger.info(`[Deploy] Deleted existing repo ${repoFullName}`);
+    }
+    // Wait a moment for GitHub to process the deletion
+    await new Promise(r => setTimeout(r, 3000));
+  } catch (e) {
+    logger.warn(`[Deploy] Could not delete repo ${repoFullName}: ${e.message}`);
+  }
+}
+
 async function createGitHubRepo(slug, description) {
   const org = process.env.GITHUB_ORG;
 
@@ -455,7 +471,9 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
     zip.extractAllTo(extractDir, true);
     results.steps.push({ step: 'extract', status: 'ok' });
 
-    // ── Step 2: Create GitHub repo ─────────────────────
+    // ── Step 2: Delete existing repo if present, then create fresh ──
+    const org = process.env.GITHUB_ORG || process.env.GITHUB_USER;
+    await deleteGitHubRepo(`${org}/${slug}`);
     const repo = await createGitHubRepo(slug, `Twomiah Build: ${factoryCustomer.name}`);
     results.steps.push({ step: 'github_repo', status: 'ok', repo: repo.full_name });
     results.repoUrl = `https://github.com/${repo.full_name}`;
