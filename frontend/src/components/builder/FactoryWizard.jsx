@@ -387,46 +387,48 @@ export default function FactoryWizard() {
           </button>
 
           {step < 5 ? (
-            <button
-              onClick={() => {
-                if (step === 1) {
-                  const c = config.company;
-                  const errors = {};
-                  if (!c.name?.trim()) errors.name = 'Company name is required';
-                  if (c.email && !validateEmail(c.email)) errors.email = 'Invalid email format';
-                  if (c.phone && !validatePhone(c.phone)) errors.phone = 'Phone must be at least 10 digits';
-                  if (c.domain && !validateDomain(c.domain)) errors.domain = 'Invalid domain format';
-                  if (c.zip && !validateZip(c.zip)) errors.zip = 'Invalid ZIP code';
-                  if (c.state && !validateState(c.state)) errors.state = '2-letter code';
-                  setValidationErrors(errors);
-                  if (Object.keys(errors).length > 0) return;
-                }
-                setStep(s => s + 1);
-              }}
-              disabled={!canProceed()}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6, padding: '10px 24px',
-                background: canProceed() ? '#f97316' : '#e5e7eb', color: canProceed() ? 'white' : '#9ca3af',
-                border: 'none', borderRadius: 8, cursor: canProceed() ? 'pointer' : 'default',
-                fontWeight: 600,
-              }}
-            >
-Next <ChevronRight size={18} />
-            </button>
-            {config.company?.name && !result && (
+            <>
               <button
-                onClick={handlePreview}
-                disabled={previewing}
+                onClick={() => {
+                  if (step === 1) {
+                    const c = config.company;
+                    const errors = {};
+                    if (!c.name?.trim()) errors.name = 'Company name is required';
+                    if (c.email && !validateEmail(c.email)) errors.email = 'Invalid email format';
+                    if (c.phone && !validatePhone(c.phone)) errors.phone = 'Phone must be at least 10 digits';
+                    if (c.domain && !validateDomain(c.domain)) errors.domain = 'Invalid domain format';
+                    if (c.zip && !validateZip(c.zip)) errors.zip = 'Invalid ZIP code';
+                    if (c.state && !validateState(c.state)) errors.state = '2-letter code';
+                    setValidationErrors(errors);
+                    if (Object.keys(errors).length > 0) return;
+                  }
+                  setStep(s => s + 1);
+                }}
+                disabled={!canProceed()}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '10px 20px', background: '#f3f4f6',
-                  border: '1px solid #d1d5db', borderRadius: 8,
-                  cursor: previewing ? 'wait' : 'pointer', color: '#374151', fontWeight: 600,
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '10px 24px',
+                  background: canProceed() ? '#f97316' : '#e5e7eb', color: canProceed() ? 'white' : '#9ca3af',
+                  border: 'none', borderRadius: 8, cursor: canProceed() ? 'pointer' : 'default',
+                  fontWeight: 600,
                 }}
               >
-                <Eye size={16} /> {previewing ? 'Loading...' : 'Preview Site'}
+                Next <ChevronRight size={18} />
               </button>
-            </button>
+              {config.company?.name && (
+                <button
+                  onClick={handlePreview}
+                  disabled={previewing}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '10px 20px', background: '#f3f4f6',
+                    border: '1px solid #d1d5db', borderRadius: 8,
+                    cursor: previewing ? 'wait' : 'pointer', color: '#374151', fontWeight: 600,
+                  }}
+                >
+                  <Eye size={16} /> {previewing ? 'Loading...' : 'Preview Site'}
+                </button>
+              )}
+            </>
           ) : null}
         </div>
       )}
