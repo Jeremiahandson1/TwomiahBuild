@@ -1040,6 +1040,46 @@ router.get('/customers/:id/deploy/status', async (req, res) => {
  * POST /api/factory/customers/:id/redeploy
  * Trigger a redeploy of all services
  */
+router.post('/customers/:id/regenerate', async (req, res) => {
+  try {
+    const customer = await prisma.factoryCustomer.findFirst({
+      where: { id: req.params.id, companyId: req.user.companyId },
+    });
+    if (!customer) return res.status(404).json({ error: 'Customer not found' });
+    if (!customer.wizardConfig) return res.status(400).json({ error: 'No saved config found for this customer' });
+
+    res.json({ message: 'Regenerating package and deploying...', status: 'deploying' });
+
+    try {
+      await prisma.factoryCustomer.update({ where: { id: customer.id }, data: { status: 'deploying', renderServiceIds: null } });
+      const config = JSON.parse(customer.wizardConfig);
+      const { zipPath, zipName, buildId, slug, storageType, defaultPassword } = await generate(config);
+      await prisma.factoryBuild.create({
+        data: { customerId: customer.id, zipPath, zipName, buildId, status: 'generated' },
+      });
+      const result = await deployService.deployCustomer(customer, zipPath, {});
+      const updateData = { status: result.success ? 'deployed' : 'generated' };
+      if (result.apiUrl) updateData.apiUrl = result.apiUrl;
+      if (result.deployedUrl) updateData.deployedUrl = result.deployedUrl;
+      if (result.siteUrl) updateData.siteUrl = result.siteUrl;
+      if (result.repoUrl) updateData.repoUrl = result.repoUrl;
+      if (result.services) updateData.renderServiceIds = JSON.stringify({
+        backend: result.services.backend?.id,
+        frontend: result.services.frontend?.id,
+        site: result.services.site?.id,
+        database: result.services.database?.id,
+      });
+      await prisma.factoryCustomer.update({ where: { id: customer.id }, data: updateData });
+    } catch (err) {
+      logger.error('[Regenerate] Failed:', err);
+      await prisma.factoryCustomer.update({ where: { id: customer.id }, data: { status: 'failed' } }).catch(() => {});
+    }
+  } catch (err) {
+    logger.error('[Regenerate] Error:', err);
+    if (!res.headersSent) res.status(500).json({ error: err.message });
+  }
+});
+
 router.post('/customers/:id/redeploy', async (req, res) => {
   try {
     if (!deployService.isConfigured()) {

@@ -128,6 +128,29 @@ export default function CustomerDetailPage() {
     }
   }
 
+  async function handleRegenerate() {
+    if (!confirm('Regenerate package from saved config and redeploy?')) return;
+    try {
+      setDeploying(true);
+      const token = api.accessToken;
+      const res = await fetch(`${API_URL}/v1/factory/customers/${id}/regenerate`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        showToast('Regenerating and deploying...');
+        fetchCustomer();
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Regenerate failed', 'error');
+      }
+    } catch (err) {
+      showToast('Regenerate failed', 'error');
+    } finally {
+      setDeploying(false);
+    }
+  }
+
   async function fetchDeployStatus() {
     try {
       const token = api.accessToken;
@@ -460,6 +483,13 @@ export default function CustomerDetailPage() {
                       className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 w-full justify-center"
                     >
                       <RefreshCw className="w-4 h-4" /> Redeploy
+                    </button>
+                    <button
+                      onClick={handleRegenerate}
+                      disabled={deploying}
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-orange-700 border border-orange-200 rounded-lg hover:bg-orange-50 w-full justify-center"
+                    >
+                      <Package className="w-4 h-4" /> Regenerate Package
                     </button>
                   </div>
                 )}
