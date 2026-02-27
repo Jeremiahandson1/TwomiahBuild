@@ -18,6 +18,7 @@ import factoryStorage from '../services/factory/storage.js';
 import factoryStripe from '../services/factory/stripe.js';
 import deployService from '../services/factory/deploy.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
+import emailService from '../services/email.js';
 import { prisma } from '../config/prisma.js';
 import { createMarketingTenant } from '../services/ads/factory.js';
 import logger from '../services/logger.js';
@@ -980,6 +981,30 @@ router.post('/customers/:id/deploy', async (req, res) => {
         } catch (mktErr) {
           // Non-fatal — marketing setup can be triggered manually from the hub
           logger.error(`[Factory] Marketing tenant setup failed for ${customer.slug}:`, mktErr.message);
+        }
+      }
+
+
+      // ── Send onboarding email to customer ─────────────────────────────────
+      if (result.success && customer.email) {
+        try {
+          const products = Array.isArray(customer.products) ? customer.products : [];
+          const productName = products.includes('crm') && products.includes('website')
+            ? 'CRM + Website'
+            : products.includes('crm') ? 'CRM' : 'Website';
+
+          await emailService.sendFactoryCustomerOnboarding(customer.email, {
+            contactName: customer.companyName,
+            productName,
+            loginEmail: customer.email,
+            tempPassword: customer.tempPassword || 'Check with your account manager',
+            crmUrl: result.deployedUrl || null,
+            cmsUrl: result.siteUrl || null,
+            siteUrl: result.siteUrl || null,
+          });
+          logger.info(`[Factory] Onboarding email sent to ${customer.email}`);
+        } catch (emailErr) {
+          logger.error(`[Factory] Onboarding email failed for ${customer.slug}:`, emailErr.message);
         }
       }
 

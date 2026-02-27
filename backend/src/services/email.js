@@ -471,6 +471,83 @@ const templates = {
     text: `Low Stock Alert: ${data.itemName}\n\nCurrent stock: ${data.currentQuantity} ${data.unit || 'units'}\nReorder point: ${data.reorderPoint}\n\nPlease reorder soon.`,
   }),
 
+
+  // ============ FACTORY CUSTOMER ONBOARDING ============
+  factoryCustomerOnboarding: (data) => ({
+    subject: `Your ${data.productName} is Ready — Login Details Inside`,
+    html: `
+      <!DOCTYPE html><html><head><style>${baseStyles}
+        .cred-box { background: #1e293b; color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; font-family: monospace; }
+        .cred-label { color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .cred-value { color: #38bdf8; font-size: 16px; font-weight: bold; word-break: break-all; }
+        .url-link { color: #f97316; text-decoration: none; font-weight: bold; }
+        .step { display: flex; gap: 12px; margin-bottom: 16px; align-items: flex-start; }
+        .step-num { background: #f97316; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 14px; }
+      </style></head>
+      <body><div class="container">
+        <div class="header">
+          <h1 style="margin:0;">🎉 Your ${data.productName} is Live!</h1>
+        </div>
+        <div class="content">
+          <p>Hi ${data.contactName},</p>
+          <p>Your new ${data.productName} has been set up and is ready to go. Here are your login details — save these somewhere safe.</p>
+
+          ${data.crmUrl ? `
+          <h3 style="margin-bottom:8px;">🖥️ CRM Dashboard</h3>
+          <div class="cred-box">
+            <div class="cred-label">URL</div>
+            <div class="cred-value"><a href="${data.crmUrl}" class="url-link" style="color:#38bdf8;">${data.crmUrl}</a></div>
+          </div>` : ''}
+
+          ${data.cmsUrl ? `
+          <h3 style="margin-bottom:8px;">✏️ Website Admin</h3>
+          <div class="cred-box">
+            <div class="cred-label">URL</div>
+            <div class="cred-value"><a href="${data.cmsUrl}/admin" class="url-link" style="color:#38bdf8;">${data.cmsUrl}/admin</a></div>
+          </div>` : ''}
+
+          <h3 style="margin-bottom:8px;">🔑 Your Login Credentials</h3>
+          <div class="cred-box">
+            <div class="cred-label">Email</div>
+            <div class="cred-value">${data.loginEmail}</div>
+            <div style="margin-top:12px;" class="cred-label">Temporary Password</div>
+            <div class="cred-value">${data.tempPassword}</div>
+          </div>
+
+          <p style="color:#ef4444; font-size:14px;">⚠️ Please change your password after your first login.</p>
+
+          ${data.siteUrl ? `
+          <h3 style="margin-bottom:8px;">🌐 Your Website</h3>
+          <p><a href="${data.siteUrl}" class="url-link">${data.siteUrl}</a></p>
+          ` : ''}
+
+          <h3>Getting Started</h3>
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>Log in with the credentials above and change your password</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>Update your company info, logo, and branding in Settings</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>Add your services and content in the Website Admin</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div>Start adding your customers and leads to the CRM</div>
+          </div>
+
+          <p>Have questions? Reply to this email and we'll get you sorted.</p>
+          <p>— The Twomiah Team</p>
+        </div>
+        <div class="footer">&copy; ${new Date().getFullYear()} Twomiah Software Ventures · twomiah.com</div>
+      </div></body></html>
+    `,
+    text: `Hi ${data.contactName},\n\nYour ${data.productName} is live!\n\nCRM: ${data.crmUrl || 'N/A'}\nWebsite Admin: ${data.cmsUrl ? data.cmsUrl + '/admin' : 'N/A'}\nWebsite: ${data.siteUrl || 'N/A'}\n\nLogin Email: ${data.loginEmail}\nTemp Password: ${data.tempPassword}\n\nChange your password after first login.\n\n— The Twomiah Team`,
+  }),
+
   subscriptionPaymentFailed: (data) => ({
     subject: `Action Required: Payment Failed for ${data.companyName}`,
     html: `
@@ -571,6 +648,7 @@ const emailService = {
   
   // Billing
   sendSubscriptionPaymentFailed: (to, data) => send(to, 'subscriptionPaymentFailed', data),
+  sendFactoryCustomerOnboarding: (to, data) => send(to, 'factoryCustomerOnboarding', data),
 
   // Digest
   sendDailyDigest: (to, data) => send(to, 'dailyDigest', data),
