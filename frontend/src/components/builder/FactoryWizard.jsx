@@ -194,10 +194,10 @@ export default function FactoryWizard() {
   const handlePreview = useCallback(async () => {
     setPreviewing(true);
     try {
+      const token = api.accessToken;
       const res = await fetch(`${API_BASE}/api/v1/factory/preview`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ config }),
       });
       if (!res.ok) throw new Error('Preview failed');
