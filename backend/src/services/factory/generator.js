@@ -25,7 +25,7 @@ const __dirname = path.dirname(__filename);
 
 // Template and output directories — configurable via env vars
 // Walks up from generator.js → services/factory/ → services/ → src/ → backend/ → project root
-const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
+const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..');
 const TEMPLATES_ROOT = process.env.TWOMIAH_BUILD_TEMPLATES_DIR || path.join(PROJECT_ROOT, 'templates');
 const OUTPUT_DIR = process.env.TWOMIAH_BUILD_OUTPUT_DIR || path.join(PROJECT_ROOT, 'generated');
 
