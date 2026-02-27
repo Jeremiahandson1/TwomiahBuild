@@ -435,7 +435,7 @@ export default function CustomerDetailPage() {
 
             {deployConfig?.configured ? (
               <div className="space-y-3">
-                {customer.status === 'generated' && (
+                {(customer.status === 'generated' || customer.status === 'deployed' || customer.status === 'active') && (
                   <button
                     onClick={handleDeploy}
                     disabled={deploying}
