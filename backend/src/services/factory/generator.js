@@ -85,6 +85,8 @@ export async function generate(config) {
       stripWebsiteFeatures(path.join(workDir, 'website'), config.features?.website || []);
       // Write logo + favicon files
       writeBrandingAssets(path.join(workDir, 'website'), config.branding || {});
+      // Inject content from wizard (services, about text, testimonials)
+      injectWizardContent(path.join(workDir, 'website'), config);
       // If CMS is also selected, nest it inside website
       if (products.includes('cms')) {
         copyTemplate('cms', path.join(workDir, 'website', 'admin'), tokens);
@@ -200,6 +202,16 @@ function buildTokenMap(config, slug) {
     '{{TRUST_BADGE_1}}': c.trustBadge1 || (c.industry === 'home_care' ? 'Licensed & Insured' : 'Licensed & Insured'),
     '{{TRUST_BADGE_2}}': c.trustBadge2 || (c.industry === 'home_care' ? 'Background Checked Caregivers' : 'Free Estimates'),
     '{{RENDER_DOMAIN}}': c.renderDomain || `${slug}-site.onrender.com`,
+    '{{ABOUT_TEXT}}': config.content?.aboutText || c.aboutText || (
+      c.industry === 'home_care'
+        ? `${c.name || 'We'} provide compassionate, professional in-home care services to seniors and families throughout ${c.city || 'the area'}. Our trained caregivers are dedicated to helping your loved ones maintain independence and dignity at home.`
+        : `${c.name || 'We'} deliver quality workmanship and outstanding service to homeowners throughout ${c.serviceRegion || c.city || 'the area'}. Licensed, insured, and committed to getting the job done right.`
+    ),
+    '{{CTA_TEXT}}': config.content?.ctaText || c.ctaText || (
+      c.industry === 'home_care'
+        ? `Ready to discuss care options for your loved one?`
+        : `Ready to start your project? Get a free estimate today.`
+    ),
 
     // Owner / Admin
     '{{OWNER_NAME}}': c.ownerName || 'Admin',
@@ -603,6 +615,84 @@ function createZip(sourceDir, outputPath) {
 
 
 /**
+ * Inject wizard-supplied content (services, about, testimonials) into generated site data files
+ */
+function injectWizardContent(websiteDir, config) {
+  const dataDir = path.join(websiteDir, 'data');
+  const wizardContent = config.content || {};
+  const industry = config.company?.industry || '';
+
+  // --- services.json ---
+  const servicesFile = path.join(dataDir, 'services.json');
+  if (fs.existsSync(servicesFile) && (wizardContent.services || wizardContent.customServices)) {
+    try {
+      let services = JSON.parse(fs.readFileSync(servicesFile, 'utf8'));
+
+      // Filter to only selected services if wizard made a selection
+      if (wizardContent.services && wizardContent.services.length > 0) {
+        services = services.filter(s => wizardContent.services.includes(s.id));
+        // Re-order to match wizard selection order
+        services.sort((a, b) =>
+          wizardContent.services.indexOf(a.id) - wizardContent.services.indexOf(b.id)
+        );
+      }
+
+      // Add custom services
+      if (wizardContent.customServices && wizardContent.customServices.length > 0) {
+        for (const custom of wizardContent.customServices) {
+          if (!services.find(s => s.id === custom.id)) {
+            services.push({
+              id: custom.id,
+              name: custom.name,
+              slug: custom.id,
+              shortDescription: custom.desc || `Professional ${custom.name.toLowerCase()} services.`,
+              description: custom.desc || `We offer professional ${custom.name.toLowerCase()} services.`,
+              icon: 'star',
+              image: '',
+              features: [],
+              visible: true,
+              order: services.length + 1,
+            });
+          }
+        }
+      }
+
+      // Apply AI-generated service descriptions if provided
+      if (wizardContent.serviceDescriptions) {
+        services = services.map(s => ({
+          ...s,
+          shortDescription: wizardContent.serviceDescriptions[s.id]?.short || s.shortDescription,
+          description: wizardContent.serviceDescriptions[s.id]?.long || s.description,
+        }));
+      }
+
+      // Re-number order
+      services = services.map((s, i) => ({ ...s, order: i + 1 }));
+      fs.writeFileSync(servicesFile, JSON.stringify(services, null, 2));
+      console.log(`[Factory] Injected ${services.length} services`);
+    } catch (e) {
+      console.warn('[Factory] Could not inject services:', e.message);
+    }
+  }
+
+  // --- homepage.json - about text and CTA ---
+  const homepageFile = path.join(dataDir, 'homepage.json');
+  if (fs.existsSync(homepageFile)) {
+    try {
+      const homepage = JSON.parse(fs.readFileSync(homepageFile, 'utf8'));
+      if (wizardContent.aboutText) homepage.aboutText = wizardContent.aboutText;
+      if (wizardContent.ctaText) homepage.ctaText = wizardContent.ctaText;
+      if (wizardContent.heroTagline) homepage.heroTagline = wizardContent.heroTagline;
+      fs.writeFileSync(homepageFile, JSON.stringify(homepage, null, 2));
+    } catch (e) {
+      console.warn('[Factory] Could not inject homepage content:', e.message);
+    }
+  }
+}
+
+
+
+/**
  * Write logo and favicon from base64 data URLs to disk
  */
 function writeBrandingAssets(targetDir, branding) {
@@ -627,6 +717,23 @@ function writeBrandingAssets(targetDir, branding) {
     writeDataUrl(branding.favicon, pngPath);
     writeDataUrl(branding.favicon, icoPath);
     updateSettingsField(targetDir, 'favicon', `/favicon.png`);
+  }
+
+  // Hero photo → build/images/hero.jpg
+  if (branding.heroPhoto && branding.heroPhoto.startsWith('data:')) {
+    const ext = getExtFromDataUrl(branding.heroPhoto) || 'jpg';
+    const heroPath = path.join(imagesDir, `hero.${ext}`);
+    writeDataUrl(branding.heroPhoto, heroPath);
+    // Update homepage.json hero.image so it shows immediately
+    const homepageFile = path.join(targetDir, 'data', 'homepage.json');
+    if (fs.existsSync(homepageFile)) {
+      try {
+        const hp = JSON.parse(fs.readFileSync(homepageFile, 'utf8'));
+        if (!hp.hero) hp.hero = {};
+        hp.hero.image = `/images/hero.${ext}`;
+        fs.writeFileSync(homepageFile, JSON.stringify(hp, null, 2));
+      } catch (e) { /* ignore */ }
+    }
   }
 }
 

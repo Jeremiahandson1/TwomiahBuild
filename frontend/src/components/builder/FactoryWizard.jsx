@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Globe, Layout, Briefcase, ChevronRight, ChevronLeft, Check,
   Building2, Palette, Settings2, Download, Loader2, Package,
-  Search, CheckSquare, Square, ChevronDown, ChevronUp, Zap, AlertCircle
+  Search, CheckSquare, Square, ChevronDown, ChevronUp, Zap, AlertCircle,
+  Sparkles, Plus, Trash2, RefreshCw
 } from 'lucide-react';
 import api from '../../services/api';
+import ContentStep from './ContentStep';
 
 import { API_BASE_URL as API_BASE } from '../../config/api.js';
 
@@ -182,6 +184,7 @@ export default function FactoryWizard() {
     { label: 'Branding', icon: Palette },
     { label: 'Features', icon: Settings2 },
     { label: 'Integrations', icon: Zap },
+    { label: 'Content', icon: Sparkles },
     { label: 'Generate', icon: Download },
   ];
 
@@ -297,6 +300,12 @@ export default function FactoryWizard() {
           />
         )}
         {step === 5 && (
+          <ContentStep
+            config={config}
+            setConfig={setConfig}
+          />
+        )}
+        {step === 6 && (
           <ReviewStep
             config={config}
             registry={featureRegistry}
@@ -582,6 +591,21 @@ function BrandingForm({ branding, onChange }) {
     reader.readAsDataURL(file);
   };
 
+  const handleHeroPhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Hero photo must be under 5MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      onChange('heroPhoto', reader.result);
+      onChange('heroPhotoFilename', file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div>
       <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>Branding</h2>
@@ -641,6 +665,42 @@ function BrandingForm({ branding, onChange }) {
             <input type="file" accept="image/*,.ico" onChange={handleFaviconUpload}
               style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
           </div>
+        </div>
+      </div>
+
+
+      {/* Hero Photo */}
+      <div style={{ marginBottom: 24 }}>
+        <label style={{ fontSize: '0.85rem', fontWeight: 500, color: '#374151', marginBottom: 4, display: 'block' }}>
+          Hero Photo <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional — shown in the homepage banner)</span>
+        </label>
+        <div style={{
+          border: '2px dashed #d1d5db', borderRadius: 12, padding: 20,
+          background: branding.heroPhoto ? '#f9fafb' : 'white', cursor: 'pointer',
+          position: 'relative', minHeight: 80,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16,
+        }}>
+          {branding.heroPhoto ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%' }}>
+              <img src={branding.heroPhoto} alt="Hero preview"
+                style={{ height: 80, width: 120, objectFit: 'cover', borderRadius: 8 }} />
+              <div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 500 }}>{branding.heroPhotoFilename}</div>
+                <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 2 }}>Will appear in homepage hero section</div>
+                <button onClick={(e) => { e.stopPropagation(); onChange('heroPhoto', null); onChange('heroPhotoFilename', null); }}
+                  style={{ fontSize: '0.75rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4, padding: 0 }}>
+                  Remove
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>Click or drag to upload a hero photo</div>
+              <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: 2 }}>JPG, PNG, WebP — max 5MB — landscape recommended (1200×600+)</div>
+            </div>
+          )}
+          <input type="file" accept="image/*" onChange={handleHeroPhotoUpload}
+            style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
         </div>
       </div>
 

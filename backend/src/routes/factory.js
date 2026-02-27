@@ -380,6 +380,71 @@ router.get('/features', (req, res) => {
 });
 
 
+
+/**
+ * POST /api/factory/generate-content
+ * Use Claude API to generate tailored website copy from company info
+ */
+router.post('/generate-content', async (req, res) => {
+  try {
+    const { companyName, city, state, industry, services, serviceRegion, ownerName, description } = req.body;
+
+    if (!companyName) {
+      return res.status(400).json({ error: 'companyName is required' });
+    }
+
+    const isHomeCare = industry === 'home_care';
+    const location = [city, state].filter(Boolean).join(', ') || 'your area';
+    const region = serviceRegion || city || 'the area';
+
+    const prompt = `You are writing website copy for a ${isHomeCare ? 'home care' : 'home improvement contractor'} company.
+
+Company: ${companyName}
+Location: ${location}
+Service region: ${region}
+${ownerName ? `Owner: ${ownerName}` : ''}
+${description ? `About: ${description}` : ''}
+Services offered: ${(services || []).join(', ')}
+
+Write the following in JSON format with these exact keys:
+{
+  "heroTagline": "short 3-6 word badge text shown in the hero section (e.g. 'Compassionate In-Home Care' or 'Licensed & Insured Since 2010')",
+  "aboutText": "2-3 sentence paragraph about this company, warm and trustworthy tone, mention the city/region",
+  "ctaText": "one sentence call-to-action for the contact banner (ends with a question or invitation, no period)",
+  "serviceDescriptions": {
+    "service-id": {
+      "short": "one sentence, 15-20 words max",
+      "long": "2-3 sentences describing this service in detail"
+    }
+  }
+}
+
+Only include service descriptions for these service IDs: ${(services || []).join(', ')}
+Return ONLY valid JSON. No markdown, no explanation.`;
+
+    // Call Anthropic API
+    const Anthropic = (await import('@anthropic-ai/sdk')).default;
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const raw = message.content[0].text.trim();
+    // Strip markdown fences if present
+    const cleaned = raw.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+    const generated = JSON.parse(cleaned);
+
+    res.json(generated);
+  } catch (err) {
+    console.error('[Factory] generate-content error:', err.message);
+    res.status(500).json({ error: 'Content generation failed', details: err.message });
+  }
+});
+
+
 /**
  * POST /api/factory/cleanup
  * Clean old generated builds
