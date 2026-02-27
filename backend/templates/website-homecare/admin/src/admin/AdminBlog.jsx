@@ -39,7 +39,7 @@ function AdminBlog() {
       excerpt: '',
       content: '',
       author: settings?.companyName || settings?.siteName || '',
-      category: 'roofing',
+      category: 'care-tips',
       tags: [],
       image: '',
       relatedServices: [],
@@ -154,7 +154,7 @@ function AdminBlog() {
     updateField('tags', editing.tags.filter(t => t !== tag));
   };
 
-  const serviceOptions = ['roofing', 'siding', 'windows', 'insulation', 'remodeling', 'new-construction'];
+  const serviceOptions = ['personal-care', 'companion-care', 'respite-care', 'memory-care', 'skilled-nursing', 'transportation'];
   const categoryOptions = ['roofing', 'siding', 'windows', 'insulation', 'remodeling', 'tips', 'news'];
 
   const toggleService = (svc) => {
