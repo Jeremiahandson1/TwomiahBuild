@@ -79,10 +79,22 @@ async function deleteGitHubRepo(repoFullName) {
       headers: githubHeaders(),
     });
     if (res.status === 204) {
-      logger.info(`[Deploy] Deleted existing repo ${repoFullName}`);
+      logger.info(`[Deploy] Deleted existing repo ${repoFullName}, waiting for GitHub...`);
+      // Poll until repo is actually gone (max 30s)
+      for (let i = 0; i < 10; i++) {
+        await new Promise(r => setTimeout(r, 3000));
+        const check = await fetch(`${GITHUB_API}/repos/${repoFullName}`, { headers: githubHeaders() });
+        if (check.status === 404) {
+          logger.info(`[Deploy] Repo ${repoFullName} confirmed deleted`);
+          return;
+        }
+        logger.info(`[Deploy] Waiting for repo deletion... attempt ${i + 1}`);
+      }
+    } else if (res.status === 404) {
+      logger.info(`[Deploy] Repo ${repoFullName} does not exist, nothing to delete`);
+    } else {
+      logger.warn(`[Deploy] Delete returned status ${res.status} for ${repoFullName}`);
     }
-    // Wait a moment for GitHub to process the deletion
-    await new Promise(r => setTimeout(r, 3000));
   } catch (e) {
     logger.warn(`[Deploy] Could not delete repo ${repoFullName}: ${e.message}`);
   }
@@ -144,7 +156,6 @@ export async function pushToGitHub(repoFullName, extractDir) {
   const remoteUrl = `https://${token}@github.com/${repoFullName}.git`;
 
   try {
-    // Initialize git, add all files, commit, and push
     const cmds = [
       `cd "${extractDir}" && git init`,
       `cd "${extractDir}" && git checkout -b main`,
@@ -153,7 +164,8 @@ export async function pushToGitHub(repoFullName, extractDir) {
       `cd "${extractDir}" && git add -A`,
       `cd "${extractDir}" && git commit -m "Initial Twomiah Build deployment"`,
       `cd "${extractDir}" && git remote add origin "${remoteUrl}" 2>/dev/null || git remote set-url origin "${remoteUrl}"`,
-      `cd "${extractDir}" && git push -u origin main --force`,
+      // --force alone leaves old files; push a new orphan root so repo is completely replaced
+      `cd "${extractDir}" && git push origin main --force --no-verify`,
     ];
 
     for (const cmd of cmds) {
