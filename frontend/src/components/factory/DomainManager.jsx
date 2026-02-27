@@ -83,7 +83,7 @@ export default function DomainManager({ customer, onUpdate, api }) {
 
   async function handleSave() {
     const domain = mode === 'subdomain'
-      ? `${subdomain || customer.slug}.twomiahcare.com`
+      ? `${subdomain || customer.slug}.twomiah.com`
       : customDomain;
 
     if (!domain) return;
@@ -170,7 +170,7 @@ export default function DomainManager({ customer, onUpdate, api }) {
             className="flex-1 p-3 border border-slate-200 rounded-lg text-left hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
           >
             <p className="text-sm font-medium text-slate-800">Twomiah Subdomain</p>
-            <p className="text-xs text-slate-500 mt-1">e.g. {customer.slug}.twomiahcare.com</p>
+            <p className="text-xs text-slate-500 mt-1">e.g. {customer.slug}.twomiah.com</p>
             <p className="text-xs text-emerald-600 mt-1">✓ No DNS setup needed</p>
           </button>
           <button
@@ -195,7 +195,7 @@ export default function DomainManager({ customer, onUpdate, api }) {
               placeholder={customer.slug}
               className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-            <span className="text-sm text-slate-500">.twomiahcare.com</span>
+            <span className="text-sm text-slate-500">.twomiah.com</span>
           </div>
           <p className="text-xs text-slate-400">We'll provision this subdomain automatically. No DNS changes needed by the customer.</p>
           <div className="flex gap-2">
