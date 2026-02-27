@@ -386,7 +386,7 @@ export default function FactoryWizard() {
             <ChevronLeft size={18} /> Back
           </button>
 
-          {step < 5 ? (
+          {step < 6 ? (
             <>
               <button
                 onClick={() => {
