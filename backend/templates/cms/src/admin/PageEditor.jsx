@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getServiceById, getSubServiceById } from '../data/services';
+import { getServiceById } from '../data/services';
 import { getPage, savePage, uploadImage, getRevisions, restoreRevision, duplicatePage, analyzeSEO } from './api';
 import { useToast } from './Toast';
 import AdminLayout from './AdminLayout';
@@ -504,7 +504,7 @@ function PageEditor() {
       };
     } else if (decodedPageId.includes('/')) {
       const [serviceId, subId] = decodedPageId.split('/');
-      const sub = getSubServiceById(serviceId, subId);
+      const sub = null;
       if (sub) data = { type: 'subservice', id: decodedPageId, ...sub };
     } else {
       const service = getServiceById(decodedPageId);
@@ -677,7 +677,7 @@ function PageEditor() {
       const service = getServiceById(serviceId);
       if (service) {
         crumbs.push({ label: service.title, to: `/edit/${serviceId}` });
-        const sub = getSubServiceById(serviceId, subId);
+        const sub = null;
         if (sub) crumbs.push({ label: sub.title });
       }
     } else {
