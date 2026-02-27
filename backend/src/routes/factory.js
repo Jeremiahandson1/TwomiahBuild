@@ -33,11 +33,11 @@ const OUTPUT_DIR = process.env.TWOMIAH_BUILD_OUTPUT_DIR || path.join(PROJECT_ROO
 
 // Skip auth for public endpoints
 router.use((req, res, next) => {
-  if (req.path === '/features' || req.path === '/templates' || req.path === '/admin/patch-repo-urls') return next();
+  if (req.path === '/features' || req.path === '/templates' || req.path === '/admin/patch-repo-urls' || req.path.startsWith('/public/')) return next();
   authenticate(req, res, next);
 });
 router.use((req, res, next) => {
-  if (req.path === '/features' || req.path === '/templates' || req.path === '/admin/patch-repo-urls') return next();
+  if (req.path === '/features' || req.path === '/templates' || req.path === '/admin/patch-repo-urls' || req.path.startsWith('/public/')) return next();
   requireRole('owner', 'admin')(req, res, next);
 });
 
@@ -1066,6 +1066,157 @@ router.get('/customers/:id/deploy/status', async (req, res) => {
  * Trigger a redeploy of all services
  */
 
+
+// ─── Public Self-Serve Signup ─────────────────────────────────────────────────
+// No auth required — these are the public-facing onboarding endpoints
+
+/**
+ * POST /api/v1/factory/public/signup
+ * Creates a pending customer record and returns a Stripe Checkout URL.
+ * industry: 'contractor' | 'home_care'
+ */
+router.post('/public/signup', async (req, res) => {
+  try {
+    const { company, branding, industry, plan = 'professional' } = req.body;
+
+    if (!company?.name || !company?.email) {
+      return res.status(400).json({ error: 'Company name and email are required' });
+    }
+
+    // Map industry to products
+    const productsByIndustry = {
+      contractor: ['website', 'cms', 'crm'],
+      home_care: ['website', 'cms', 'crm'],
+    };
+    const products = productsByIndustry[industry] || ['website', 'cms', 'crm'];
+
+    // Map plan to price
+    const planPrices = {
+      starter: 9700,       // $97
+      professional: 19700, // $197
+      growth: 29700,       // $297
+    };
+    const priceAmount = planPrices[plan] || 19700;
+    const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+
+    // Generate slug
+    const slug = company.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .substring(0, 40) + '-' + Date.now().toString(36);
+
+    // Generate temp password
+    const tempPassword = Math.random().toString(36).slice(2, 8).toUpperCase() +
+      Math.random().toString(36).slice(2, 6) + '!';
+
+    // Find or use default operator company (Twomiah's own companyId)
+    const operatorCompany = await prisma.company.findFirst({
+      where: { name: { contains: 'Twomiah', mode: 'insensitive' } },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (!operatorCompany) {
+      return res.status(500).json({ error: 'Operator company not configured' });
+    }
+
+    // Create pending customer record
+    const customer = await prisma.factoryCustomer.create({
+      data: {
+        companyId: operatorCompany.id,
+        companyName: company.name,
+        slug,
+        email: company.email,
+        phone: company.phone || null,
+        industry,
+        city: company.city || null,
+        state: company.state || null,
+        products,
+        status: 'pending_payment',
+        adminPassword: tempPassword,
+        wizardConfig: {
+          products,
+          company: {
+            name: company.name,
+            email: company.email,
+            phone: company.phone || '',
+            city: company.city || '',
+            state: company.state || '',
+            ownerName: company.ownerName || '',
+            industry,
+          },
+          branding: branding || {},
+        },
+        planId: plan,
+        billingType: 'subscription',
+        billingStatus: 'pending',
+        monthlyAmount: priceAmount / 100,
+      },
+    });
+
+    // Create Stripe Checkout session
+    if (!stripe) {
+      // Dev mode — skip payment, auto-deploy
+      return res.json({ 
+        success: true, 
+        dev: true, 
+        customerId: customer.id,
+        message: 'Dev mode: Stripe not configured. Customer created.' 
+      });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      customer_email: company.email,
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Twomiah ${industry === 'home_care' ? 'Care' : 'Build'} — ${planName}`,
+            description: `${products.join(', ')} • ${company.name}`,
+          },
+          unit_amount: priceAmount,
+          recurring: { interval: 'month' },
+        },
+        quantity: 1,
+      }],
+      metadata: {
+        customerId: customer.id,
+        industry,
+        plan,
+      },
+      success_url: `${process.env.FRONTEND_URL || 'https://buildpro-app-dcsx.onrender.com'}/signup/success?session_id={CHECKOUT_SESSION_ID}&customer=${customer.id}`,
+      cancel_url: `${process.env.TWOMIAH_SITE_URL || 'https://twomiah.com'}/${industry === 'home_care' ? 'care' : 'build'}.html?canceled=1`,
+    });
+
+    res.json({ checkoutUrl: session.url, customerId: customer.id, sessionId: session.id });
+  } catch (err) {
+    logger.error('[Public Signup] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/v1/factory/public/signup/status/:customerId
+ * Check status of a pending signup (polled after payment)
+ */
+router.get('/public/signup/status/:customerId', async (req, res) => {
+  try {
+    const customer = await prisma.factoryCustomer.findUnique({
+      where: { id: req.params.customerId },
+      select: { 
+        id: true, status: true, companyName: true, 
+        siteUrl: true, deployedUrl: true, apiUrl: true,
+        email: true, adminPassword: true,
+      },
+    });
+    if (!customer) return res.status(404).json({ error: 'Not found' });
+    res.json(customer);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Domain Management ────────────────────────────────────────────────────────
 
 router.post('/customers/:id/domain', async (req, res) => {
@@ -1460,7 +1611,6 @@ router.post('/stripe/webhook', express.raw({ type: 'application/json' }), async 
     if (webhookSecret) {
       event = factoryStripe.verifyWebhook(req.body, sig, webhookSecret);
     } else {
-      // Dev mode — no signature verification
       event = JSON.parse(req.body.toString());
     }
   } catch (err) {
@@ -1469,6 +1619,105 @@ router.post('/stripe/webhook', express.raw({ type: 'application/json' }), async 
   }
 
   try {
+    // Handle public signup payment completion
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const meta = session.metadata || {};
+      const customerId = meta.customerId || meta.factory_customer_id;
+
+      if (customerId) {
+        // Find the pending customer
+        const customer = await prisma.factoryCustomer.findUnique({
+          where: { id: customerId },
+        });
+
+        if (customer && customer.status === 'pending_payment') {
+          // Mark as paid
+          await prisma.factoryCustomer.update({
+            where: { id: customerId },
+            data: {
+              billingStatus: 'active',
+              stripeCustomerId: session.customer,
+              stripeSubscriptionId: session.subscription,
+            },
+          });
+
+          // Trigger generate + deploy in background
+          setImmediate(async () => {
+            try {
+              logger.info(`[Public Signup] Auto-deploying for ${customer.companyName}`);
+              
+              const wizardConfig = customer.wizardConfig || {};
+              const { zipPath, zipName, buildId } = await generate(wizardConfig, {
+                outputDir: `/tmp/factory-builds/${customer.slug}`,
+              });
+
+              // Store build record
+              const storageType = process.env.R2_BUCKET_NAME ? 'r2' : 's3';
+              await factoryStorage.uploadZip(zipPath, zipName, storageType);
+
+              const build = await prisma.factoryBuild.create({
+                data: {
+                  customerId: customer.id,
+                  companyId: customer.companyId,
+                  companyName: customer.companyName,
+                  slug: customer.slug,
+                  zipPath, zipName, buildId,
+                  status: 'generated',
+                  storageType,
+                },
+              });
+
+              await prisma.factoryCustomer.update({
+                where: { id: customer.id },
+                data: { status: 'generated', latestBuildId: build.id },
+              });
+
+              // Deploy
+              const result = await deployService.deployCustomer(customer, zipPath, {
+                region: 'ohio',
+                plan: 'free',
+              });
+
+              const updateData = { status: result.success ? 'deployed' : 'generated' };
+              if (result.apiUrl) updateData.apiUrl = result.apiUrl;
+              if (result.deployedUrl) updateData.deployedUrl = result.deployedUrl;
+              if (result.siteUrl) updateData.siteUrl = result.siteUrl;
+              if (result.services) {
+                const serviceIds = {};
+                if (result.services.backend?.id) serviceIds.backend = result.services.backend.id;
+                if (result.services.site?.id) serviceIds.site = result.services.site.id;
+                updateData.renderServiceIds = JSON.stringify(serviceIds);
+              }
+
+              await prisma.factoryCustomer.update({ where: { id: customer.id }, data: updateData });
+
+              // Send onboarding email
+              if (result.success && customer.email) {
+                await emailService.sendFactoryCustomerOnboarding(customer.email, {
+                  contactName: customer.companyName,
+                  productName: customer.industry === 'home_care' ? 'Twomiah Care' : 'Twomiah Build',
+                  loginEmail: customer.email,
+                  tempPassword: customer.adminPassword || 'Check your welcome email',
+                  crmUrl: result.deployedUrl || null,
+                  cmsUrl: result.siteUrl || null,
+                  siteUrl: result.siteUrl || null,
+                });
+              }
+
+              logger.info(`[Public Signup] Auto-deploy complete for ${customer.companyName}`);
+            } catch (deployErr) {
+              logger.error(`[Public Signup] Auto-deploy failed for ${customer.slug}:`, deployErr.message);
+              await prisma.factoryCustomer.update({
+                where: { id: customerId },
+                data: { status: 'generated', notes: `Auto-deploy failed: ${deployErr.message}` },
+              }).catch(() => {});
+            }
+          });
+        }
+      }
+    }
+
     const result = await factoryStripe.handleWebhookEvent(event, prisma);
     res.json({ received: true, result });
   } catch (err) {

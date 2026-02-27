@@ -41,6 +41,8 @@ const OperatorLayout        = lazy(() => import('./components/layout/OperatorLay
 const OperatorDashboard     = lazy(() => import('./pages/OperatorDashboard'));
 const CustomersPage         = lazy(() => import('./pages/CustomersPage'));
 const PlansPage              = lazy(() => import('./pages/PlansPage'));
+const PublicSignup           = lazy(() => import('./pages/public/PublicSignup'));
+const SignupSuccess          = lazy(() => import('./pages/public/SignupSuccess'));
 const CustomerDetailPage    = lazy(() => import('./pages/CustomerDetailPage'));
 const SettingsPage          = lazy(() => import('./pages/SettingsPage'));
 const BillingSettingsPage   = lazy(() => import('./pages/settings/BillingSettingsPage'));
@@ -114,6 +116,8 @@ function App() {
               <SocketProvider>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
+        <Route path="/signup/:product" element={<PublicSignup />} />
+        <Route path="/signup/success" element={<SignupSuccess />} />
                     {/* Public marketing */}
                     <Route path="/pricing"        element={<PricingPage />} />
                     <Route path="/signup"         element={<SignupPage />} />
