@@ -287,7 +287,7 @@ function AdminSiteSettings() {
                 )}
               </div>
             </div>
-          </div>
+
             {/* Brand Colors */}
             <div className="form-group" style={{ marginTop: '28px' }}>
               <label style={{ fontWeight: 700, fontSize: '15px', marginBottom: '4px', display: 'block' }}>
@@ -302,15 +302,15 @@ function AdminSiteSettings() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <input
                       type="color"
-                      value={settings.primaryColor || '#1e3a5f'}
+                      value={settings.primaryColor || '#009688'}
                       onChange={e => handleChange('primaryColor', e.target.value)}
                       style={{ width: '48px', height: '36px', border: '1px solid var(--admin-border)', borderRadius: '6px', cursor: 'pointer', padding: '2px' }}
                     />
                     <input
                       type="text"
-                      value={settings.primaryColor || '#1e3a5f'}
+                      value={settings.primaryColor || '#009688'}
                       onChange={e => handleChange('primaryColor', e.target.value)}
-                      placeholder="#1e3a5f"
+                      placeholder="#009688"
                       style={{ flex: 1, fontFamily: 'monospace', fontSize: '13px' }}
                     />
                   </div>
@@ -320,15 +320,15 @@ function AdminSiteSettings() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <input
                       type="color"
-                      value={settings.secondaryColor || '#f97316'}
+                      value={settings.secondaryColor || '#004d40'}
                       onChange={e => handleChange('secondaryColor', e.target.value)}
                       style={{ width: '48px', height: '36px', border: '1px solid var(--admin-border)', borderRadius: '6px', cursor: 'pointer', padding: '2px' }}
                     />
                     <input
                       type="text"
-                      value={settings.secondaryColor || '#f97316'}
+                      value={settings.secondaryColor || '#004d40'}
                       onChange={e => handleChange('secondaryColor', e.target.value)}
-                      placeholder="#f97316"
+                      placeholder="#004d40"
                       style={{ flex: 1, fontFamily: 'monospace', fontSize: '13px' }}
                     />
                   </div>
@@ -356,15 +356,15 @@ function AdminSiteSettings() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <input
                       type="color"
-                      value={settings.offWhiteColor || '#f8fafc'}
+                      value={settings.offWhiteColor || '#f0fdf9'}
                       onChange={e => handleChange('offWhiteColor', e.target.value)}
                       style={{ width: '48px', height: '36px', border: '1px solid var(--admin-border)', borderRadius: '6px', cursor: 'pointer', padding: '2px' }}
                     />
                     <input
                       type="text"
-                      value={settings.offWhiteColor || '#f8fafc'}
+                      value={settings.offWhiteColor || '#f0fdf9'}
                       onChange={e => handleChange('offWhiteColor', e.target.value)}
-                      placeholder="#f8fafc"
+                      placeholder="#f0fdf9"
                       style={{ flex: 1, fontFamily: 'monospace', fontSize: '13px' }}
                     />
                   </div>
@@ -374,10 +374,10 @@ function AdminSiteSettings() {
               <div style={{ marginTop: '14px', display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <span style={{ fontSize: '12px', color: 'var(--admin-text-muted)' }}>Preview:</span>
                 {[
-                  { key: 'primaryColor', label: 'Primary', def: '#1e3a5f' },
-                  { key: 'secondaryColor', label: 'Secondary', def: '#f97316' },
+                  { key: 'primaryColor', label: 'Primary', def: '#009688' },
+                  { key: 'secondaryColor', label: 'Secondary', def: '#004d40' },
                   { key: 'accentColor', label: 'Accent', def: '#f59e0b' },
-                  { key: 'offWhiteColor', label: 'BG Tint', def: '#f8fafc' },
+                  { key: 'offWhiteColor', label: 'BG Tint', def: '#f0fdf9' },
                 ].map(c => (
                   <div key={c.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                     <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: settings[c.key] || c.def, border: '1px solid var(--admin-border)' }} />
@@ -386,6 +386,7 @@ function AdminSiteSettings() {
                 ))}
               </div>
             </div>
+          </div>
         )}
 
         {/* Social Media */}

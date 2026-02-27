@@ -287,7 +287,7 @@ function AdminSiteSettings() {
                 )}
               </div>
             </div>
-          </div>
+
             {/* Brand Colors */}
             <div className="form-group" style={{ marginTop: '28px' }}>
               <label style={{ fontWeight: 700, fontSize: '15px', marginBottom: '4px', display: 'block' }}>
@@ -386,6 +386,7 @@ function AdminSiteSettings() {
                 ))}
               </div>
             </div>
+          </div>
         )}
 
         {/* Social Media */}
