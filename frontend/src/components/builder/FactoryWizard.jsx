@@ -476,6 +476,7 @@ function ProductSelector({ products, onToggle }) {
     { id: 'website', name: 'Website', desc: 'Server-rendered site with SEO, blog, gallery, contact forms', icon: Globe, color: '#3b82f6' },
     { id: 'cms', name: 'CMS Admin Panel', desc: 'Full content management — pages, media, settings, leads', icon: Layout, color: '#8b5cf6' },
     { id: 'crm', name: 'CRM', desc: 'Business management — contacts, jobs, invoices, scheduling, 85+ features', icon: Briefcase, color: '#f97316' },
+    { id: 'vision', name: 'Twomiah Vision', desc: 'AI home exterior visualizer — let homeowners see paint, siding, roofing before they buy', icon: Globe, color: '#10b981' },
   ];
 
   return (
