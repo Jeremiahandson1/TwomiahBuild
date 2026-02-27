@@ -6,7 +6,7 @@ services:
     name: {{COMPANY_SLUG}}-site
     runtime: node
     plan: starter
-    buildCommand: npm install && cd admin && npm install && npm run build
+    buildCommand: npm install && cd admin && npm install --include=dev && npm run build
     startCommand: node server.js
     envVars:
       - key: JWT_SECRET
