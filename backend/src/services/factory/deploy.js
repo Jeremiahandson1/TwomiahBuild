@@ -568,8 +568,7 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
           name: `${slug}-site`,
           repoFullName: repo.full_name,
           rootDir: 'website',
-          buildCommand: 'npm install',
-          startCommand: 'node server-static.js',
+          buildCommand: 'npm install && cd admin && npm install && npm run build',
           envVars: [
             { key: 'NODE_ENV', value: 'production' },
             { key: 'PORT', value: '10000' },
