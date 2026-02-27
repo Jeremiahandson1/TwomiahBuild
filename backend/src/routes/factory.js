@@ -997,7 +997,7 @@ router.post('/customers/:id/deploy', async (req, res) => {
             contactName: customer.companyName,
             productName,
             loginEmail: customer.email,
-            tempPassword: customer.tempPassword || 'Check with your account manager',
+            tempPassword: customer.adminPassword || 'Check with your account manager',
             crmUrl: result.deployedUrl || null,
             cmsUrl: result.siteUrl || null,
             siteUrl: result.siteUrl || null,
