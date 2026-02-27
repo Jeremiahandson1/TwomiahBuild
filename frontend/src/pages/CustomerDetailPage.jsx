@@ -473,7 +473,7 @@ export default function CustomerDetailPage() {
                     <RefreshCw className="w-4 h-4 animate-spin" /> Deploying...
                   </div>
                 )}
-                {(customer.status === 'deployed' || customer.status === 'active') && (
+                {(customer.status === 'deployed' || customer.status === 'active' || customer.status === 'failed') && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm text-emerald-600">
                       <CheckCircle2 className="w-4 h-4" /> Deployed
