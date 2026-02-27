@@ -167,6 +167,14 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Static assets: build/ has CSS, images, scripts, favicon
 app.use(express.static(buildDir));
+
+// Admin panel (React SPA built from admin/)
+const adminDist = path.join(__dirname, 'admin', 'dist');
+if (fs.existsSync(adminDist)) {
+  app.use('/admin', express.static(adminDist));
+  app.get('/admin', (req, res) => res.sendFile(path.join(adminDist, 'index.html')));
+  app.get('/admin/*', (req, res) => res.sendFile(path.join(adminDist, 'index.html')));
+}
 // Serve uploads
 app.use('/uploads', express.static(uploadsDir));
 // Also serve public/ folder

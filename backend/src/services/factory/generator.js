@@ -87,6 +87,16 @@ export async function generate(config) {
       writeBrandingAssets(path.join(workDir, 'website'), config.branding || {});
       // Inject content from wizard (services, about text, testimonials)
       injectWizardContent(path.join(workDir, 'website'), config);
+      // Process website render.yaml.template if present (website-only builds)
+      const websiteRenderTemplate = path.join(workDir, 'website', 'render.yaml.template');
+      if (fs.existsSync(websiteRenderTemplate)) {
+        let renderContent = fs.readFileSync(websiteRenderTemplate, 'utf8');
+        renderContent = injectTokens(renderContent, tokens);
+        // Write to repo root for Render Blueprint discovery
+        fs.writeFileSync(path.join(workDir, 'render.yaml'), renderContent, 'utf8');
+        fs.writeFileSync(path.join(workDir, 'website', 'render.yaml'), renderContent, 'utf8');
+        fs.unlinkSync(websiteRenderTemplate);
+      }
       // If CMS is also selected, nest it inside website
       if (products.includes('cms')) {
         copyTemplate('cms', path.join(workDir, 'website', 'admin'), tokens);
