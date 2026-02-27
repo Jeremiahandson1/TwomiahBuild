@@ -432,108 +432,20 @@ async function sendOnboardingEmail(factoryCustomer, deployResults) {
 
 
 
-/**
- * Trigger a Render Blueprint sync from a GitHub repo.
- * Render reads render.yaml from the repo root and creates/updates all services.
- */
-async function triggerBlueprintSync(repoFullName, branch = 'main') {
-  const ownerId = process.env.RENDER_OWNER_ID;
-
-  const res = await fetch(`${RENDER_API}/blueprints`, {
-    method: 'POST',
-    headers: renderHeaders(),
-    body: JSON.stringify({
-      repoURL: `https://github.com/${repoFullName}`,
-      branch,
-      ownerId,
-      autoSync: true,
-    }),
-  });
-
-  const body = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    if (res.status === 409 || (body.message || '').includes('already')) {
-      logger.info('[Deploy] Blueprint already exists, syncing existing...');
-      return await findAndSyncExistingBlueprint(repoFullName);
-    }
-    throw new Error(`Blueprint sync failed (${res.status}): ${JSON.stringify(body)}`);
-  }
-
-  return body;
-}
-
-async function findAndSyncExistingBlueprint(repoFullName) {
-  const res = await fetch(`${RENDER_API}/blueprints?limit=20`, { headers: renderHeaders() });
-  if (!res.ok) throw new Error('Failed to list blueprints');
-  const list = await res.json();
-  const blueprints = Array.isArray(list) ? list : (list.blueprints || []);
-  const match = blueprints.find(b => {
-    const bp = b.blueprint || b;
-    return (bp.repo || '').includes(repoFullName);
-  });
-  if (!match) throw new Error(`No existing blueprint found for ${repoFullName}`);
-  const bp = match.blueprint || match;
-
-  const syncRes = await fetch(`${RENDER_API}/blueprints/${bp.id}/sync`, {
-    method: 'POST',
-    headers: renderHeaders(),
-    body: JSON.stringify({}),
-  });
-  const syncBody = await syncRes.json().catch(() => ({}));
-  if (!syncRes.ok) throw new Error(`Blueprint re-sync failed: ${JSON.stringify(syncBody)}`);
-  return syncBody;
-}
-
-/**
- * Poll Render for services matching our slug, up to maxWaitMs.
- * Returns a map of { site, backend, frontend } service objects.
- */
-async function pollForServices(slug, products, maxWaitMs = 120000) {
-  const start = Date.now();
-  const serviceMap = {};
-
-  while (Date.now() - start < maxWaitMs) {
-    await new Promise(r => setTimeout(r, 8000));
-
-    const res = await fetch(`${RENDER_API}/services?limit=50`, { headers: renderHeaders() });
-    if (!res.ok) continue;
-
-    const list = await res.json();
-    const services = Array.isArray(list) ? list : [];
-
-    for (const item of services) {
-      const svc = item.service || item;
-      const name = svc.name || '';
-      if (!name.startsWith(slug)) continue;
-
-      if (name.includes('-site')) serviceMap.site = svc;
-      else if (name.includes('-api')) serviceMap.backend = svc;
-      else if (name.endsWith('-care') || name.endsWith('-crm')) serviceMap.frontend = svc;
-    }
-
-    const needed = [];
-    if (products.includes('website')) needed.push('site');
-    if (products.includes('crm')) needed.push('backend', 'frontend');
-
-    if (needed.every(k => serviceMap[k])) {
-      logger.info(`[Deploy] All services found after blueprint sync: ${Object.keys(serviceMap).join(', ')}`);
-      return serviceMap;
-    }
-  }
-
-  logger.warn(`[Deploy] Service poll timed out. Found: ${Object.keys(serviceMap).join(', ') || 'none'}`);
-  return serviceMap;
-}
-
-
 export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
   const {
+    region = 'ohio',
+    plan = 'free',
     products = factoryCustomer.products || ['crm'],
   } = options;
 
   const slug = factoryCustomer.slug;
+  const isHomeCare = factoryCustomer.industry === 'home_care' || factoryCustomer.config?.company?.industry === 'home_care';
   const results = { steps: [], services: {}, errors: [] };
+
+  const generateJwtSecret = () => {
+    return crypto.randomBytes(48).toString('base64');
+  };
 
   try {
     // ── Step 1: Extract zip ────────────────────────────
@@ -549,40 +461,129 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
     results.repoUrl = `https://github.com/${repo.full_name}`;
 
     // ── Step 3: Push code to GitHub ────────────────────
-    // The zip already contains a correct render.yaml — Render will read it
     await pushToGitHub(repo.full_name, extractDir);
     results.steps.push({ step: 'github_push', status: 'ok' });
 
-    // ── Step 4: Trigger Render Blueprint sync ──────────
-    // Render reads render.yaml from the repo root and creates all services automatically.
-    // No more manually specifying build commands, start commands, env vars — that's all in render.yaml.
-    logger.info(`[Deploy] Triggering blueprint sync for ${repo.full_name}`);
-    const blueprint = await triggerBlueprintSync(repo.full_name);
-    results.steps.push({ step: 'blueprint_sync', status: 'ok', blueprintId: blueprint.id || blueprint.blueprint?.id });
+    // ── Step 4: Create Render Postgres ─────────────────
+    let dbInfo = null;
+    let dbConnectionInfo = null;
 
-    // ── Step 5: Poll for services to appear ────────────
-    logger.info(`[Deploy] Polling for services (slug: ${slug})...`);
-    const serviceMap = await pollForServices(slug, products);
+    try {
+      const dbSlug = isHomeCare ? `${slug}-care` : slug;
+      logger.info(`[Deploy] Creating DB: ${dbSlug}-db in ${region}`);
+      const db = await createRenderDatabase(dbSlug, region);
+      logger.info(`[Deploy] DB created successfully: ${dbSlug}-db, id=${db.id}`);
+      results.steps.push({ step: 'render_db', status: 'ok', dbId: db.id });
+      results.services.database = db;
 
-    if (serviceMap.site) {
-      results.services.site = serviceMap.site;
-      results.siteUrl = `https://${serviceMap.site.name}.onrender.com`;
-    } else if (products.includes('website')) {
-      results.siteUrl = `https://${slug}-site.onrender.com`;
+      logger.info(`[Deploy] Waiting 30s for DB to initialize...`);
+      await new Promise(resolve => setTimeout(resolve, 30000));
+      dbConnectionInfo = await getDatabaseConnectionInfo(db.id);
+      dbInfo = dbConnectionInfo;
+      logger.info(`[Deploy] DB connection info retrieved. Keys: ${Object.keys(dbConnectionInfo || {}).join(', ')}`);
+    } catch (dbErr) {
+      logger.error(`[Deploy] DB creation FAILED for ${slug}: ${dbErr.message}`);
+      results.steps.push({ step: 'render_db', status: 'error', error: dbErr.message });
+      results.errors.push(`Database creation failed: ${dbErr.message}`);
+      results.success = false;
+      results.status = 'failed';
+      return results;
     }
 
-    if (serviceMap.backend) {
-      results.services.backend = serviceMap.backend;
-      results.apiUrl = `https://${serviceMap.backend.name}.onrender.com`;
+    const jwtSecret = generateJwtSecret();
+    const jwtRefreshSecret = generateJwtSecret();
+
+    // ── Step 5: Create Backend Service ─────────────────
+    if (products.includes('crm')) {
+      try {
+        const backendEnvVars = [
+          { key: 'NODE_ENV', value: 'production' },
+          { key: 'JWT_SECRET', value: jwtSecret },
+          { key: 'FRONTEND_URL', value: isHomeCare ? `https://${slug}-care.onrender.com` : `https://${slug}-crm.onrender.com` },
+          { key: 'JWT_REFRESH_SECRET', value: jwtRefreshSecret },
+          { key: 'PORT', value: '10000' },
+        ];
+
+        if (factoryCustomer.planId === 'enterprise') {
+          backendEnvVars.push({ key: 'FEATURE_PACKAGE', value: 'enterprise' });
+        }
+
+        if (dbInfo?.internalConnectionString) {
+          backendEnvVars.push({ key: 'DATABASE_URL', value: dbInfo.internalConnectionString });
+        } else if (dbInfo?.externalConnectionString) {
+          backendEnvVars.push({ key: 'DATABASE_URL', value: dbInfo.externalConnectionString });
+        }
+
+        const crmApiName = isHomeCare ? `${slug}-care-api` : `${slug}-api`;
+        const backend = await createRenderWebService({
+          name: crmApiName,
+          repoFullName: repo.full_name,
+          rootDir: 'crm/backend',
+          buildCommand: 'npm install && npx prisma generate && npx prisma migrate deploy',
+          startCommand: 'npm run db:seed && npm start',
+          envVars: backendEnvVars,
+          plan,
+          region,
+        });
+
+        results.steps.push({ step: 'render_backend', status: 'ok', serviceId: backend.service?.id });
+        results.services.backend = backend.service;
+
+        const backendUrl = `https://${crmApiName}.onrender.com`;
+        results.apiUrl = backendUrl;
+
+        // ── Step 6: Create Frontend Service ───────────
+        const crmFrontName = isHomeCare ? `${slug}-care` : `${slug}-crm`;
+        const frontend = await createRenderStaticSite({
+          name: crmFrontName,
+          repoFullName: repo.full_name,
+          rootDir: 'crm/frontend',
+          buildCommand: 'npm install --include=dev && npm run build',
+          publishPath: 'dist',
+          envVars: [
+            { key: 'VITE_API_URL', value: backendUrl },
+          ],
+        });
+
+        results.steps.push({ step: 'render_frontend', status: 'ok', serviceId: frontend.service?.id });
+        results.services.frontend = frontend.service;
+        results.deployedUrl = `https://${crmFrontName}.onrender.com`;
+
+      } catch (err) {
+        results.steps.push({ step: 'render_backend', status: 'error', error: err.message });
+        results.errors.push(`Backend: ${err.message}`);
+      }
     }
 
-    if (serviceMap.frontend) {
-      results.services.frontend = serviceMap.frontend;
-      results.deployedUrl = `https://${serviceMap.frontend.name}.onrender.com`;
+    // ── Step 7: Create Site Service ────────────────────
+    if (products.includes('website')) {
+      try {
+        const site = await createRenderWebService({
+          name: `${slug}-site`,
+          repoFullName: repo.full_name,
+          rootDir: 'website',
+          buildCommand: 'npm install && cd admin && npm install --include=dev && npm run build',
+          startCommand: 'node server.js',
+          envVars: [
+            { key: 'NODE_ENV', value: 'production' },
+            { key: 'PORT', value: '10000' },
+            { key: 'JWT_SECRET', value: jwtSecret },
+          ],
+          plan,
+          region,
+        });
+
+        results.steps.push({ step: 'render_site', status: 'ok', serviceId: site.service?.id });
+        results.services.site = site.service;
+        results.siteUrl = `https://${slug}-site.onrender.com`;
+      } catch (err) {
+        results.steps.push({ step: 'render_site', status: 'error', error: err.message });
+        results.errors.push(`Site: ${err.message}`);
+      }
     }
 
-    // ── Step 6: Send onboarding email ─────────────────
-    if (factoryCustomer.config?.company?.email) {
+    // ── Send onboarding email ──────────────────────────
+    if (results.success && factoryCustomer.config?.company?.email) {
       try {
         await sendOnboardingEmail(factoryCustomer, results);
         results.steps.push({ step: 'onboarding_email', status: 'ok' });
@@ -602,7 +603,6 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
     results.success = false;
     results.status = 'failed';
     results.errors.push(err.message);
-    logger.error(`[Deploy] deployCustomer failed: ${err.message}`);
   }
 
   return results;
