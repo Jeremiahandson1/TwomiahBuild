@@ -1040,6 +1040,72 @@ router.get('/customers/:id/deploy/status', async (req, res) => {
  * POST /api/factory/customers/:id/redeploy
  * Trigger a redeploy of all services
  */
+
+// ─── Domain Management ────────────────────────────────────────────────────────
+
+router.post('/customers/:id/domain', async (req, res) => {
+  try {
+    const { domain, type } = req.body; // type: 'custom' | 'subdomain'
+    if (!domain) return res.status(400).json({ error: 'Domain required' });
+
+    const customer = await prisma.factoryCustomer.findFirst({
+      where: { id: req.params.id, companyId: req.user.companyId },
+    });
+    if (!customer) return res.status(404).json({ error: 'Customer not found' });
+
+    // Add domain to Render site service if we have the service ID
+    let renderServiceIds = null;
+    try { if (customer.renderServiceIds) renderServiceIds = JSON.parse(customer.renderServiceIds); } catch(e) {}
+    
+    const siteServiceId = renderServiceIds?.site;
+    if (siteServiceId && process.env.RENDER_API_KEY) {
+      // Add custom domain to Render service
+      const renderRes = await fetch(`https://api.render.com/v1/services/${siteServiceId}/custom-domains`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RENDER_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: domain }),
+      });
+      if (!renderRes.ok) {
+        const err = await renderRes.json();
+        logger.warn('[Domain] Render API error:', err);
+        // Don't fail — save domain anyway, operator can add manually
+      }
+    }
+
+    // Save domain to customer record
+    const updated = await prisma.factoryCustomer.update({
+      where: { id: customer.id },
+      data: { domain, siteUrl: `https://${domain}` },
+    });
+
+    res.json({ success: true, domain, customer: updated });
+  } catch (err) {
+    logger.error('[Domain] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/customers/:id/domain', async (req, res) => {
+  try {
+    const customer = await prisma.factoryCustomer.findFirst({
+      where: { id: req.params.id, companyId: req.user.companyId },
+    });
+    if (!customer) return res.status(404).json({ error: 'Customer not found' });
+
+    await prisma.factoryCustomer.update({
+      where: { id: customer.id },
+      data: { domain: null },
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.post('/customers/:id/regenerate', async (req, res) => {
   try {
     const customer = await prisma.factoryCustomer.findFirst({

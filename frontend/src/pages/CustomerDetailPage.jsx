@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import DomainManager from '../components/factory/DomainManager';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Globe, Database, Palette, Package, ExternalLink,
@@ -523,9 +524,15 @@ export default function CustomerDetailPage() {
             )}
           </div>
 
-          {/* Billing */}
+          {/* Domain Management */}
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+              <Globe className="w-4 h-4 text-slate-400" /> Domain Management
+            </h3>
+            <DomainManager customer={customer} onUpdate={fetchCustomer} api={api} />
+          </div>
+
+          {/* Billing */}
               <DollarSign className="w-4 h-4 text-slate-400" /> Billing
             </h3>
             <div className="grid grid-cols-2 gap-4">
