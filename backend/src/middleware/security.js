@@ -207,8 +207,8 @@ const sqlPatterns = [
   /\bunion\b.{0,20}\bselect\b/i,
   // Dangerous stored procedures
   /\b(xp_cmdshell|sp_executesql|exec\s*\(|execute\s*\()/i,
-  // Hex-encoded payloads
-  /0x[0-9a-f]{4,}/i,
+  // Hex-encoded payloads (but not base64 data URLs)
+  /(?<!data:image\/[a-z]+;base64,[\w+/=]{0,100})0x[0-9a-f]{8,}/i,
 ];
 
 export function detectSqlInjection(value) {
@@ -216,7 +216,7 @@ export function detectSqlInjection(value) {
   return sqlPatterns.some(pattern => pattern.test(value));
 }
 
-const SAFE_FIELDS = ['primaryColor', 'secondaryColor', 'color', 'logo', 'favicon'];
+const SAFE_FIELDS = ['primaryColor', 'secondaryColor', 'color', 'logo', 'favicon', 'heroPhoto', 'defaultOgImage', 'image'];
 
 export function sqlInjectionDetector(req, res, next) {
   const checkObject = (obj, path = '') => {

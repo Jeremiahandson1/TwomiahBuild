@@ -237,9 +237,9 @@ function buildTokenMap(config, slug) {
     '{{HASHED_DEFAULT_PASSWORD}}': bcrypt.hashSync(defaultPassword, 10),
 
     // Branding / Colors
-    '{{PRIMARY_COLOR}}': b.primaryColor || defaults.primary,
-    '{{SECONDARY_COLOR}}': b.secondaryColor || defaults.secondary,
-    '{{ACCENT_COLOR}}': b.accentColor || defaults.accent,
+    '{{PRIMARY_COLOR}}': b.primaryColor || (industry === 'home_care' ? '#009688' : '#c9a227'),
+    '{{SECONDARY_COLOR}}': b.secondaryColor || (industry === 'home_care' ? '#004d40' : '#1a2744'),
+    '{{ACCENT_COLOR}}': b.accentColor || '#f59e0b',
     '{{OFF_WHITE_COLOR}}': b.offWhiteColor || (industry === 'home_care' ? '#f0fdf9' : '#f8f9fa'),
 
     // Products selected
