@@ -20,27 +20,16 @@ const DIST = join(__dirname, 'dist');
 // Every public route that should be prerendered
 const routes = [
   '/',
+  '/services',
+  '/services/personal-care',
+  '/services/companion-care',
+  '/services/respite-care',
+  '/services/memory-care',
+  '/services/skilled-nursing',
+  '/services/transportation',
   '/gallery',
-  '/services/roofing',
-  '/services/roofing/asphalt-shingles',
-  '/services/roofing/metal-roofing',
-  '/services/roofing/storm-damage',
-  '/services/roofing/roof-repair',
-  '/services/siding',
-  '/services/siding/james-hardie',
-  '/services/siding/lp-smartside',
-  '/services/siding/vinyl-siding',
-  '/services/siding/soffit-fascia',
-  '/services/windows',
-  '/services/windows/replacement-windows',
-  '/services/windows/entry-doors',
-  '/services/windows/patio-doors',
-  '/services/insulation',
-  '/services/insulation/blown-in-insulation',
-  '/services/insulation/spray-foam',
-  '/services/insulation/air-sealing',
-  '/services/remodeling',
-  '/services/new-construction',
+  '/blog',
+  '/contact',
 ];
 
 // Simple static file server for the built dist
@@ -64,12 +53,12 @@ function startServer(port) {
         
         if (req.url.includes('public-settings')) {
           res.end(JSON.stringify({
-            phone: '(715)-944-9065',
-            email: 'integrityhomehrealthcarellc@outlook.com',
-            address: '123 Main St',
-            city: 'Eau Claire',
-            state: 'WI',
-            zip: '54701'
+            phone: '{{COMPANY_PHONE}}',
+            email: '{{COMPANY_EMAIL}}',
+            address: '{{COMPANY_ADDRESS}}',
+            city: '{{CITY}}',
+            state: '{{STATE}}',
+            zip: '{{ZIP}}'
           }));
         } else if (req.url.includes('homepage')) {
           res.end(JSON.stringify({}));

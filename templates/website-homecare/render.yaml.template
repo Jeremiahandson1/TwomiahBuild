@@ -16,6 +16,6 @@ services:
       - key: SITE_URL
         value: https://{{DOMAIN}}
     disk:
-      name: data
-      mountPath: /opt/render/project/src/data
+      name: site-data
+      mountPath: /opt/render/project/src/persistent
       sizeGB: 1

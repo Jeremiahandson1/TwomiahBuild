@@ -1203,8 +1203,8 @@ router.get('/leads', authMiddleware, (req, res) => {
 router.post('/leads', async (req, res) => {
   const { name, email, phone, service, services, message, source, address } = req.body;
   
-  if (!name || !email) {
-    return res.status(400).json({ error: 'Name and email required' });
+  if (!name || (!email && !phone)) {
+    return res.status(400).json({ error: 'Name and either email or phone are required' });
   }
   
   try {

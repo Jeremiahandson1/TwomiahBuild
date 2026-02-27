@@ -182,6 +182,7 @@ function buildTokenMap(config, slug) {
 
     // Domain / URLs
     '{{DOMAIN}}': c.domain || `${slug}.com`,
+    '{{COMPANY_DOMAIN}}': c.domain || `${slug}.com`,
     '{{SITE_URL}}': c.siteUrl || `https://${c.domain || slug + '.com'}`,
     '{{FRONTEND_URL}}': c.frontendUrl || (c.industry === 'home_care' ? `https://${slug}-care.onrender.com` : `https://${slug}-crm.onrender.com`),
     '{{BACKEND_URL}}': c.backendUrl || (c.industry === 'home_care' ? `https://${slug}-care-api.onrender.com` : `https://${slug}-api.onrender.com`),
