@@ -1052,7 +1052,7 @@ router.post('/customers/:id/regenerate', async (req, res) => {
 
     try {
       await prisma.factoryCustomer.update({ where: { id: customer.id }, data: { status: 'deploying', renderServiceIds: null } });
-      const config = JSON.parse(customer.wizardConfig);
+      const config = typeof customer.wizardConfig === 'string' ? JSON.parse(customer.wizardConfig) : customer.wizardConfig;
       const { zipPath, zipName, buildId, slug, storageType, defaultPassword } = await generate(config);
       await prisma.factoryBuild.create({
         data: { customerId: customer.id, zipPath, zipName, buildId, status: 'generated' },
