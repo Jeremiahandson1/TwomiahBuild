@@ -154,6 +154,7 @@ export async function generate(config) {
 function buildTokenMap(config, slug) {
   const c = config.company || {};
   const b = config.branding || {};
+  const industry = c.industry || '';
   
   const ownerParts = (c.ownerName || 'Admin User').split(' ');
   const firstName = ownerParts[0] || 'Admin';
