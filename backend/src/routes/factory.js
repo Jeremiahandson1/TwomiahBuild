@@ -13,7 +13,7 @@ import path from 'path';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import { fileURLToPath } from 'url';
-import { generate, listTemplates, cleanOldBuilds } from '../services/factory/generator.js';
+import { generate, listTemplates, cleanOldBuilds, previewWebsite } from '../services/factory/generator.js';
 import factoryStorage from '../services/factory/storage.js';
 import factoryStripe from '../services/factory/stripe.js';
 import deployService from '../services/factory/deploy.js';
@@ -157,6 +157,10 @@ router.post('/generate', async (req, res) => {
       customerId: customer?.id || null,
       downloadUrl: `/api/v1/factory/download/${result.buildId}/${result.zipName}`,
       generatedIn: `${elapsed}s`,
+      defaultPassword: result.defaultPassword,
+      adminUrl: config?.products?.includes('website') || config?.products?.includes('cms')
+        ? `https://${result.slug}-site.onrender.com/admin`
+        : null,
     });
 
   } catch (err) {
@@ -377,6 +381,25 @@ router.get('/features', (req, res) => {
       }
     ]
   });
+});
+
+
+
+/**
+ * POST /api/factory/preview
+ * Render a preview of the website with wizard config (no files written)
+ */
+router.post('/preview', (req, res) => {
+  try {
+    const { config } = req.body;
+    if (!config) return res.status(400).json({ error: 'config required' });
+    const html = previewWebsite(config);
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  } catch (err) {
+    console.error('[Factory] Preview error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 
@@ -629,7 +652,18 @@ router.get('/customers', async (req, res) => {
       }
     });
 
-    res.json(customers);
+    // Enrich with dashboard-friendly fields
+    const enriched = customers.map(c => ({
+      ...c,
+      companyName: c.name,
+      deployStatus: c.status === 'active' || c.status === 'deployed' ? 'deployed'
+        : c.status === 'generated' ? 'pending'
+        : c.status === 'failed' ? 'failed' : c.status,
+      leadsCount: c.leadsCount || 0,
+      siteUrl: c.siteUrl || c.deployedUrl || (c.slug ? `https://${c.slug}-site.onrender.com` : null),
+    }));
+
+    res.json(enriched);
   } catch (err) {
     logger.error('Customers error:', err);
     res.json([]);

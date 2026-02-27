@@ -4,7 +4,7 @@
     "title": "{{CITY}}'s Trusted {{INDUSTRY}}",
     "subtitle": "Quality Work. Fair Prices. Done Right.",
     "description": "{{COMPANY_NAME}} has been serving {{SERVICE_REGION}} with professional {{INDUSTRY}} services. Licensed, insured, and backed by our satisfaction guarantee.",
-    "image": "",
+    "image": "/images/hero.jpg",
     "animation": "ken-burns",
     "primaryButtonText": "Get a Free Estimate",
     "primaryButtonLink": "#contact",
@@ -48,7 +48,9 @@
     "primaryButtonLink": "#contact",
     "secondaryButtonText": "Call {{COMPANY_PHONE}}",
     "secondaryButtonLink": "tel:{{COMPANY_PHONE_RAW}}",
-    "backgroundImage": ""
+    "backgroundImage": "",
+    "headline": "{{CTA_TEXT}}",
+    "subtext": "Call {{COMPANY_PHONE}} or fill out the form \u2014 we respond same day."
   },
   "serviceAreas": [
     "{{CITY}}",
@@ -58,12 +60,45 @@
     "{{NEARBY_CITY_4}}"
   ],
   "businessHours": {
-    "monday": { "open": "7:00 AM", "close": "6:00 PM", "closed": false },
-    "tuesday": { "open": "7:00 AM", "close": "6:00 PM", "closed": false },
-    "wednesday": { "open": "7:00 AM", "close": "6:00 PM", "closed": false },
-    "thursday": { "open": "7:00 AM", "close": "6:00 PM", "closed": false },
-    "friday": { "open": "7:00 AM", "close": "6:00 PM", "closed": false },
-    "saturday": { "open": "8:00 AM", "close": "4:00 PM", "closed": false },
-    "sunday": { "open": "Closed", "close": "Closed", "closed": true }
+    "monday": {
+      "open": "7:00 AM",
+      "close": "6:00 PM",
+      "closed": false
+    },
+    "tuesday": {
+      "open": "7:00 AM",
+      "close": "6:00 PM",
+      "closed": false
+    },
+    "wednesday": {
+      "open": "7:00 AM",
+      "close": "6:00 PM",
+      "closed": false
+    },
+    "thursday": {
+      "open": "7:00 AM",
+      "close": "6:00 PM",
+      "closed": false
+    },
+    "friday": {
+      "open": "7:00 AM",
+      "close": "6:00 PM",
+      "closed": false
+    },
+    "saturday": {
+      "open": "8:00 AM",
+      "close": "4:00 PM",
+      "closed": false
+    },
+    "sunday": {
+      "open": "Closed",
+      "close": "Closed",
+      "closed": true
+    }
+  },
+  "aboutSection": {
+    "title": "Why Homeowners Choose {{COMPANY_NAME}}",
+    "text": "{{ABOUT_TEXT}}",
+    "image": ""
   }
 }

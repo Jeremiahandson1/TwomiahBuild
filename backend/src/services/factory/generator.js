@@ -122,7 +122,7 @@ export async function generate(config) {
     // 5. Upload to S3/R2 for persistent storage (no-op if local)
     const { storageKey, storageType } = await factoryStorage.uploadZip(zipPath, zipName);
 
-    return { zipPath: storageKey, zipName, buildId, slug, storageType };
+    return { zipPath: storageKey, zipName, buildId, slug, storageType, defaultPassword };
 
   } catch (err) {
     // Clean up on failure
@@ -1026,6 +1026,196 @@ function findFiles(dir, filterFn, result = []) {
 /**
  * List available templates
  */
+
+/**
+ * Generate a preview of the website home page with tokens filled in
+ * Returns rendered HTML string — no files written to disk
+ */
+export function previewWebsite(config) {
+  const industry = config.company?.industry || 'contractor';
+  const websiteTemplate = industry === 'home_care' ? 'website-homecare'
+    : industry === 'contractor' ? 'website-contractor'
+    : 'website-general';
+
+  const TEMPLATES_DIR = path.join(path.dirname(new URL(import.meta.url).pathname), '..', '..', '..', '..', 'templates');
+  const templateDir = path.join(TEMPLATES_DIR, websiteTemplate);
+
+  if (!fs.existsSync(templateDir)) {
+    throw new Error(`Template not found: ${websiteTemplate}`);
+  }
+
+  const tokens = buildTokenMap(config);
+
+  // Read home.ejs and base.ejs
+  const homeEjs = path.join(templateDir, 'views', 'home.ejs');
+  const baseEjs = path.join(templateDir, 'views', 'base.ejs');
+  const cssFile = path.join(templateDir, 'build', 'styles', 'main.css');
+
+  if (!fs.existsSync(homeEjs) || !fs.existsSync(baseEjs)) {
+    throw new Error('Template views not found');
+  }
+
+  let homeContent = injectTokens(fs.readFileSync(homeEjs, 'utf8'), tokens);
+  let baseContent = injectTokens(fs.readFileSync(baseEjs, 'utf8'), tokens);
+  let css = '';
+  if (fs.existsSync(cssFile)) {
+    css = injectTokens(fs.readFileSync(cssFile, 'utf8'), tokens);
+  }
+
+  // Load template data files with token replacement
+  const dataDir = path.join(templateDir, 'data');
+  const loadData = (file) => {
+    const fp = path.join(dataDir, file);
+    if (!fs.existsSync(fp)) return null;
+    try { return JSON.parse(injectTokens(fs.readFileSync(fp, 'utf8'), tokens)); }
+    catch (e) { return null; }
+  };
+
+  const settings = loadData('settings.json') || {};
+  const services = loadData('services.json') || [];
+  const testimonials = loadData('testimonials.json') || [];
+  const homepage = loadData('homepage.json') || {};
+
+  // Apply branding colors to CSS
+  const b = config.branding || {};
+  if (b.primaryColor) css = css.replace(/--gold:\s*[^;]+;/, `--gold: ${b.primaryColor};`);
+  if (b.secondaryColor) css = css.replace(/--navy:\s*[^;]+;/, `--navy: ${b.secondaryColor};`);
+
+  // Simple EJS-like variable substitution for preview
+  // Replace <%- varName %> and <%= varName %> with actual values
+  const ejsVars = {
+    settings: JSON.stringify(settings),
+    services: JSON.stringify(services),
+    testimonials: JSON.stringify(testimonials),
+    homepage: JSON.stringify(homepage),
+    siteName: settings.siteName || tokens['{{COMPANY_NAME}}'],
+    companyName: tokens['{{COMPANY_NAME}}'],
+    phone: tokens['{{COMPANY_PHONE}}'],
+    city: tokens['{{CITY}}'],
+    state: tokens['{{STATE}}'],
+  };
+
+  // Build a self-contained HTML preview
+  const logoSrc = b.logo || '';
+  const previewHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${tokens['{{COMPANY_NAME}}']} — Preview</title>
+  <style>
+    ${css}
+    /* Preview banner */
+    .twomiah-preview-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
+      background: linear-gradient(90deg, #7c3aed, #4f46e5);
+      color: white; text-align: center; padding: 8px 16px;
+      font-size: 13px; font-family: sans-serif; font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    body { padding-top: 36px; }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="twomiah-preview-bar">⚡ TWOMIAH FACTORY PREVIEW — ${tokens['{{COMPANY_NAME}}']}</div>
+
+  <nav class="hc-nav">
+    <div class="hc-nav-inner">
+      <a class="hc-nav-brand" href="#">
+        ${logoSrc ? `<img src="${logoSrc}" alt="${tokens['{{COMPANY_NAME}}']}" class="hc-nav-logo">` : `<span class="hc-nav-brand-text">${tokens['{{COMPANY_NAME}}']}</span>`}
+      </a>
+      <div class="hc-nav-links">
+        <a href="#about" class="hc-nav-link">About</a>
+        <a href="#services" class="hc-nav-link">Services</a>
+        <a href="#areas" class="hc-nav-link">Service Areas</a>
+        <a href="#contact" class="hc-nav-link hc-nav-cta">Free Consultation</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero-split" id="home">
+    <div class="hero-split-inner">
+      <div class="hero-split-text">
+        <div class="hero-badge-pill">${tokens['{{HERO_BADGE}}'] || 'Professional Services'}</div>
+        <h1 class="hero-split-headline">${tokens['{{HERO_TITLE}}']}</h1>
+        <p class="hero-split-sub">${tokens['{{HERO_DESCRIPTION}}']}</p>
+        <div class="hero-split-buttons">
+          <a href="#contact" class="btn btn-warm btn-lg">Get a Free Consultation</a>
+          <a href="#services" class="btn btn-outline-teal btn-lg">Our Services</a>
+        </div>
+      </div>
+      <div class="hero-split-photo">
+        ${b.heroPhoto ? `<img src="${b.heroPhoto}" alt="Hero" class="hero-photo-img">` : `<div class="hero-photo-placeholder" style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);border-radius:20px;height:340px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#0284c7;font-family:sans-serif;"><span style="font-size:48px">📸</span><span style="font-size:14px;font-weight:600">Upload a hero photo in Branding step</span></div>`}
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-services-section" id="services">
+    <div class="hc-services-inner">
+      <div class="section-eyebrow">What We Offer</div>
+      <h2 class="section-headline-serif">Our Services</h2>
+      <div class="hc-services-grid">
+        ${services.slice(0,6).map(s => `
+          <div class="hc-service-card">
+            <div class="hc-service-icon">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <h3 class="hc-service-name">${s.name}</h3>
+            <p class="hc-service-desc">${s.shortDescription || ''}</p>
+          </div>`).join('')}
+      </div>
+    </div>
+  </section>
+
+  ${testimonials.length > 0 ? `
+  <section style="padding:60px 20px;background:white;">
+    <div style="max-width:1100px;margin:0 auto;text-align:center;">
+      <div class="section-eyebrow">What Families Say</div>
+      <h2 class="section-headline-serif">Client Testimonials</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:32px;">
+        ${testimonials.slice(0,3).map(t => `
+          <div style="background:#f8fafc;border-radius:16px;padding:28px;text-align:left;">
+            <div style="color:#f59e0b;font-size:18px;margin-bottom:12px;">${'★'.repeat(t.rating||5)}</div>
+            <p style="font-size:15px;color:#374151;line-height:1.6;margin:0 0 16px">"${t.text}"</p>
+            <div style="font-weight:700;font-size:14px">${t.name}</div>
+            <div style="font-size:13px;color:#6b7280">${t.role||''} — ${t.location||''}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </section>` : ''}
+
+  <section class="hc-cta-banner" id="contact">
+    <div class="hc-cta-inner">
+      <h2 class="hc-cta-headline">${tokens['{{CTA_TEXT}}'] || 'Ready to get started?'}</h2>
+      <p class="hc-cta-sub">Call us at <strong>${tokens['{{COMPANY_PHONE}}']}</strong> or send a message below.</p>
+    </div>
+  </section>
+
+  <footer class="hc-footer">
+    <div class="hc-footer-inner">
+      <div class="hc-footer-col">
+        <div class="hc-footer-brand">${tokens['{{COMPANY_NAME}}']}</div>
+        <div class="hc-footer-contact">
+          <div>${tokens['{{COMPANY_PHONE}}']}</div>
+          <div>${tokens['{{COMPANY_EMAIL}}']}</div>
+          <div>${tokens['{{CITY}}']}, ${tokens['{{STATE}}']}</div>
+        </div>
+      </div>
+    </div>
+    <div class="hc-footer-bottom">
+      <p>&copy; 2026 ${tokens['{{COMPANY_LEGAL_NAME}}']}. All rights reserved.</p>
+      <p class="built-by">Built by <a href="https://twomiah.com">Twomiah</a></p>
+    </div>
+  </footer>
+</body>
+</html>`;
+
+  return previewHtml;
+}
+
+
 export function listTemplates() {
   if (!fs.existsSync(TEMPLATES_ROOT)) return [];
   return fs.readdirSync(TEMPLATES_ROOT, { withFileTypes: true })

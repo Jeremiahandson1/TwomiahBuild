@@ -3,7 +3,7 @@ import {
   Globe, Layout, Briefcase, ChevronRight, ChevronLeft, Check,
   Building2, Palette, Settings2, Download, Loader2, Package,
   Search, CheckSquare, Square, ChevronDown, ChevronUp, Zap, AlertCircle,
-  Sparkles, Plus, Trash2, RefreshCw
+  Sparkles, Plus, Trash2, RefreshCw, Eye, X
 } from 'lucide-react';
 import api from '../../services/api';
 import ContentStep from './ContentStep';
@@ -115,6 +115,8 @@ export default function FactoryWizard() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [previewing, setPreviewing] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState(null);
 
   // Config state
   const [config, setConfig] = useState(saved?.config || {
@@ -188,6 +190,26 @@ export default function FactoryWizard() {
     { label: 'Generate', icon: Download },
   ];
 
+
+  const handlePreview = useCallback(async () => {
+    setPreviewing(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/factory/preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ config }),
+      });
+      if (!res.ok) throw new Error('Preview failed');
+      const html = await res.text();
+      setPreviewHtml(html);
+    } catch (err) {
+      alert('Preview failed: ' + err.message);
+    } finally {
+      setPreviewing(false);
+    }
+  }, [config]);
+
   const updateCompany = useCallback((key, value) => {
     setConfig(prev => ({ ...prev, company: { ...prev.company, [key]: value } }));
   }, []);
@@ -229,15 +251,18 @@ export default function FactoryWizard() {
       case 0: return config.products.length > 0;
       case 1: {
         if (!c.name?.trim()) return false;
-        if (c.email && !validateEmail(c.email)) return false;
-        if (c.phone && !validatePhone(c.phone)) return false;
+        if (!c.phone?.trim()) return false; // phone required
+        if (!c.email?.trim() || !validateEmail(c.email)) return false; // email required
+        if (!c.city?.trim()) return false; // city required
         if (c.domain && !validateDomain(c.domain)) return false;
         if (c.zip && !validateZip(c.zip)) return false;
         if (c.state && !validateState(c.state)) return false;
         return true;
       }
-      case 2: return true;
-      case 3: return true;
+      case 2: return true; // branding optional
+      case 3: return true; // features optional
+      case 4: return true; // integrations optional
+      case 5: return (config.content?.services?.length ?? 1) > 0; // need at least 1 service
       default: return true;
     }
   }, [step, config]);
@@ -317,6 +342,34 @@ export default function FactoryWizard() {
         )}
       </div>
 
+
+      {/* Preview Modal */}
+      {previewHtml && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column',
+        }}>
+          <div style={{
+            background: '#1e1e2e', padding: '12px 20px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <span style={{ color: 'white', fontWeight: 700, fontSize: 15 }}>
+              🔍 Preview — {config.company?.name || 'Your Site'}
+            </span>
+            <button
+              onClick={() => setPreviewHtml(null)}
+              style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: 8 }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+          <iframe
+            srcDoc={previewHtml}
+            style={{ flex: 1, border: 'none', background: 'white' }}
+            title="Site Preview"
+          />
+        </div>
+      )}
       {/* Nav Buttons */}
       {!result && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
@@ -358,7 +411,21 @@ export default function FactoryWizard() {
                 fontWeight: 600,
               }}
             >
-              Next <ChevronRight size={18} />
+Next <ChevronRight size={18} />
+            </button>
+            {config.company?.name && !result && (
+              <button
+                onClick={handlePreview}
+                disabled={previewing}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 20px', background: '#f3f4f6',
+                  border: '1px solid #d1d5db', borderRadius: 8,
+                  cursor: previewing ? 'wait' : 'pointer', color: '#374151', fontWeight: 600,
+                }}
+              >
+                <Eye size={16} /> {previewing ? 'Loading...' : 'Preview Site'}
+              </button>
             </button>
           ) : null}
         </div>
@@ -1436,6 +1503,28 @@ function ReviewStep({ config, registry, generating, result, error, onGenerate })
         >
           <Download size={16} /> Download zip
         </a>
+        {/* Credentials Card */}
+        {result.defaultPassword && (
+          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '20px 24px', marginTop: 20, textAlign: 'left' }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: '#92400e', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              🔑 Admin Login Credentials
+              <span style={{ fontWeight: 400, fontSize: 12, color: '#b45309' }}>(save these now — also emailed to client)</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              {[
+                { label: 'Admin URL', value: result.adminUrl || `${deployResult?.deployedUrl || ''}/admin` },
+                { label: 'Email / Username', value: config.company?.email || '' },
+                { label: 'Temp Password', value: result.defaultPassword },
+                { label: 'Build ID', value: result.buildId },
+              ].map(row => row.value ? (
+                <div key={row.label}>
+                  <div style={{ fontSize: 11, color: '#92400e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 3 }}>{row.label}</div>
+                  <code style={{ fontSize: 13, background: 'white', padding: '4px 8px', borderRadius: 6, border: '1px solid #fde68a', display: 'block', wordBreak: 'break-all' }}>{row.value}</code>
+                </div>
+              ) : null)}
+            </div>
+          </div>
+        )}
         <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: 12 }}>
           Build ID: {result.buildId}
         </p>

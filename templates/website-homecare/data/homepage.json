@@ -4,7 +4,7 @@
     "title": "{{CITY}} Home Care Services",
     "subtitle": "Trusted Care for Your Loved Ones",
     "description": "{{COMPANY_NAME}} provides professional, compassionate in-home care services across {{SERVICE_REGION}}. We help seniors and those with disabilities live safely and independently at home.",
-    "image": "",
+    "image": "/images/hero.jpg",
     "animation": "ken-burns",
     "primaryButtonText": "Request a Free Assessment",
     "primaryButtonLink": "#contact",
@@ -58,13 +58,41 @@
     "{{NEARBY_CITY_4}}"
   ],
   "businessHours": {
-    "monday": { "open": "8:00 AM", "close": "5:00 PM", "closed": false },
-    "tuesday": { "open": "8:00 AM", "close": "5:00 PM", "closed": false },
-    "wednesday": { "open": "8:00 AM", "close": "5:00 PM", "closed": false },
-    "thursday": { "open": "8:00 AM", "close": "5:00 PM", "closed": false },
-    "friday": { "open": "8:00 AM", "close": "5:00 PM", "closed": false },
-    "saturday": { "open": "By Appointment", "close": "By Appointment", "closed": false },
-    "sunday": { "open": "Closed", "close": "Closed", "closed": true }
+    "monday": {
+      "open": "8:00 AM",
+      "close": "5:00 PM",
+      "closed": false
+    },
+    "tuesday": {
+      "open": "8:00 AM",
+      "close": "5:00 PM",
+      "closed": false
+    },
+    "wednesday": {
+      "open": "8:00 AM",
+      "close": "5:00 PM",
+      "closed": false
+    },
+    "thursday": {
+      "open": "8:00 AM",
+      "close": "5:00 PM",
+      "closed": false
+    },
+    "friday": {
+      "open": "8:00 AM",
+      "close": "5:00 PM",
+      "closed": false
+    },
+    "saturday": {
+      "open": "By Appointment",
+      "close": "By Appointment",
+      "closed": false
+    },
+    "sunday": {
+      "open": "Closed",
+      "close": "Closed",
+      "closed": true
+    }
   },
   "whyChooseUs": {
     "enabled": true,

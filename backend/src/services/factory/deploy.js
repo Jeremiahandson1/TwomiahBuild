@@ -355,6 +355,83 @@ async function getServiceDeploys(serviceId, limit = 5) {
  * @param {Object} options - Deployment options
  * @returns {Object} Deployment results with service URLs
  */
+/**
+ * Send a branded onboarding email to the client after successful deployment
+ */
+async function sendOnboardingEmail(factoryCustomer, deployResults) {
+  const sgApiKey = process.env.SENDGRID_API_KEY;
+  if (!sgApiKey) throw new Error('SENDGRID_API_KEY not set');
+
+  const { default: sgMail } = await import('@sendgrid/mail');
+  sgMail.setApiKey(sgApiKey);
+
+  const config = factoryCustomer.config || {};
+  const company = config.company || {};
+  const clientEmail = company.email;
+  const clientName = company.ownerName || company.name || 'there';
+  const companyName = company.name || factoryCustomer.slug;
+  const siteUrl = deployResults.siteUrl || `https://${factoryCustomer.slug}-site.onrender.com`;
+  const adminUrl = `${siteUrl}/admin`;
+  const crmUrl = deployResults.crmUrl || '';
+  const defaultPassword = config.defaultPassword || '(set at generation)';
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;">
+      <div style="background:linear-gradient(135deg,#0ea5e9,#6366f1);padding:32px;border-radius:12px 12px 0 0;text-align:center;">
+        <h1 style="color:white;margin:0;font-size:26px;">🎉 Your Site is Live!</h1>
+        <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;">Welcome to Twomiah Build, ${clientName}</p>
+      </div>
+      <div style="background:#f9fafb;padding:32px;border-radius:0 0 12px 12px;border:1px solid #e5e7eb;">
+        <p style="font-size:16px;">Hi ${clientName},</p>
+        <p>Your <strong>${companyName}</strong> website and tools are deployed and ready to go. Here's everything you need to get started:</p>
+        
+        <div style="background:white;border-radius:10px;padding:20px;margin:20px 0;border:1px solid #e5e7eb;">
+          <h3 style="margin:0 0 16px;color:#374151;font-size:15px;text-transform:uppercase;letter-spacing:0.05em;">Your Links</h3>
+          ${siteUrl ? `<div style="margin-bottom:12px;"><strong>🌐 Your Website:</strong> <a href="${siteUrl}" style="color:#0ea5e9;">${siteUrl}</a></div>` : ''}
+          <div style="margin-bottom:12px;"><strong>⚙️ Admin Panel:</strong> <a href="${adminUrl}" style="color:#0ea5e9;">${adminUrl}</a></div>
+          ${crmUrl ? `<div style="margin-bottom:12px;"><strong>📊 CRM Dashboard:</strong> <a href="${crmUrl}" style="color:#0ea5e9;">${crmUrl}</a></div>` : ''}
+        </div>
+
+        <div style="background:white;border-radius:10px;padding:20px;margin:20px 0;border:1px solid #e5e7eb;">
+          <h3 style="margin:0 0 16px;color:#374151;font-size:15px;text-transform:uppercase;letter-spacing:0.05em;">Admin Login</h3>
+          <div style="margin-bottom:8px;"><strong>Email / Username:</strong> ${clientEmail}</div>
+          <div><strong>Temporary Password:</strong> <code style="background:#f3f4f6;padding:4px 8px;border-radius:6px;font-size:14px;">${defaultPassword}</code></div>
+          <p style="font-size:13px;color:#6b7280;margin-top:12px;">Please change your password after your first login: Admin → Settings → Change Password</p>
+        </div>
+
+        <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:16px;margin:20px 0;">
+          <strong>⏱ Note:</strong> Render's free tier takes 1-2 minutes to spin up on first load. Your site will be fast once it's warmed up. Consider upgrading to a paid Render plan for instant load times.
+        </div>
+
+        <h3 style="color:#374151;">Getting Started</h3>
+        <ol style="color:#374151;line-height:2;">
+          <li>Log into your admin panel and change your password</li>
+          <li>Upload your logo and hero photo (Admin → Site Settings → Branding)</li>
+          <li>Review and update your services list (Admin → Services)</li>
+          <li>Add your first testimonial (Admin → Testimonials)</li>
+          <li>Test your contact form by submitting a message</li>
+        </ol>
+
+        <p>Need help? Reply to this email or reach out to Jeremiah at Twomiah.</p>
+        <p style="color:#6b7280;font-size:13px;margin-top:32px;border-top:1px solid #e5e7eb;padding-top:16px;">
+          Built with ❤️ by <a href="https://twomiah.com" style="color:#0ea5e9;">Twomiah</a>
+        </p>
+      </div>
+    </div>`;
+
+  await sgMail.send({
+    to: clientEmail,
+    from: process.env.FROM_EMAIL || 'hello@twomiah.com',
+    subject: `🎉 Your ${companyName} site is live on Twomiah Build!`,
+    html,
+    text: `Hi ${clientName}! Your ${companyName} site is live.\n\nWebsite: ${siteUrl}\nAdmin: ${adminUrl}\nTemp password: ${defaultPassword}\n\nChange your password after first login.\n\n— Twomiah Build`,
+  });
+
+  console.log(`[Deploy] Onboarding email sent to ${clientEmail}`);
+}
+
+
+
 export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
   const {
     region = 'ohio',
@@ -508,6 +585,18 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
       } catch (err) {
         results.steps.push({ step: 'render_site', status: 'error', error: err.message });
         results.errors.push(`Site: ${err.message}`);
+      }
+    }
+
+
+    // ── Send onboarding email to client ───────────────
+    if (results.success && factoryCustomer.config?.company?.email) {
+      try {
+        await sendOnboardingEmail(factoryCustomer, results);
+        results.steps.push({ step: 'onboarding_email', status: 'ok' });
+      } catch (emailErr) {
+        console.warn('[Deploy] Onboarding email failed:', emailErr.message);
+        results.steps.push({ step: 'onboarding_email', status: 'skipped', reason: emailErr.message });
       }
     }
 
