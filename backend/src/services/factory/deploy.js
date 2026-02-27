@@ -34,7 +34,7 @@ function renderHeaders() {
 
 function githubHeaders() {
   return {
-    'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+    'Authorization': `token ${process.env.GITHUB_TOKEN}`,
     'Content-Type': 'application/json',
     'Accept': 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
