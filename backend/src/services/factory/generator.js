@@ -61,6 +61,10 @@ export async function generate(config) {
   // Ensure output dir exists
   fs.mkdirSync(workDir, { recursive: true });
 
+  // Generate password first so it's in scope for the return value
+  const defaultPassword = config.company?.defaultPassword || generatePassword();
+  config = { ...config, company: { ...config.company, defaultPassword } };
+
   // Build the token map from config
   const tokens = buildTokenMap(config, slug);
 
