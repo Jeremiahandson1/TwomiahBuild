@@ -1055,7 +1055,7 @@ router.post('/customers/:id/regenerate', async (req, res) => {
       const config = typeof customer.wizardConfig === 'string' ? JSON.parse(customer.wizardConfig) : customer.wizardConfig;
       const { zipPath, zipName, buildId, slug, storageType, defaultPassword } = await generate(config);
       await prisma.factoryBuild.create({
-        data: { customerId: customer.id, zipPath, zipName, buildId, status: 'generated' },
+        data: { customerId: customer.id, zipPath, zipName, buildId, status: 'generated', companyName: customer.companyName || customer.slug },
       });
       const result = await deployService.deployCustomer(customer, zipPath, {});
       const updateData = { status: result.success ? 'deployed' : 'generated' };
