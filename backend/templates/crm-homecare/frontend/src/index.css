@@ -1,7 +1,9 @@
 :root {
-    --color-teal: #2ABBA7;
+    --color-primary: #2ABBA7;
+    --color-primary-light: #E8F8F6;
+    --color-teal: var(--color-primary);
     --color-teal-dark: #1E9A89;
-    --color-teal-light: #E8F8F6;
+    --color-teal-light: var(--color-primary-light);
     --color-gold: #C9A227;
     --color-gold-light: #D4AF37;
     --color-gold-pale: #FDF8E8;
