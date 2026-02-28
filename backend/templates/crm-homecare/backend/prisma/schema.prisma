@@ -109,6 +109,21 @@ model User {
   authorizationsCreated Authorization[]
   gustoSyncLogs        GustoSyncLog[]
   expenseSubmissions   Expense[]
+  // New model relations
+  jobApplicationsHired JobApplication[]     @relation("HiredFromApplication")
+  applicationStatusChanges JobApplicationStatusHistory[] @relation("ApplicationStatusChangedBy")
+  carePlansCreated     CarePlan[]           @relation("CarePlanCreatedBy")
+  carePlansUpdated     CarePlan[]           @relation("CarePlanUpdatedBy")
+  incidentsInvolved    IncidentReport[]     @relation("IncidentCaregiver")
+  incidentsReported    IncidentReport[]     @relation("IncidentReporter")
+  performanceReviews   PerformanceReview[]  @relation("PerformanceReviewCaregiver")
+  performanceReviewsGiven PerformanceReview[] @relation("PerformanceReviewReviewer")
+  prospectsAssigned    Prospect[]           @relation("ProspectAssignedTo")
+  documentsUploaded    Document[]           @relation("DocumentUploadedBy")
+  documentsAcknowledged Document[]          @relation("DocumentAcknowledgedBy")
+  smsSent              SmsMessage[]         @relation("SmsSentBy")
+  caregiverRates       CaregiverRate[]      @relation("CaregiverRates")
+  trainingRecords      TrainingRecord[]     @relation("TrainingRecords")
 
   @@map("users")
 }
@@ -222,6 +237,8 @@ model ReferralSource {
   authorizations Authorization[]
   ediBatches   EdiBatch[]
   remittances  RemittanceBatch[]
+  prospects    Prospect[]
+  rates        ReferralSourceRate[]
 
   @@index([type])
   @@index([isActive])
@@ -278,6 +295,8 @@ model Client {
   formSubmissions    FormSubmission[]
   absencesCovering   Absence[]
   noshowAlerts       NoshowAlert[]
+  carePlans          CarePlan[]
+  incidentReports    IncidentReport[]
 
   @@index([isActive])
   @@index([referredById])
@@ -1133,4 +1152,301 @@ model DashboardCache {
   createdAt DateTime @default(now())
 
   @@map("dashboard_cache")
+}
+
+// ==================== JOB APPLICATIONS ====================
+model JobApplication {
+  id                   String   @id @default(cuid())
+  firstName            String
+  lastName             String
+  email                String
+  phone                String?
+  address              String?
+  city                 String?
+  state                String?
+  zip                  String?
+  dateOfBirth          DateTime? @db.Date
+  hasDriversLicense    Boolean  @default(false)
+  hasTransportation    Boolean  @default(false)
+  legalToWork          Boolean  @default(false)
+  willingBackgroundCheck Boolean @default(false)
+  felonyConviction     Boolean  @default(false)
+  felonyExplanation    String?
+  yearsExperience      Int?
+  cnaLicense           String?
+  certifications       String?
+  previousEmployer     String?
+  reasonForLeaving     String?
+  availabilityDays     String?
+  availabilityShifts   String?
+  hoursDesired         String?
+  earliestStartDate    DateTime? @db.Date
+  ref1Name             String?
+  ref1Relationship     String?
+  ref1Phone            String?
+  ref1Email            String?
+  ref2Name             String?
+  ref2Relationship     String?
+  ref2Phone            String?
+  ref2Email            String?
+  whyInterested        String?
+  additionalInfo       String?
+  interviewNotes       String?
+  status               String   @default("new") // new | reviewing | interviewed | offered | hired | rejected
+  hiredCaregiverId     String?
+  hiredCaregiver       User?    @relation("HiredFromApplication", fields: [hiredCaregiverId], references: [id])
+  statusHistory        JobApplicationStatusHistory[]
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("job_applications")
+}
+
+model JobApplicationStatusHistory {
+  id            String   @id @default(cuid())
+  applicationId String
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status        String
+  notes         String?
+  changedById   String?
+  changedBy     User?    @relation("ApplicationStatusChangedBy", fields: [changedById], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@map("job_application_status_history")
+}
+
+// ==================== CARE PLANS ====================
+model CarePlan {
+  id          String   @id @default(cuid())
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  title       String
+  content     String?  @db.Text
+  goals       Json?
+  adlNeeds    Json?
+  dietaryNeeds String?
+  mobilityNeeds String?
+  cognitiveNeeds String?
+  safetyNeeds  String?
+  medicationNeeds String?
+  status      String   @default("active") // active | archived
+  createdById String?
+  createdBy   User?    @relation("CarePlanCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?    @relation("CarePlanUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("care_plans")
+}
+
+// ==================== INCIDENTS ====================
+model IncidentReport {
+  id           String   @id @default(cuid())
+  clientId     String?
+  client       Client?  @relation(fields: [clientId], references: [id])
+  caregiverId  String?
+  caregiver    User?    @relation("IncidentCaregiver", fields: [caregiverId], references: [id])
+  reportedById String?
+  reportedBy   User?    @relation("IncidentReporter", fields: [reportedById], references: [id])
+  title        String
+  description  String   @db.Text
+  incidentType String   @default("general") // fall | medication_error | behavior | injury | other | general
+  severity     String   @default("low") // low | medium | high | critical
+  incidentDate DateTime
+  location     String?
+  witnesses    String?
+  actionTaken  String?  @db.Text
+  followUpRequired Boolean @default(false)
+  followUpNotes String? @db.Text
+  status       String   @default("open") // open | under_review | resolved | closed
+  resolvedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("incident_reports")
+}
+
+// ==================== PERFORMANCE REVIEWS ====================
+model PerformanceReview {
+  id           String   @id @default(cuid())
+  caregiverId  String
+  caregiver    User     @relation("PerformanceReviewCaregiver", fields: [caregiverId], references: [id], onDelete: Cascade)
+  reviewerId   String?
+  reviewer     User?    @relation("PerformanceReviewReviewer", fields: [reviewerId], references: [id])
+  reviewDate   DateTime @db.Date
+  periodStart  DateTime @db.Date
+  periodEnd    DateTime @db.Date
+  punctuality  Int?     // 1-5
+  clientFeedback Int?   // 1-5
+  documentation Int?    // 1-5
+  professionalism Int?  // 1-5
+  overallScore Float?
+  strengths    String?  @db.Text
+  improvements String?  @db.Text
+  goals        String?  @db.Text
+  status       String   @default("draft") // draft | completed
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("performance_reviews")
+}
+
+// ==================== PROSPECTS ====================
+model Prospect {
+  id           String   @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String?
+  phone        String?
+  address      String?
+  city         String?
+  state        String?
+  zip          String?
+  dateOfBirth  DateTime? @db.Date
+  notes        String?  @db.Text
+  status       String   @default("new") // new | contacted | qualified | converted | lost
+  sourceType   String?  // referral | website | walk-in | phone | other
+  referralSourceId String?
+  referralSource   ReferralSource? @relation(fields: [referralSourceId], references: [id])
+  assignedToId String?
+  assignedTo   User?    @relation("ProspectAssignedTo", fields: [assignedToId], references: [id])
+  appointments ProspectAppointment[]
+  convertedClientId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("prospects")
+}
+
+model ProspectAppointment {
+  id          String   @id @default(cuid())
+  prospectId  String
+  prospect    Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  scheduledAt DateTime
+  type        String   @default("assessment") // assessment | follow-up | intake
+  notes       String?
+  status      String   @default("scheduled") // scheduled | completed | cancelled | no-show
+  createdAt   DateTime @default(now())
+
+  @@map("prospect_appointments")
+}
+
+// ==================== DOCUMENTS ====================
+model Document {
+  id           String   @id @default(cuid())
+  entityType   String   // client | caregiver | agency
+  entityId     String
+  fileName     String
+  originalName String
+  fileSize     Int?
+  mimeType     String?
+  category     String?  // id | license | contract | medical | other
+  description  String?
+  uploadedById String?
+  uploadedBy   User?    @relation("DocumentUploadedBy", fields: [uploadedById], references: [id])
+  acknowledgedAt DateTime?
+  acknowledgedById String?
+  acknowledgedBy User?  @relation("DocumentAcknowledgedBy", fields: [acknowledgedById], references: [id])
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@map("documents")
+}
+
+// ==================== SMS MESSAGES ====================
+model SmsMessage {
+  id          String   @id @default(cuid())
+  direction   String   // inbound | outbound
+  fromNumber  String
+  toNumber    String
+  body        String   @db.Text
+  status      String   @default("sent") // sent | delivered | failed | received
+  entityType  String?  // caregiver | client
+  entityId    String?
+  sentById    String?
+  sentBy      User?    @relation("SmsSentBy", fields: [sentById], references: [id])
+  twilioSid   String?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@map("sms_messages")
+}
+
+model SmsTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  body      String   @db.Text
+  category  String?  // reminder | alert | general
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sms_templates")
+}
+
+// ==================== CAREGIVER RATES ====================
+model CaregiverRate {
+  id           String   @id @default(cuid())
+  caregiverId  String
+  caregiver    User     @relation("CaregiverRates", fields: [caregiverId], references: [id], onDelete: Cascade)
+  serviceType  String   // personal_care | skilled_nursing | companionship | etc
+  hourlyRate   Float
+  effectiveDate DateTime @db.Date
+  createdAt    DateTime @default(now())
+
+  @@unique([caregiverId, serviceType])
+  @@map("caregiver_rates")
+}
+
+// ==================== REFERRAL SOURCE RATES ====================
+model ReferralSourceRate {
+  id               String   @id @default(cuid())
+  referralSourceId String
+  referralSource   ReferralSource @relation(fields: [referralSourceId], references: [id], onDelete: Cascade)
+  serviceType      String
+  billRate         Float
+  payRate          Float?
+  effectiveDate    DateTime @db.Date
+  createdAt        DateTime @default(now())
+
+  @@unique([referralSourceId, serviceType])
+  @@map("referral_source_rates")
+}
+
+// ==================== TRAINING RECORDS ====================
+model TrainingRecord {
+  id          String   @id @default(cuid())
+  caregiverId String
+  caregiver   User     @relation("TrainingRecords", fields: [caregiverId], references: [id], onDelete: Cascade)
+  title       String
+  type        String   @default("required") // required | optional | certification
+  completedAt DateTime? @db.Date
+  expiresAt   DateTime? @db.Date
+  provider    String?
+  hours       Float?
+  passed      Boolean?
+  certificate String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("training_records")
+}
+
+// ==================== SERVICE PRICING ====================
+model ServicePricing {
+  id          String   @id @default(cuid())
+  serviceType String
+  baseRate    Float
+  overtimeRate Float?
+  holidayRate  Float?
+  weekendRate  Float?
+  effectiveDate DateTime @db.Date
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([serviceType, effectiveDate])
+  @@map("service_pricing")
 }

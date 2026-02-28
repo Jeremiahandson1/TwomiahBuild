@@ -183,7 +183,7 @@ app.get('/api/emergency/miss-reports', (req, res) => res.json([]));
 // Billing sub-routes
 app.get('/api/billing/referral-source-rates', (req, res) => res.json([]));
 app.get('/api/billing/invoice-payments', (req, res) => res.json([]));
-app.post('/api/payroll/calculate', (req, res) => res.json({ caregivers: [], total: 0 }));
+app.post('/api/payroll/calculate', (req, res) => res.json({ payrollData: [], total: 0 }));
 
 // Claims
 app.get('/api/claims', (req, res) => res.json([]));
@@ -209,10 +209,10 @@ app.post('/api/background-checks', (req, res) => res.json({ id: Date.now(), ...r
 app.get('/api/documents', (req, res) => res.json([]));
 
 // Audit logs
-app.get('/api/audit-logs', (req, res) => res.json([]));
+app.use('/api/audit-logs', auditRoutes);
 
 // Auth sub-routes
-app.get('/api/auth/login-activity', (req, res) => res.json({ activities: [], total: 0 }));
+app.get('/api/auth/login-activity', (req, res) => res.json({ activity: [], total: 0, pagination: { total: 0, page: 1, pages: 1 } }));
 
 // Communication log sub-routes
 app.get('/api/communication-log/follow-ups/pending', (req, res) => res.json([]));

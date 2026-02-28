@@ -1009,3 +1009,288 @@ CREATE INDEX "login_activity_createdAt_idx" ON "login_activity"("createdAt");
 CREATE INDEX "audit_logs_userId_idx" ON "audit_logs"("userId");
 CREATE INDEX "audit_logs_timestamp_idx" ON "audit_logs"("timestamp");
 CREATE INDEX "audit_logs_tableName_idx" ON "audit_logs"("tableName");
+
+-- ==================== JOB APPLICATIONS ====================
+CREATE TABLE "job_applications" (
+    "id" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT,
+    "address" TEXT,
+    "city" TEXT,
+    "state" TEXT,
+    "zip" TEXT,
+    "dateOfBirth" DATE,
+    "hasDriversLicense" BOOLEAN NOT NULL DEFAULT false,
+    "hasTransportation" BOOLEAN NOT NULL DEFAULT false,
+    "legalToWork" BOOLEAN NOT NULL DEFAULT false,
+    "willingBackgroundCheck" BOOLEAN NOT NULL DEFAULT false,
+    "felonyConviction" BOOLEAN NOT NULL DEFAULT false,
+    "felonyExplanation" TEXT,
+    "yearsExperience" INTEGER,
+    "cnaLicense" TEXT,
+    "certifications" TEXT,
+    "previousEmployer" TEXT,
+    "reasonForLeaving" TEXT,
+    "availabilityDays" TEXT,
+    "availabilityShifts" TEXT,
+    "hoursDesired" TEXT,
+    "earliestStartDate" DATE,
+    "ref1Name" TEXT,
+    "ref1Relationship" TEXT,
+    "ref1Phone" TEXT,
+    "ref1Email" TEXT,
+    "ref2Name" TEXT,
+    "ref2Relationship" TEXT,
+    "ref2Phone" TEXT,
+    "ref2Email" TEXT,
+    "whyInterested" TEXT,
+    "additionalInfo" TEXT,
+    "interviewNotes" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'new',
+    "hiredCaregiverId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "job_applications_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "job_application_status_history" (
+    "id" TEXT NOT NULL,
+    "applicationId" TEXT NOT NULL,
+    "status" TEXT NOT NULL,
+    "notes" TEXT,
+    "changedById" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "job_application_status_history_pkey" PRIMARY KEY ("id")
+);
+
+-- ==================== CARE PLANS ====================
+CREATE TABLE "care_plans" (
+    "id" TEXT NOT NULL,
+    "clientId" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "content" TEXT,
+    "goals" JSONB,
+    "adlNeeds" JSONB,
+    "dietaryNeeds" TEXT,
+    "mobilityNeeds" TEXT,
+    "cognitiveNeeds" TEXT,
+    "safetyNeeds" TEXT,
+    "medicationNeeds" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'active',
+    "createdById" TEXT,
+    "updatedById" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "care_plans_pkey" PRIMARY KEY ("id")
+);
+
+-- ==================== INCIDENTS ====================
+CREATE TABLE "incident_reports" (
+    "id" TEXT NOT NULL,
+    "clientId" TEXT,
+    "caregiverId" TEXT,
+    "reportedById" TEXT,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "incidentType" TEXT NOT NULL DEFAULT 'general',
+    "severity" TEXT NOT NULL DEFAULT 'low',
+    "incidentDate" TIMESTAMP(3) NOT NULL,
+    "location" TEXT,
+    "witnesses" TEXT,
+    "actionTaken" TEXT,
+    "followUpRequired" BOOLEAN NOT NULL DEFAULT false,
+    "followUpNotes" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'open',
+    "resolvedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "incident_reports_pkey" PRIMARY KEY ("id")
+);
+
+-- ==================== PERFORMANCE REVIEWS ====================
+CREATE TABLE "performance_reviews" (
+    "id" TEXT NOT NULL,
+    "caregiverId" TEXT NOT NULL,
+    "reviewerId" TEXT,
+    "reviewDate" DATE NOT NULL,
+    "periodStart" DATE NOT NULL,
+    "periodEnd" DATE NOT NULL,
+    "punctuality" INTEGER,
+    "clientFeedback" INTEGER,
+    "documentation" INTEGER,
+    "professionalism" INTEGER,
+    "overallScore" DOUBLE PRECISION,
+    "strengths" TEXT,
+    "improvements" TEXT,
+    "goals" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'draft',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "performance_reviews_pkey" PRIMARY KEY ("id")
+);
+
+-- ==================== PROSPECTS ====================
+CREATE TABLE "prospects" (
+    "id" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "email" TEXT,
+    "phone" TEXT,
+    "address" TEXT,
+    "city" TEXT,
+    "state" TEXT,
+    "zip" TEXT,
+    "dateOfBirth" DATE,
+    "notes" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'new',
+    "sourceType" TEXT,
+    "referralSourceId" TEXT,
+    "assignedToId" TEXT,
+    "convertedClientId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "prospects_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "prospect_appointments" (
+    "id" TEXT NOT NULL,
+    "prospectId" TEXT NOT NULL,
+    "scheduledAt" TIMESTAMP(3) NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'assessment',
+    "notes" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'scheduled',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "prospect_appointments_pkey" PRIMARY KEY ("id")
+);
+
+-- ==================== DOCUMENTS ====================
+CREATE TABLE "documents" (
+    "id" TEXT NOT NULL,
+    "entityType" TEXT NOT NULL,
+    "entityId" TEXT NOT NULL,
+    "fileName" TEXT NOT NULL,
+    "originalName" TEXT NOT NULL,
+    "fileSize" INTEGER,
+    "mimeType" TEXT,
+    "category" TEXT,
+    "description" TEXT,
+    "uploadedById" TEXT,
+    "acknowledgedAt" TIMESTAMP(3),
+    "acknowledgedById" TEXT,
+    "expiresAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "documents_pkey" PRIMARY KEY ("id")
+);
+
+CREATE INDEX "documents_entityType_entityId_idx" ON "documents"("entityType", "entityId");
+
+-- ==================== SMS MESSAGES ====================
+CREATE TABLE "sms_messages" (
+    "id" TEXT NOT NULL,
+    "direction" TEXT NOT NULL,
+    "fromNumber" TEXT NOT NULL,
+    "toNumber" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'sent',
+    "entityType" TEXT,
+    "entityId" TEXT,
+    "sentById" TEXT,
+    "twilioSid" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "sms_messages_pkey" PRIMARY KEY ("id")
+);
+
+CREATE INDEX "sms_messages_entityType_entityId_idx" ON "sms_messages"("entityType", "entityId");
+
+CREATE TABLE "sms_templates" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "category" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "sms_templates_pkey" PRIMARY KEY ("id")
+);
+
+-- ==================== CAREGIVER RATES ====================
+CREATE TABLE "caregiver_rates" (
+    "id" TEXT NOT NULL,
+    "caregiverId" TEXT NOT NULL,
+    "serviceType" TEXT NOT NULL,
+    "hourlyRate" DOUBLE PRECISION NOT NULL,
+    "effectiveDate" DATE NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "caregiver_rates_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "caregiver_rates_caregiverId_serviceType_key" UNIQUE ("caregiverId", "serviceType")
+);
+
+-- ==================== REFERRAL SOURCE RATES ====================
+CREATE TABLE "referral_source_rates" (
+    "id" TEXT NOT NULL,
+    "referralSourceId" TEXT NOT NULL,
+    "serviceType" TEXT NOT NULL,
+    "billRate" DOUBLE PRECISION NOT NULL,
+    "payRate" DOUBLE PRECISION,
+    "effectiveDate" DATE NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "referral_source_rates_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "referral_source_rates_referralSourceId_serviceType_key" UNIQUE ("referralSourceId", "serviceType")
+);
+
+-- ==================== TRAINING RECORDS ====================
+CREATE TABLE "training_records" (
+    "id" TEXT NOT NULL,
+    "caregiverId" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'required',
+    "completedAt" DATE,
+    "expiresAt" DATE,
+    "provider" TEXT,
+    "hours" DOUBLE PRECISION,
+    "passed" BOOLEAN,
+    "certificate" TEXT,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "training_records_pkey" PRIMARY KEY ("id")
+);
+
+-- ==================== SERVICE PRICING ====================
+CREATE TABLE "service_pricing" (
+    "id" TEXT NOT NULL,
+    "serviceType" TEXT NOT NULL,
+    "baseRate" DOUBLE PRECISION NOT NULL,
+    "overtimeRate" DOUBLE PRECISION,
+    "holidayRate" DOUBLE PRECISION,
+    "weekendRate" DOUBLE PRECISION,
+    "effectiveDate" DATE NOT NULL,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "service_pricing_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "service_pricing_serviceType_effectiveDate_key" UNIQUE ("serviceType", "effectiveDate")
+);
+
+-- Foreign Keys for new tables
+ALTER TABLE "job_applications" ADD CONSTRAINT "job_applications_hiredCaregiverId_fkey" FOREIGN KEY ("hiredCaregiverId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "job_application_status_history" ADD CONSTRAINT "job_application_status_history_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "job_applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "job_application_status_history" ADD CONSTRAINT "job_application_status_history_changedById_fkey" FOREIGN KEY ("changedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "care_plans" ADD CONSTRAINT "care_plans_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "clients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "care_plans" ADD CONSTRAINT "care_plans_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "care_plans" ADD CONSTRAINT "care_plans_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "incident_reports" ADD CONSTRAINT "incident_reports_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "clients"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "incident_reports" ADD CONSTRAINT "incident_reports_caregiverId_fkey" FOREIGN KEY ("caregiverId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "incident_reports" ADD CONSTRAINT "incident_reports_reportedById_fkey" FOREIGN KEY ("reportedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "performance_reviews" ADD CONSTRAINT "performance_reviews_caregiverId_fkey" FOREIGN KEY ("caregiverId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "performance_reviews" ADD CONSTRAINT "performance_reviews_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "prospects" ADD CONSTRAINT "prospects_referralSourceId_fkey" FOREIGN KEY ("referralSourceId") REFERENCES "referral_sources"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "prospects" ADD CONSTRAINT "prospects_assignedToId_fkey" FOREIGN KEY ("assignedToId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "prospect_appointments" ADD CONSTRAINT "prospect_appointments_prospectId_fkey" FOREIGN KEY ("prospectId") REFERENCES "prospects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "documents" ADD CONSTRAINT "documents_uploadedById_fkey" FOREIGN KEY ("uploadedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "documents" ADD CONSTRAINT "documents_acknowledgedById_fkey" FOREIGN KEY ("acknowledgedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "sms_messages" ADD CONSTRAINT "sms_messages_sentById_fkey" FOREIGN KEY ("sentById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "caregiver_rates" ADD CONSTRAINT "caregiver_rates_caregiverId_fkey" FOREIGN KEY ("caregiverId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "referral_source_rates" ADD CONSTRAINT "referral_source_rates_referralSourceId_fkey" FOREIGN KEY ("referralSourceId") REFERENCES "referral_sources"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "training_records" ADD CONSTRAINT "training_records_caregiverId_fkey" FOREIGN KEY ("caregiverId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
