@@ -157,7 +157,7 @@ const PaymentPage = () => {
 
         <div style={styles.footer}>
           <p>Questions about this invoice? Contact us at:</p>
-          <p><strong>support@chippewavalleyhomecare.com</strong></p>
+          <p><strong>{{COMPANY_EMAIL}}</strong></p>
         </div>
       </div>
     </div>

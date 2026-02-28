@@ -169,6 +169,7 @@ function buildTokenMap(config, slug) {
     '{{COMPANY_SLUG}}': slug,
     '{{COMPANY_NAME_SLUG}}': pascalCase(c.name || 'MyCompany'),
     '{{COMPANY_EMAIL}}': c.email || `info@${slug}.com`,
+    '{{COMPANY_SHORT}}': (c.name || 'Co').split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 4),
     '{{COMPANY_PHONE}}': c.phone || '(555) 000-0000',
     '{{COMPANY_PHONE_RAW}}': (c.phone || '5550000000').replace(/\D/g, ''),
     '{{COMPANY_ADDRESS}}': c.address || '123 Main St',

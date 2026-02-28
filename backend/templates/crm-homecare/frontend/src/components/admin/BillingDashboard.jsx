@@ -1487,7 +1487,7 @@ const handleDeleteInvoice = async (invoiceId, invoiceNumber) => {
                     <div>Eau Claire, Wisconsin 54701</div>
                     <div>U.S.A</div>
                     <div>715-491-1254</div>
-                    <div>chippewavalleyhomecare@gmail.com</div>
+                    <div>{{COMPANY_EMAIL}}</div>
                   </div>
                 </div>
                 <div className="invoice-header-right">

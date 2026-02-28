@@ -292,7 +292,7 @@ const AdminDashboard = ({ user, token, onLogout, onImpersonate }) => {
       {/* SIDEBAR */}
       <div className={`sidebar ${sidebarOpen ? 'open' : ''}`} style={{ width: '260px', minWidth: '260px' }}>
         <div className="sidebar-logo" style={{ fontSize: '1.4rem', padding: '0 0.5rem 1.5rem 0.5rem' }}>
-          <span>🏥</span> CVHC CRM
+          <span>🏥</span> {{COMPANY_NAME}} CRM
         </div>
 
         <ul className="sidebar-nav" style={{ paddingBottom: '1rem' }}>
