@@ -546,7 +546,6 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
         const backendEnvVars = [
           { key: 'NODE_ENV', value: 'production' },
           { key: 'JWT_SECRET', value: jwtSecret },
-          { key: 'FRONTEND_URL', value: isHomeCare ? `https://${slug}-care.onrender.com` : `https://${slug}-crm.onrender.com` },
           { key: 'JWT_REFRESH_SECRET', value: jwtRefreshSecret },
           { key: 'PORT', value: '10000' },
         ];
@@ -566,8 +565,8 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
           name: crmApiName,
           repoFullName: repo.full_name,
           rootDir: 'crm/backend',
-          buildCommand: 'npm install && npx prisma generate && npx prisma migrate deploy',
-          startCommand: 'npm run db:seed && npm start',
+          buildCommand: 'npm install && npx prisma generate',
+          startCommand: 'npx prisma migrate deploy && node prisma/seed.js && node src/index.js',
           envVars: backendEnvVars,
           plan,
           region,
@@ -602,8 +601,8 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
         const frontendUrl = `https://${actualFrontSlug}.onrender.com`;
         results.deployedUrl = frontendUrl;
 
-        // Update backend FRONTEND_URL with the real frontend URL
-        if (backend.service?.id && frontendUrl !== `https://${slug}-care.onrender.com` && frontendUrl !== `https://${slug}-crm.onrender.com`) {
+        // Always update backend FRONTEND_URL with the real frontend URL
+        if (backend.service?.id) {
           await updateRenderEnvVars(backend.service.id, [
             { key: 'FRONTEND_URL', value: frontendUrl },
           ]);
