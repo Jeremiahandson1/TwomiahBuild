@@ -246,7 +246,14 @@ app.get('/api/remittance/payer-summary', (req, res) => res.json([]));
 
 // Route Optimizer & Matching stubs
 app.get('/api/route-optimizer/config-status', (req, res) => res.json({ configured: false }));
-app.get('/api/matching/capabilities', (req, res) => res.json({ features: [] }));
+app.get('/api/matching/capabilities', (req, res) => res.json([]));
+app.get('/api/matching/caregiver/:id/capabilities', (req, res) => res.json([]));
+app.put('/api/matching/caregiver/:id/capabilities', (req, res) => res.json({ success: true }));
+app.get('/api/matching/client/:id/needs', (req, res) => res.json([]));
+app.put('/api/matching/client/:id/needs', (req, res) => res.json({ success: true }));
+app.get('/api/matching/client/:id/schedule-prefs', (req, res) => res.json({ daysPerWeek: 5, allowedDays: [1,2,3,4,5] }));
+app.get('/api/matching/client/:id/restrictions', (req, res) => res.json([]));
+app.post('/api/matching/capabilities', (req, res) => res.json({ id: Date.now(), ...req.body }));
 
 app.use(notFoundHandler);
 app.use(errorHandler);
