@@ -442,7 +442,7 @@ const HelpPanel = ({ isOpen, onClose, currentPage = '' }) => {
         {/* Footer */}
         <div style={{ padding: '0.875rem 1.25rem', borderTop: '1px solid #E5E7EB', background: '#F9FAFB' }}>
           <p style={{ margin: 0, fontSize: '0.78rem', color: '#9CA3AF', textAlign: 'center' }}>
-            Chippewa Valley Home Care CRM — Help Center
+            {{COMPANY_NAME}} CRM — Help Center
           </p>
         </div>
       </div>

@@ -1040,7 +1040,7 @@ const CaregiverDashboard = ({ user, token, onLogout }) => {
 
       <div className="main-content">
         <div className="header">
-          <div><h1>Chippewa Valley Home Care</h1><p>Caregiver Portal</p></div>
+          <div><h1>{{COMPANY_NAME}}</h1><p>Caregiver Portal</p></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <button className="hamburger-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>Menu</button>
             <button

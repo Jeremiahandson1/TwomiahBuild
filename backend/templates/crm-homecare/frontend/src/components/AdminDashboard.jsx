@@ -363,7 +363,7 @@ const AdminDashboard = ({ user, token, onLogout, onImpersonate }) => {
             </button>
             <div>
               <h1 style={{ fontSize: '1.15rem', margin: 0 }}>{pageTitle}</h1>
-              <p style={{ margin: 0, fontSize: '0.78rem', color: '#9CA3AF' }}>Chippewa Valley Home Care</p>
+              <p style={{ margin: 0, fontSize: '0.78rem', color: '#9CA3AF' }}>{{COMPANY_NAME}}</p>
             </div>
           </div>
 
