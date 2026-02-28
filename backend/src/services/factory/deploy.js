@@ -244,7 +244,15 @@ async function getDatabaseConnectionInfo(databaseId) {
   });
 
   if (!res.ok) throw new Error('Failed to get DB connection info');
-  return await res.json();
+  const data = await res.json();
+  logger.info(`[Deploy] DB connection info raw keys: ${JSON.stringify(Object.keys(data))}`);
+  logger.info(`[Deploy] DB connection info sample: ${JSON.stringify(data).substring(0, 300)}`);
+  // Normalize - Render API may use different field names
+  return {
+    internalConnectionString: data.internalConnectionString || data.internal_connection_string || data.internalDatabaseUrl || data.internal_database_url || data.connectionString || data.connection_string,
+    externalConnectionString: data.externalConnectionString || data.external_connection_string || data.externalDatabaseUrl || data.external_database_url,
+    ...data,
+  };
 }
 
 
