@@ -21,7 +21,7 @@ export const requireAdmin = (req, res, next) => {
   next();
 };
 
-export const logAuthEvent = async (prisma, eventData) => {
+export const logAuthEvent = async (prisma, data) => {
   // Placeholder - can be wired to audit log later
 };
 

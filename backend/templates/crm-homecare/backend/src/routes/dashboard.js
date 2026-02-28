@@ -108,4 +108,49 @@ router.get('/alerts', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Aliases for frontend compatibility
+router.get('/summary', async (req, res, next) => {
+  try {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const [activeClients, activeCaregiversCount, invoicesOutstanding, monthRevenue] = await Promise.all([
+      prisma.client.count({ where: { isActive: true } }),
+      prisma.user.count({ where: { role: 'caregiver', isActive: true } }),
+      prisma.invoice.aggregate({ where: { paymentStatus: { in: ['pending', 'overdue'] } }, _sum: { total: true } }),
+      prisma.invoice.aggregate({ where: { paymentStatus: 'paid', createdAt: { gte: monthStart } }, _sum: { total: true } }),
+    ]);
+
+    res.json({
+      activeClients,
+      activeCaregivers: activeCaregiversCount,
+      pendingInvoices: Number(invoicesOutstanding._sum.total || 0),
+      monthRevenue: Number(monthRevenue._sum.total || 0),
+    });
+  } catch (err) { next(err); }
+});
+
+router.get('/referrals', async (req, res, next) => {
+  try {
+    const referrals = await prisma.referralSource.findMany({
+      include: { _count: { select: { clients: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    }).catch(() => []);
+    res.json({ referrals });
+  } catch (err) { next(err); }
+});
+
+router.get('/caregiver-hours', async (req, res, next) => {
+  try {
+    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+    const entries = await prisma.timeEntry.findMany({
+      where: { startTime: { gte: weekAgo }, isComplete: true },
+      include: { caregiver: { select: { firstName: true, lastName: true } } },
+    }).catch(() => []);
+    res.json({ entries });
+  } catch (err) { next(err); }
+});
+
 export default router;

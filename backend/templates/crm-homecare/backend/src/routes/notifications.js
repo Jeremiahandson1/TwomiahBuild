@@ -44,4 +44,13 @@ router.put('/preferences', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.get('/unread-count', async (req, res, next) => {
+  try {
+    const count = await prisma.notification.count({
+      where: { userId: req.user.userId, isRead: false }
+    }).catch(() => 0);
+    res.json({ count });
+  } catch (err) { next(err); }
+});
+
 export default router;

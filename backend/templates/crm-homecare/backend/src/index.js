@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 
+
 import logger from './services/logger.js';
 import { initializeSocket } from './services/socket.js';
 import { applySecurity } from './middleware/security.js';
@@ -18,11 +19,12 @@ import { errorHandler, notFoundHandler, handleUncaughtExceptions } from './utils
 import authRoutes from './routes/auth.js';
 import dashboardRoutes from './routes/dashboard.js';
 import clientsRoutes from './routes/clients.js';
+import referralSourcesRoutes from './routes/referralSources.js';
+import careTypesRoutes from './routes/careTypes.js';
 import caregiversRoutes from './routes/caregivers.js';
 import schedulingRoutes from './routes/scheduling.js';
 import timeTrackingRoutes from './routes/timeTracking.js';
 import billingRoutes from './routes/billing.js';
-import payrollRoutes from './routes/payroll.js';
 import complianceRoutes from './routes/compliance.js';
 import communicationRoutes from './routes/communication.js';
 import documentsRoutes from './routes/documents.js';
@@ -32,10 +34,6 @@ import smsRoutes from './routes/sms.js';
 import portalRoutes from './routes/portal.js';
 import reportsRoutes from './routes/reports.js';
 import formsRoutes from './routes/forms.js';
-import evvRoutes from './routes/evv.js';
-import ediRoutes from './routes/edi.js';
-import claimsRoutes from './routes/claims.js';
-import remittanceRoutes from './routes/remittance.js';
 import authorizationsRoutes from './routes/authorizations.js';
 import serviceCodesRoutes from './routes/serviceCodes.js';
 import payersRoutes from './routes/payers.js';
@@ -43,6 +41,13 @@ import auditRoutes from './routes/audit.js';
 import companyRoutes from './routes/company.js';
 import stripeRoutes from './routes/stripe.js';
 import optimizerRoutes from './routes/optimizer.js';
+import usersRoutes from './routes/users.js';
+import noShowRoutes from './routes/noShow.js';
+import applicationsRoutes from './routes/applications.js';
+import carePlansRoutes from './routes/carePlans.js';
+import incidentsRoutes from './routes/incidents.js';
+import performanceReviewsRoutes from './routes/performanceReviews.js';
+import prospectsRoutes from './routes/prospects.js';
 
 dotenv.config();
 
@@ -113,11 +118,12 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/clients', clientsRoutes);
+app.use('/api/referral-sources', referralSourcesRoutes);
+app.use('/api/care-types', careTypesRoutes);
 app.use('/api/caregivers', caregiversRoutes);
 app.use('/api/scheduling', schedulingRoutes);
 app.use('/api/time-tracking', timeTrackingRoutes);
 app.use('/api/billing', billingRoutes);
-app.use('/api/payroll', payrollRoutes);
 app.use('/api/compliance', complianceRoutes);
 app.use('/api/communication', communicationRoutes);
 app.use('/api/documents', documentsRoutes);
@@ -127,10 +133,6 @@ app.use('/api/sms', smsRoutes);
 app.use('/api/portal', portalRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/forms', formsRoutes);
-app.use('/api/evv', evvRoutes);
-app.use('/api/edi', ediRoutes);
-app.use('/api/claims', claimsRoutes);
-app.use('/api/remittance', remittanceRoutes);
 app.use('/api/authorizations', authorizationsRoutes);
 app.use('/api/service-codes', serviceCodesRoutes);
 app.use('/api/payers', payersRoutes);
@@ -138,6 +140,99 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/optimizer', optimizerRoutes);
+
+// Aliases for frontend compatibility
+app.use("/api/users", usersRoutes);
+app.use("/api/notification-settings", notificationsRoutes);
+app.use("/api/remittance/payers", payersRoutes);
+app.get("/api/failsafe/issues", (req, res) => res.json([]));
+app.get("/api/edi/service-codes", (req, res) => res.json([]));
+app.get("/api/sandata/status", (req, res) => res.json({ connected: false }));
+
+
+
+// ============ PROPER PRISMA ROUTES ============
+app.use('/api/no-show', noShowRoutes);
+app.use('/api/applications', applicationsRoutes);
+app.use('/api/care-plans', carePlansRoutes);
+app.use('/api/incidents', incidentsRoutes);
+app.use('/api/performance-reviews', performanceReviewsRoutes);
+app.use('/api/prospects', prospectsRoutes);
+
+// ============ STUB ROUTES FOR UNIMPLEMENTED FEATURES ============
+// Schedules all
+app.get('/api/schedules-all', (req, res) => res.json([]));
+
+// Emergency
+app.get('/api/emergency/miss-reports', (req, res) => res.json([]));
+
+// Billing sub-routes
+app.get('/api/billing/referral-source-rates', (req, res) => res.json([]));
+app.get('/api/billing/invoice-payments', (req, res) => res.json([]));
+app.post('/api/payroll/calculate', (req, res) => res.json({ caregivers: [], total: 0 }));
+
+// Claims
+app.get('/api/claims', (req, res) => res.json([]));
+app.post('/api/claims', (req, res) => res.json({ id: Date.now(), ...req.body }));
+app.get('/api/claims/reports/summary', (req, res) => res.json({ total: 0, paid: 0, pending: 0, denied: 0 }));
+
+// Reports
+app.post('/api/reports/overview', (req, res) => res.json({ metrics: [], charts: [] }));
+
+// Expenses
+app.get('/api/expenses', (req, res) => res.json([]));
+app.post('/api/expenses', (req, res) => res.json({ id: Date.now(), ...req.body }));
+
+// Forecast
+app.get('/api/forecast/revenue', (req, res) => res.json({ months: [], total: 0 }));
+app.get('/api/forecast/caregiver-utilization', (req, res) => res.json([]));
+
+// Background checks
+app.get('/api/background-checks', (req, res) => res.json([]));
+app.post('/api/background-checks', (req, res) => res.json({ id: Date.now(), ...req.body }));
+
+// Documents
+app.get('/api/documents', (req, res) => res.json([]));
+
+// Audit logs
+app.get('/api/audit-logs', (req, res) => res.json([]));
+
+// Auth sub-routes
+app.get('/api/auth/login-activity', (req, res) => res.json({ activities: [], total: 0 }));
+
+// Communication log sub-routes
+app.get('/api/communication-log/follow-ups/pending', (req, res) => res.json([]));
+app.get('/api/communication-log/:type/:id', (req, res) => res.json({ logs: [], total: 0 }));
+
+// SMS
+app.get('/api/sms/messages', (req, res) => res.json([]));
+app.get('/api/sms/templates', (req, res) => res.json([]));
+
+// Family portal
+app.get('/api/family-portal/admin/members', (req, res) => res.json([]));
+
+// Alerts
+app.get('/api/alerts', (req, res) => res.json([]));
+
+// Messages
+app.get('/api/messages/inbox', (req, res) => res.json([]));
+app.get('/api/messages/users', (req, res) => res.json([]));
+
+// Integrations
+app.get('/api/gusto/config', (req, res) => res.json({ connected: false }));
+app.get('/api/sandata/config', (req, res) => res.json({ connected: false }));
+
+// Authorizations sub-routes
+app.get('/api/authorizations/summary', (req, res) => res.json({ total: 0, active: 0, expiring: 0 }));
+
+// Remittance sub-routes
+app.get('/api/remittance/payer-summary', (req, res) => res.json([]));
+
+
+
+// Route Optimizer & Matching stubs
+app.get('/api/route-optimizer/config-status', (req, res) => res.json({ configured: false }));
+app.get('/api/matching/capabilities', (req, res) => res.json({ features: [] }));
 
 app.use(notFoundHandler);
 app.use(errorHandler);

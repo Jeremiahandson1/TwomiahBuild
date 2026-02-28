@@ -6,7 +6,12 @@ import { authenticate, requireAdmin } from '../middleware/auth.js';
 const router = Router();
 router.use(authenticate);
 
-// GET /api/caregivers
+// GET /api/caregivers (also served at /api/users/caregivers)
+router.get('/caregivers', async (req, res, next) => {
+  req.url = '/';
+  router.handle(req, res, next);
+});
+
 router.get('/', async (req, res, next) => {
   try {
     const { search, isActive = 'true', page = 1, limit = 50 } = req.query;

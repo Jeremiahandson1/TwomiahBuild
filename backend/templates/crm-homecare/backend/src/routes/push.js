@@ -29,5 +29,7 @@ router.post('/unsubscribe', async (req, res, next) => {
 router.get('/vapid-key', (req, res) => {
   res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || '' });
 });
-
+router.get('/unread-count', async (req, res) => {
+  res.json({ count: 0 });
+});
 export default router;
