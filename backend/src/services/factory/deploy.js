@@ -346,6 +346,23 @@ async function createRenderStaticSite(config) {
 
 
 /**
+ * Update env vars on an existing Render service
+ */
+async function updateRenderEnvVars(serviceId, envVars) {
+  const res = await fetch(`${RENDER_API}/services/${serviceId}/env-vars`, {
+    method: 'PUT',
+    headers: renderHeaders(),
+    body: JSON.stringify(envVars.map(ev => ({ key: ev.key, value: ev.value }))),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    logger.warn(`[Deploy] Failed to update env vars for service ${serviceId}:`, err);
+  }
+  return res.ok;
+}
+
+
+/**
  * Get service deploy status
  */
 async function getServiceStatus(serviceId) {
@@ -559,7 +576,9 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
         results.steps.push({ step: 'render_backend', status: 'ok', serviceId: backend.service?.id });
         results.services.backend = backend.service;
 
-        const backendUrl = `https://${crmApiName}.onrender.com`;
+        // Use actual slug from Render response (may have random suffix like -pjhh)
+        const actualApiSlug = backend.service?.slug || crmApiName;
+        const backendUrl = `https://${actualApiSlug}.onrender.com`;
         results.apiUrl = backendUrl;
 
         // ── Step 6: Create Frontend Service ───────────
@@ -577,7 +596,19 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
 
         results.steps.push({ step: 'render_frontend', status: 'ok', serviceId: frontend.service?.id });
         results.services.frontend = frontend.service;
-        results.deployedUrl = `https://${crmFrontName}.onrender.com`;
+
+        // Use actual slug from Render response for frontend URL too
+        const actualFrontSlug = frontend.service?.slug || crmFrontName;
+        const frontendUrl = `https://${actualFrontSlug}.onrender.com`;
+        results.deployedUrl = frontendUrl;
+
+        // Update backend FRONTEND_URL with the real frontend URL
+        if (backend.service?.id && frontendUrl !== `https://${slug}-care.onrender.com` && frontendUrl !== `https://${slug}-crm.onrender.com`) {
+          await updateRenderEnvVars(backend.service.id, [
+            { key: 'FRONTEND_URL', value: frontendUrl },
+          ]);
+          logger.info(`[Deploy] Updated FRONTEND_URL to ${frontendUrl}`);
+        }
 
       } catch (err) {
         results.steps.push({ step: 'render_backend', status: 'error', error: err.message });
