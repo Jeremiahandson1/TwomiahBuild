@@ -2,7 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { prisma } from '../index.js';
+import prisma from '../config/prisma.js';
 import { authenticate, logAuthEvent } from '../middleware/auth.js';
 import logger from '../services/logger.js';
 
