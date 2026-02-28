@@ -3,7 +3,7 @@ import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
 import stripeService from '../services/stripe.js';
 import audit from '../services/audit.js';
-import { prisma } from '../index.js';
+import prisma from '../config/prisma.js';
 
 const router = Router();
 

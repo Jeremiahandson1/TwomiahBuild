@@ -251,6 +251,6 @@ router.post('/import/customers', requireRole('admin'), async (req, res, next) =>
 });
 
 // Prisma client for route handlers
-import { prisma } from '../index.js';
+import prisma from '../config/prisma.js';
 
 export default router;

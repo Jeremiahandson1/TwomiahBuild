@@ -12,7 +12,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { prisma } from '../index.js';
+import prisma from '../config/prisma.js';
 import { authenticate } from '../middleware/auth.js';
 import { 
   FEATURE_REGISTRY, 

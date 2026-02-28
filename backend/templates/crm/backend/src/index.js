@@ -8,7 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { syncFeatures } from './startup/featureSync.js';
-import { PrismaClient } from '@prisma/client';
+import prismaClient from './config/prisma.js';
 
 // Services
 import logger from './services/logger.js';
@@ -93,9 +93,7 @@ const server = createServer(app);
 // Initialize WebSocket
 const io = initializeSocket(server);
 
-const prisma = new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-});
+const prisma = prismaClient;
 
 export { prisma, io };
 
@@ -109,7 +107,18 @@ app.use(helmet({
 
 // CORS
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const allowed = [
+      process.env.FRONTEND_URL,
+      'http://localhost:5173',
+      'http://localhost:3000',
+    ].filter(Boolean);
+    if (allowed.includes(origin) || origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Request-ID'],
