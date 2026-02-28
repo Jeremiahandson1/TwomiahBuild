@@ -65,6 +65,23 @@ const prisma = prismaClient;
 
 export { prisma, io };
 
+// Retry DB connection on startup
+const connectWithRetry = async (retries = 10, delay = 5000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await prisma.$connect();
+      logger.info('Database connected');
+      return;
+    } catch (err) {
+      logger.warn(`DB connection attempt ${i + 1}/${retries} failed: ${err.message}`);
+      if (i < retries - 1) await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw new Error('Could not connect to database after multiple attempts');
+};
+
+await connectWithRetry();
+
 app.set('trust proxy', 1);
 
 app.use(helmet({
