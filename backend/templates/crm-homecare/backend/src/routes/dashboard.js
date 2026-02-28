@@ -138,7 +138,7 @@ router.get('/referrals', async (req, res, next) => {
       orderBy: { createdAt: 'desc' },
       take: 10,
     }).catch(() => []);
-    res.json({ referrals });
+    res.json(referrals);
   } catch (err) { next(err); }
 });
 
@@ -149,7 +149,7 @@ router.get('/caregiver-hours', async (req, res, next) => {
       where: { startTime: { gte: weekAgo }, isComplete: true },
       include: { caregiver: { select: { firstName: true, lastName: true } } },
     }).catch(() => []);
-    res.json({ entries });
+    res.json(entries);
   } catch (err) { next(err); }
 });
 
