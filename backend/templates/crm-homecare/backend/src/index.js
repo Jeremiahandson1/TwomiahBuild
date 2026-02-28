@@ -72,7 +72,23 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    const allowed = [
+      process.env.FRONTEND_URL,
+      process.env.ALLOWED_ORIGINS,
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'capacitor://localhost',
+      'https://localhost',
+    ].filter(Boolean);
+    // Also allow any onrender.com subdomain for this account
+    if (allowed.includes(origin) || origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
