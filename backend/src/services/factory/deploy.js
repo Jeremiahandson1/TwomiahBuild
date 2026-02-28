@@ -531,9 +531,23 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
       results.steps.push({ step: 'render_db', status: 'ok', dbId: db.id });
       results.services.database = db;
 
-      logger.info(`[Deploy] Waiting 30s for DB to initialize...`);
-      await new Promise(resolve => setTimeout(resolve, 30000));
-      dbConnectionInfo = await getDatabaseConnectionInfo(db.id);
+      // Wait for DB to be ready - poll instead of fixed wait
+      logger.info(`[Deploy] Waiting for DB to be ready...`);
+      let dbReady = false;
+      for (let attempt = 0; attempt < 20; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 15000)); // 15s between checks
+        try {
+          dbConnectionInfo = await getDatabaseConnectionInfo(db.id);
+          if (dbConnectionInfo?.internalConnectionString) {
+            logger.info(`[Deploy] DB ready after ${(attempt + 1) * 15}s`);
+            dbReady = true;
+            break;
+          }
+        } catch (e) {
+          logger.info(`[Deploy] DB not ready yet (attempt ${attempt + 1}), waiting...`);
+        }
+      }
+      if (!dbReady) throw new Error('DB did not become ready in time');
       dbInfo = dbConnectionInfo;
       logger.info(`[Deploy] DB connection info retrieved. Keys: ${Object.keys(dbConnectionInfo || {}).join(', ')}`);
     } catch (dbErr) {
