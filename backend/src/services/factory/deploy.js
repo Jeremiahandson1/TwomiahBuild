@@ -336,6 +336,9 @@ async function createRenderStaticSite(config) {
       serviceDetails: {
         buildCommand,
         publishPath,
+        routes: [
+          { type: 'rewrite', source: '/*', destination: '/index.html' },
+        ],
       },
       envVars: envVars.map(ev => ({
         key: ev.key,
