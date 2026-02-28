@@ -1,6 +1,5 @@
 {
-  "_comment": "Twomiah Build Factory — feature manifest for crm-homecare template. Maps feature IDs (as selected in the wizard) to the backend route and service files they require. The generator strips any route/service file NOT listed here for the selected feature set.",
-
+  "_comment": "Twomiah Build Factory \u2014 feature manifest for crm-homecare template. Maps feature IDs (as selected in the wizard) to the backend route and service files they require. The generator strips any route/service file NOT listed here for the selected feature set.",
   "core": {
     "description": "Always-included core modules",
     "backend": {
@@ -27,7 +26,16 @@
         "audit.js",
         "payers.js",
         "serviceCodes.js",
-        "authorizations.js"
+        "authorizations.js",
+        "users.js",
+        "referralSources.js",
+        "careTypes.js",
+        "applications.js",
+        "carePlans.js",
+        "incidents.js",
+        "noShow.js",
+        "performanceReviews.js",
+        "prospects.js"
       ],
       "services": [
         "logger.js",
@@ -58,11 +66,9 @@
       ]
     }
   },
-
   "features": {
-
     "evv_sandata": {
-      "label": "EVV — Sandata Integration",
+      "label": "EVV \u2014 Sandata Integration",
       "description": "Electronic Visit Verification via Sandata (required for Medicaid billing in most states). Includes EVV visit logging, EDI 837 claim generation, and remittance processing.",
       "backend": {
         "routes": [
@@ -77,13 +83,15 @@
         ]
       },
       "frontend": {
-        "pages": ["EVVPage", "ClaimsPage"]
+        "pages": [
+          "EVVPage",
+          "ClaimsPage"
+        ]
       }
     },
-
     "evv_worcs": {
-      "label": "EVV — WORCS Integration (Wisconsin)",
-      "description": "Electronic Visit Verification via Wisconsin's WORCS system. Includes EVV visit logging only — EDI/claims handled separately through ForwardHealth.",
+      "label": "EVV \u2014 WORCS Integration (Wisconsin)",
+      "description": "Electronic Visit Verification via Wisconsin's WORCS system. Includes EVV visit logging only \u2014 EDI/claims handled separately through ForwardHealth.",
       "backend": {
         "routes": [
           "evv.js"
@@ -94,12 +102,13 @@
         ]
       },
       "frontend": {
-        "pages": ["EVVPage"]
+        "pages": [
+          "EVVPage"
+        ]
       }
     },
-
     "payroll_gusto": {
-      "label": "Payroll — Gusto Sync",
+      "label": "Payroll \u2014 Gusto Sync",
       "description": "Sync caregiver hours and pay rates to Gusto for payroll processing. Manual payroll export is always available; this feature adds automatic sync.",
       "backend": {
         "routes": [
@@ -111,12 +120,13 @@
         ]
       },
       "frontend": {
-        "pages": ["PayrollPage"]
+        "pages": [
+          "PayrollPage"
+        ]
       }
     },
-
     "payroll_manual": {
-      "label": "Payroll — Manual / Export Only",
+      "label": "Payroll \u2014 Manual / Export Only",
       "description": "Payroll processing with CSV/PDF export. No third-party sync. Use this if you process payroll manually or through a system other than Gusto.",
       "backend": {
         "routes": [
@@ -128,16 +138,16 @@
         ]
       },
       "frontend": {
-        "pages": ["PayrollPage"]
+        "pages": [
+          "PayrollPage"
+        ]
       }
     }
-
   },
-
   "_notes": {
-    "evv": "evv_sandata and evv_worcs are mutually exclusive — agencies use one or the other. Wisconsin agencies typically use evv_worcs.",
+    "evv": "evv_sandata and evv_worcs are mutually exclusive \u2014 agencies use one or the other. Wisconsin agencies typically use evv_worcs.",
     "payroll": "payroll_gusto and payroll_manual are mutually exclusive. If neither is selected, payroll routes are excluded from the build.",
     "claims": "claims.js and remittance.js are only included with evv_sandata since they require EDI infrastructure.",
-    "stripe": "stripe.js is always included in core — it handles the agency's own subscription billing to Twomiah Care, not patient billing."
+    "stripe": "stripe.js is always included in core \u2014 it handles the agency's own subscription billing to Twomiah Care, not patient billing."
   }
 }
