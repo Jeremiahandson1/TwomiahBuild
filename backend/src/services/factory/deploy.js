@@ -607,6 +607,13 @@ export async function deployCustomer(factoryCustomer, zipPath, options = {}) {
             { key: 'FRONTEND_URL', value: frontendUrl },
           ]);
           logger.info(`[Deploy] Updated FRONTEND_URL to ${frontendUrl}`);
+          // Trigger redeploy so backend picks up the new FRONTEND_URL
+          await fetch(`${RENDER_API}/services/${backend.service.id}/deploys`, {
+            method: 'POST',
+            headers: renderHeaders(),
+            body: JSON.stringify({}),
+          });
+          logger.info(`[Deploy] Triggered backend redeploy to apply FRONTEND_URL`);
         }
 
       } catch (err) {
