@@ -104,10 +104,12 @@ export async function generate(config) {
       // If CMS is also selected, nest it inside website
       if (products.includes('cms')) {
         copyTemplate('cms', path.join(workDir, 'website', 'admin'), tokens);
+        writeBrandingAssets(path.join(workDir, 'website', 'admin'), config.branding || {});
       }
     } else if (products.includes('cms')) {
       // CMS standalone
       copyTemplate('cms', path.join(workDir, 'cms'), tokens);
+      writeBrandingAssets(path.join(workDir, 'cms'), config.branding || {});
     }
 
     if (products.includes('crm')) {
