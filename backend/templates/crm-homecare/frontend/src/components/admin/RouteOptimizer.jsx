@@ -88,8 +88,8 @@ const RouteOptimizer = ({ token }) => {
       ]);
       const cgData = await cgRes.json();
       const clData = await clRes.json();
-      setCaregivers(Array.isArray(cgData) ? cgData : []);
-      setClients(Array.isArray(clData) ? clData : []);
+      setCaregivers(cgData.caregivers || []);
+      setClients(clData.clients || []);
     } catch (e) {
       console.error('Load error:', e);
     } finally {
@@ -124,11 +124,11 @@ const RouteOptimizer = ({ token }) => {
     setLoadingSchedule(true);
     try {
       const data = await api(`/api/route-optimizer/load-schedule/${selectedCaregiver}/${selectedDate}`);
-      if (data.stops.length === 0) {
+      if (!data?.stops || data.stops.length === 0) {
         showMsg(`No schedules found for ${selectedDate}`, 'error');
         return;
       }
-      setRouteStops(data.stops);
+      setRouteStops(data?.stops || []);
       setExistingSavedPlan(data.savedPlan);
       setOptimizedRoute(null);
       setPreOptimizeMiles(null);
@@ -228,7 +228,7 @@ const RouteOptimizer = ({ token }) => {
 
       setOptimizedRoute(data);
       // Update stops to match optimized order
-      setRouteStops(data.stops.map(s => ({
+      setRouteStops((data?.stops || []).map(s => ({
         clientId: s.clientId, clientName: s.clientName, address: s.address,
         latitude: s.latitude, longitude: s.longitude,
         serviceUnits: s.serviceUnits, weeklyAuthorizedUnits: s.weeklyAuthorizedUnits,
@@ -376,7 +376,7 @@ const RouteOptimizer = ({ token }) => {
       const data = await api(`/api/route-optimizer/plans/${planId}/full`);
       setSelectedCaregiver(data.plan.caregiver_id);
       setSelectedDate(data.plan.route_date);
-      setRouteStops(data.stops.map(s => ({
+      setRouteStops((data?.stops || []).map(s => ({
         clientId: s.client_id, clientName: s.clientName,
         address: s.address, latitude: s.latitude, longitude: s.longitude,
         serviceUnits: s.service_units || 4,

@@ -41,7 +41,7 @@ const PerformanceRatings = ({ token }) => {
       const clientsData = await clientsRes.json();
 
       setCaregivers(caregiversData);
-      setClients(clientsData);
+      setClients(clientsData.clients || []);
       loadReviews(caregiversData);
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -56,13 +56,14 @@ const PerformanceRatings = ({ token }) => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
+      const reviewList = Array.isArray(data) ? data : (data.reviews || []);
       
       const reviewsByCaregiver = {};
       caregiversList.forEach(cg => {
         reviewsByCaregiver[cg.id] = [];
       });
       
-      data.forEach(review => {
+      reviewList.forEach(review => {
         if (reviewsByCaregiver[review.caregiver_id]) {
           reviewsByCaregiver[review.caregiver_id].push(review);
         }

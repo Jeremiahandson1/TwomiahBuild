@@ -78,7 +78,7 @@ const AuditLogs = ({ token }) => {
       ]);
       const admins = await adminsRes.json();
       const caregivers = await caregiversRes.json();
-      setUsers([...admins, ...caregivers]);
+      setUsers([...(Array.isArray(admins) ? admins : []), ...(caregivers.caregivers || [])]);
     } catch (error) {
       console.error('Failed to load users:', error);
     }

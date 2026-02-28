@@ -148,26 +148,34 @@ const BillingDashboard = ({ token }) => {
         fetch(`${API_BASE_URL}/api/users?role=caregiver`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
 
-      setInvoices(await invoiceRes.json());
-      setClients(await clientRes.json());
-      setReferralSources(await rsRes.json());
-      setCareTypes(await ctRes.json());
-      setRates(await ratesRes.json());
-      
+      const [invData, cliData, rsData, ctData, ratesData] = await Promise.all([
+        invoiceRes.json(),
+        clientRes.json(),
+        rsRes.json(),
+        ctRes.json(),
+        ratesRes.json(),
+      ]);
+
+      setInvoices(invData.invoices || []);
+      setClients(cliData.clients || []);
+      setReferralSources(Array.isArray(rsData) ? rsData : []);
+      setCareTypes(Array.isArray(ctData) ? ctData : []);
+      setRates(Array.isArray(ratesData) ? ratesData : []);
+
       try {
         const caregiversData = await caregiversRes.json();
-        setCaregivers(Array.isArray(caregiversData) ? caregiversData : []);
+        setCaregivers(caregiversData.caregivers || []);
       } catch (e) { setCaregivers([]); }
 
       // Try loading optional endpoints
       try {
         const authRes = await fetch(`${API_BASE_URL}/api/authorizations`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (authRes.ok) setAuthorizations(await authRes.json());
+        if (authRes.ok) ((authResData) => { setAuthorizations(Array.isArray(authResData) ? authResData : (authResData.authorizations || [])); })(await authRes.json());
       } catch (e) { console.log('Authorizations endpoint not available'); }
 
       try {
         const payRes = await fetch(`${API_BASE_URL}/api/billing/invoice-payments`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (payRes.ok) setPayments(await payRes.json());
+        if (payRes.ok) ((payResData) => { setPayments(Array.isArray(payResData) ? payResData : (payResData.payments || [])); })(await payRes.json());
       } catch (e) { console.log('Payments endpoint not available'); }
 
     } catch (error) {

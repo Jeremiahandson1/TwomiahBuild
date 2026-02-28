@@ -23,8 +23,8 @@ export default function RevenueForecast({ token }) {
         fetch(`${API}/api/forecast/revenue?months=${months}`, { headers: h }),
         fetch(`${API}/api/forecast/caregiver-utilization`, { headers: h }),
       ]);
-      setData(await fR.json());
-      setUtilData(await uR.json());
+      ((fRData) => { setData(Array.isArray(fRData) ? fRData : (fRData.data || [])); })(await fR.json());
+      ((uRData) => { setUtilData(Array.isArray(uRData) ? uRData : (uRData.utilData || [])); })(await uR.json());
     } catch (e) {}
     setLoading(false);
   };

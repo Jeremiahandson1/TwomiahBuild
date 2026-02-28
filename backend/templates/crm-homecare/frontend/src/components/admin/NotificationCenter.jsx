@@ -49,7 +49,7 @@ const NotificationCenter = ({ token }) => {
       setNotifications(Array.isArray(notificationsData) ? notificationsData : []);
       setSettings(settingsData || {});
       setCaregivers(caregiversData);
-      setClients(clientsData);
+      setClients(clientsData.clients || []);
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {

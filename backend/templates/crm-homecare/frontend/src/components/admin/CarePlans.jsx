@@ -50,16 +50,17 @@ const CarePlans = ({ token }) => {
 
       const clientsData = await clientsRes.json();
       const plansData = await plansRes.json();
+      const clientList = clientsData.clients || [];
 
-      setClients(clientsData);
+      setClients(clientList);
 
       // Group plans by client
       const plansByClient = {};
-      clientsData.forEach(client => {
+      clientList.forEach(client => {
         plansByClient[client.id] = [];
       });
 
-      plansData.forEach(plan => {
+      (Array.isArray(plansData) ? plansData : []).forEach(plan => {
         if (plansByClient[plan.client_id]) {
           plansByClient[plan.client_id].push(plan);
         }

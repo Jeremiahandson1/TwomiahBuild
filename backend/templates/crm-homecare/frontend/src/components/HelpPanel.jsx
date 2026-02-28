@@ -271,7 +271,7 @@ Each report exports to CSV (for Excel) or PDF (branded, printable).`
         title: 'Exporting to PDF',
         content: `Every report has an "Export" button. Select PDF from the format dropdown.
 
-The PDF is automatically formatted with {{COMPANY_SHORT}} branding, the report title, your selected date range, and a table of all records.
+The PDF is automatically formatted with {{COMPANY_NAME}} branding, the report title, your selected date range, and a table of all records.
 
 For large date ranges (e.g., a full year), PDFs may be multiple pages. The record count is shown at the bottom of each export.`
       },

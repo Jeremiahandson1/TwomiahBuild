@@ -107,8 +107,10 @@ const CaregiverManagement = ({ token, onViewProfile, onViewHistory }) => {
         fetch(`${API_BASE_URL}/api/caregivers`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${API_BASE_URL}/api/care-types`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
-      setCaregivers(await cgRes.json());
-      setCareTypes(await ctRes.json());
+      const cgData = await cgRes.json();
+      setCaregivers(cgData.caregivers || []);
+      const ctData = await ctRes.json();
+      setCareTypes(Array.isArray(ctData) ? ctData : []);
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -189,7 +191,7 @@ const CaregiverManagement = ({ token, onViewProfile, onViewHistory }) => {
       const response = await fetch(`${API_BASE_URL}/api/caregiver-care-type-rates?caregiverId=${caregiver.id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      setCaregiverRates(await response.json());
+      ((responseData) => { setCaregiverRates(Array.isArray(responseData) ? responseData : (responseData.caregiverRates || [])); })(await response.json());
       setShowRatesModal(true);
     } catch (error) {
       toast('Failed to load rates: ' + error.message, 'error');
@@ -219,7 +221,7 @@ const CaregiverManagement = ({ token, onViewProfile, onViewHistory }) => {
       const ratesRes = await fetch(`${API_BASE_URL}/api/caregiver-care-type-rates?caregiverId=${selectedCaregiver.id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      setCaregiverRates(await ratesRes.json());
+      ((ratesResData) => { setCaregiverRates(Array.isArray(ratesResData) ? ratesResData : (ratesResData.caregiverRates || [])); })(await ratesRes.json());
     } catch (error) {
       toast('Failed to add rate: ' + error.message, 'error');
     }
@@ -237,7 +239,7 @@ const CaregiverManagement = ({ token, onViewProfile, onViewHistory }) => {
       const ratesRes = await fetch(`${API_BASE_URL}/api/caregiver-care-type-rates?caregiverId=${selectedCaregiver.id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      setCaregiverRates(await ratesRes.json());
+      ((ratesResData) => { setCaregiverRates(Array.isArray(ratesResData) ? ratesResData : (ratesResData.caregiverRates || [])); })(await ratesRes.json());
     } catch (error) {
       toast('Failed to delete rate: ' + error.message, 'error');
     }

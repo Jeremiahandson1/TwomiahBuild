@@ -42,8 +42,8 @@ export default function FormBuilder({ token }) {
         fetch(`${API}/api/clients`, { headers: h }),
         fetch(`${API}/api/caregivers`, { headers: h }),
       ]);
-      setTemplates(await tR.json());
-      setSubmissions(await sR.json());
+      ((tRData) => { setTemplates(Array.isArray(tRData) ? tRData : (tRData.templates || [])); })(await tR.json());
+      ((sRData) => { setSubmissions(Array.isArray(sRData) ? sRData : (sRData.submissions || [])); })(await sR.json());
       const cData = await cR.json(); setClients(Array.isArray(cData) ? cData : cData.clients || []);
       const cgData = await cgR.json(); setCaregivers(Array.isArray(cgData) ? cgData : cgData.caregivers || []);
     } catch (e) {}

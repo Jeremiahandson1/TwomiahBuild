@@ -1,31 +1,16 @@
-// Capacitor stub for web builds — replaces native mobile APIs with no-ops
+// Stub for all @capacitor/* packages when running in browser/web
 export const Capacitor = {
   isNativePlatform: () => false,
-  isPluginAvailable: () => false,
   getPlatform: () => 'web',
+  isPluginAvailable: () => false,
 };
-
-export const Geolocation = {
-  getCurrentPosition: async () => { throw new Error('Geolocation not available on web'); },
-  watchPosition: () => {},
-  clearWatch: () => {},
-};
-
-export const Network = {
-  getStatus: async () => ({ connected: true, connectionType: 'wifi' }),
-  addListener: () => ({ remove: () => {} }),
-};
-
-export const Haptics = {
-  impact: async () => {},
-  notification: async () => {},
-  vibrate: async () => {},
-};
-
-export const LocalNotifications = {
-  schedule: async () => {},
-  requestPermissions: async () => ({ display: 'denied' }),
-  checkPermissions: async () => ({ display: 'denied' }),
-};
-
-export default { Capacitor, Geolocation, Network, Haptics, LocalNotifications };
+export const Geolocation = null;
+export const Network = null;
+export const Haptics = null;
+export const LocalNotifications = null;
+export const BackgroundGeolocation = null;
+export const SplashScreen = null;
+export const StatusBar = null;
+export const Keyboard = null;
+export const PushNotifications = null;
+export default {};

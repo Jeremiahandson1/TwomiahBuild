@@ -68,7 +68,8 @@ const PayrollProcessing = ({ token }) => {
       const response = await fetch(`${API_BASE_URL}/api/caregivers`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      setCaregivers(await response.json());
+      const { caregivers } = await response.json();
+      setCaregivers(caregivers || []);
     } catch (error) {
       console.error('Failed to load caregivers:', error);
     }
@@ -293,7 +294,7 @@ const PayrollProcessing = ({ token }) => {
       const r = await fetch(`${API_BASE_URL}/api/payroll/discrepancies?startDate=${payPeriod.startDate}&endDate=${payPeriod.endDate}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (r.ok) setDiscrepancies(await r.json());
+      if (r.ok) ((rData) => { setDiscrepancies(Array.isArray(rData) ? rData : (rData.discrepancies || [])); })(await r.json());
     } catch(e) {}
     setDiscrepancyLoading(false);
   };

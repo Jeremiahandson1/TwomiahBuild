@@ -51,7 +51,7 @@ const IncidentReporting = ({ token }) => {
       const caregiversData = await caregiversRes.json();
       const incidentsData = await incidentsRes.json();
 
-      setClients(clientsData);
+      setClients(clientsData.clients || []);
       setCaregivers(caregiversData);
       setIncidents(Array.isArray(incidentsData) ? incidentsData : []);
     } catch (error) {

@@ -38,8 +38,8 @@ const ReportsAnalytics = ({ token }) => {
       ]);
       const caregiverData = await cgRes.json();
       const clientData = await clRes.json();
-      setCaregivers(caregiverData);
-      setClients(clientData);
+      setCaregivers(caregiverData.caregivers || []);
+      setClients(clientData.clients || []);
     } catch (error) {
       console.error('Failed to load filters:', error);
     }
@@ -86,7 +86,7 @@ const ReportsAnalytics = ({ token }) => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `{{COMPANY_SLUG}}-${reportType}-report-${dateRange.startDate}-to-${dateRange.endDate}.${format}`;
+      a.download = `cvhc-${reportType}-report-${dateRange.startDate}-to-${dateRange.endDate}.${format}`;
       a.click();
       window.URL.revokeObjectURL(url);
       toast(`${format.toUpperCase()} export downloaded!`, 'success');

@@ -10,6 +10,7 @@ const MedicationsManagement = ({ token }) => {
   const [medications, setMedications] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [activeTab, setActiveTab] = useState('medications');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showLogModal, setShowLogModal] = useState(false);
@@ -38,7 +39,7 @@ const MedicationsManagement = ({ token }) => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      setClients(Array.isArray(data) ? data.filter(c => c.status === 'active') : []);
+      setClients((data.clients || []).filter(c => c.status === 'active'));
     } catch (error) {
       console.error('Failed to load clients:', error);
     }

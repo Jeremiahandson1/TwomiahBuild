@@ -437,7 +437,7 @@ export default function CaregiverDetail({ caregiverId, token, onBack, onHireComp
     if (shiftFilter.end) params.set('endDate', shiftFilter.end + 'T23:59:59');
     params.set('limit', '100');
     const r = await fetch(`${API_BASE_URL}/api/time-entries/caregiver-history/${caregiverId}?${params}`, { headers: hdr });
-    if (r.ok) setAllShifts(await r.json());
+    if (r.ok) ((rData) => { setAllShifts(Array.isArray(rData) ? rData : (rData.allShifts || [])); })(await r.json());
   };
 
   const renderShifts = () => {

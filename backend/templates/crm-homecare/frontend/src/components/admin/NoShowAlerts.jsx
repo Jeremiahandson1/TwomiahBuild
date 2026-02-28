@@ -28,8 +28,8 @@ export default function NoShowAlerts({ token }) {
         fetch(`${API}/api/no-show/stats`, { headers: h }),
         fetch(`${API}/api/no-show/config`, { headers: h }),
       ]);
-      setAlerts(await aR.json());
-      setStats(await sR.json());
+      ((aRData) => { setAlerts(Array.isArray(aRData) ? aRData : (aRData.alerts || [])); })(await aR.json());
+      ((sRData) => { setStats(Array.isArray(sRData) ? sRData : (sRData.stats || [])); })(await sR.json());
       const cfg = await cR.json();
       if (cfg && cfg.grace_minutes) setConfig(cfg);
     } catch (e) {}
