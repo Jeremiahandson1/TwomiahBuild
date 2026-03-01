@@ -133,6 +133,7 @@ export default function FactoryWizard() {
     features: {
       website: [],
       crm: [],
+      paid_ads: false,
     },
     integrations: {
       twilio: { accountSid: '', authToken: '', phoneNumber: '' },
@@ -300,7 +301,7 @@ export default function FactoryWizard() {
           <button
             onClick={() => { clearSavedState(); setStep(0); setConfig({
               products: [], company: { name: '', email: '', phone: '', address: '', city: '', state: '', zip: '', domain: '', ownerName: '', industry: '', serviceRegion: '', nearbyCities: ['', '', '', ''] },
-              branding: { primaryColor: '#f97316', secondaryColor: '#1e3a5f' }, features: { website: [], crm: [] },
+              branding: { primaryColor: '#f97316', secondaryColor: '#1e3a5f' }, features: { website: [], crm: [], paid_ads: false },
               integrations: { twilio: { accountSid: '', authToken: '', phoneNumber: '' }, sendgrid: { apiKey: '' }, stripe: { secretKey: '', publishableKey: '', webhookSecret: '' }, sentry: { dsn: '' }, googleMaps: { apiKey: '' } },
             }); }}
             style={{ fontSize: '0.8rem', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4, textDecoration: 'underline' }}
@@ -895,6 +896,33 @@ function HomeCareIncluded() {
   );
 }
 
+function PaidAdsFeature({ enabled, onChange }) {
+  return (
+    <div style={{ border: `2px solid ${enabled ? '#10b981' : '#e5e7eb'}`, borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '20px 24px', background: enabled ? '#f0fdf4' : '#f9fafb' }}>
+        <span style={{ fontSize: 36 }}>📣</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#111827', marginBottom: 4 }}>
+            Paid Ads Management — Google + Meta
+            {enabled && <span style={{ marginLeft: 10, fontSize: '0.75rem', color: '#10b981', fontWeight: 700 }}>ENABLED</span>}
+          </div>
+          <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+            AI-powered campaign creation via Twomiah Ads. Launches Google Search campaigns automatically after onboarding.
+          </div>
+        </div>
+        <button onClick={() => onChange(!enabled)} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 700, background: enabled ? '#10b981' : '#f97316', color: 'white' }}>
+          {enabled ? 'Enabled' : 'Enable'}
+        </button>
+      </div>
+      {enabled && (
+        <div style={{ padding: '16px 24px', borderTop: '1px solid #d1fae5', background: 'white', fontSize: '0.8rem', color: '#92400e', background: '#fffbeb', borderRadius: 8 }}>
+          Twomiah Ads tenant provisioned automatically on generate. Client connects Google Ads account after deployment.
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FeatureStep({ config, setConfig, registry }) {
   const hasWebsite = config.products.includes('website');
   const hasCRM = config.products.includes('crm');
@@ -948,18 +976,24 @@ function FeatureStep({ config, setConfig, registry }) {
       <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 4 }}>Configure Features</h2>
       <p style={{ color: '#6b7280', marginBottom: 16 }}>Select which features to enable for each product.</p>
 
-      {hasWebsite && hasCRM && (
-        <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, flexWrap: 'wrap' }}>
+        {hasCRM && (
           <button onClick={() => setTab('crm')} style={{
             padding: '8px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600,
             background: tab === 'crm' ? '#f97316' : '#f3f4f6', color: tab === 'crm' ? 'white' : '#6b7280',
           }}>CRM Features ({config.features.crm.length})</button>
+        )}
+        {hasWebsite && (
           <button onClick={() => setTab('website')} style={{
             padding: '8px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600,
             background: tab === 'website' ? '#3b82f6' : '#f3f4f6', color: tab === 'website' ? 'white' : '#6b7280',
           }}>Website Features ({config.features.website.length})</button>
-        </div>
-      )}
+        )}
+        <button onClick={() => setTab('ads')} style={{
+          padding: '8px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600,
+          background: tab === 'ads' ? '#10b981' : '#f3f4f6', color: tab === 'ads' ? 'white' : '#6b7280',
+        }}>📣 Paid Ads {config.features.paid_ads ? '✓' : ''}</button>
+      </div>
 
       {tab === 'crm' && hasCRM && (
         <CRMFeatures
@@ -974,6 +1008,13 @@ function FeatureStep({ config, setConfig, registry }) {
           selected={config.features.website}
           onChange={features => setConfig(prev => ({ ...prev, features: { ...prev.features, website: features } }))}
           registry={registry?.website || []}
+        />
+      )}
+
+      {tab === 'ads' && (
+        <PaidAdsFeature
+          enabled={config.features.paid_ads}
+          onChange={val => setConfig(prev => ({ ...prev, features: { ...prev.features, paid_ads: val } }))}
         />
       )}
     </div>
