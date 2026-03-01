@@ -16,10 +16,10 @@ const NAV_LINKS = [
 ];
 
 const STATS = [
-  { value: '2,400+', label: 'Contractors Running Twomiah Build' },
-  { value: '$1.2B', label: 'In Invoices Processed' },
-  { value: '98.9%', label: 'Uptime SLA' },
-  { value: '4.9★', label: 'Average Customer Rating' },
+  { value: '30+', label: 'Years of Sales Experience Behind Every Feature' },
+  { value: '100+', label: 'Features Shipped and Ready' },
+  { value: '5', label: 'Products in the Twomiah Suite' },
+  { value: 'Free', label: 'Trial — No Credit Card Required' },
 ];
 
 const FEATURE_CATEGORIES = [
