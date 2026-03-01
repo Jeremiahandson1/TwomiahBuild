@@ -2,7 +2,8 @@
 // Smoke tests for authentication endpoints
 // These run against a real DB — set TEST_DATABASE_URL in env
 
-const request = require('supertest');
+import request from 'supertest';
+import jwt from 'jsonwebtoken';
 
 // Only run integration tests if TEST_DATABASE_URL is set
 const INTEGRATION = !!process.env.TEST_DATABASE_URL;
@@ -10,12 +11,13 @@ const INTEGRATION = !!process.env.TEST_DATABASE_URL;
 describe('Auth endpoints', () => {
   let app;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     if (!INTEGRATION) return;
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
-    process.env.JWT_SECRET   = 'test-jwt-secret-for-unit-tests-only';
+    process.env.DATABASE_URL  = process.env.TEST_DATABASE_URL;
+    process.env.JWT_SECRET    = 'test-jwt-secret-for-unit-tests-only';
     process.env.ENCRYPTION_KEY = 'a'.repeat(64); // Valid 64-char hex
-    app = require('../server');
+    const module = await import('../server');
+    app = module.default;
   });
 
   describe('POST /api/auth/login', () => {
@@ -46,8 +48,6 @@ describe('Auth endpoints', () => {
 });
 
 // ── JWT validation unit tests (no DB needed) ──────────────────────────────────
-
-const jwt = require('jsonwebtoken');
 
 describe('JWT validation', () => {
   const SECRET = 'test-secret';
