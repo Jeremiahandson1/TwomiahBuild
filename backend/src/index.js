@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 import { prisma } from './config/prisma.js';
 import { authenticate } from './middleware/auth.js';
 
+
 // Services
 import logger from './services/logger.js';
 import { initializeSocket } from './services/socket.js';
@@ -40,6 +41,7 @@ import documentsRoutes from './routes/documents.js';
 import billingRoutes from './routes/billing.js';
 import integrationsRoutes from './routes/integrations.js';
 import factoryRoutes from './routes/factory.js';
+import migrationRouter from './routes/migration.js';
 
 // Auto-wired feature routes
 import agencyAdminRoutes from './routes/agencyAdmin.js';
@@ -256,6 +258,7 @@ app.use('/api/v1/time-tracking', timeTrackingRoutes);
 app.use('/api/v1/warranties', warrantiesRoutes);
 app.use('/api/v1/weather', weatherRoutes);
 app.use('/api/v1/wisetack', wisetackRoutes);
+app.use('/api/v1/migration', migrationRouter);
 
 // Gap features — construction-specific routes now live
 app.use('/api/v1/booking-gap', gapBookingRoutes);
