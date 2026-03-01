@@ -6,7 +6,8 @@ export default {
   testPathIgnorePatterns: [
     '/node_modules/',
     'integration',
-    'templates/crm/frontend',   // vitest tests — run with `vite test` inside that template
+    'templates/crm/frontend',                        // vitest tests — run with `vite test` inside that template
+    'templates/crm-homecare/backend/src/tests/auth', // integration tests — require live DB, not for unit suite
   ],
   setupFiles: ['<rootDir>/jest.timezone.js'], // pin to UTC so date tests pass on any machine
   collectCoverageFrom: [
