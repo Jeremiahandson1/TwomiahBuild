@@ -17,8 +17,8 @@ const NAV_LINKS = [
 
 const STATS = [
   { value: '30+', label: 'Years of Sales Experience Behind Every Feature' },
-  { value: '100+', label: 'Features Shipped and Ready' },
-  { value: '5', label: 'Products in the Twomiah Suite' },
+  { value: '50+', label: 'Features Across the Full Platform' },
+  { value: '6', label: 'Products in the Twomiah Suite' },
   { value: 'Free', label: 'Trial — No Credit Card Required' },
 ];
 
